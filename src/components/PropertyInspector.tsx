@@ -447,7 +447,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         </div>
 
         {/* Visual Icon Picker */}
-        {['button', 'input', 'metric-card', 'navbar'].includes(element.type) && (
+        {['button', 'input', 'metric-card', 'navbar', 'icon', 'badge-shape'].includes(element.type) && (
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
@@ -562,19 +562,19 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
         {/* Tipografi */}
         {(element.fontSize !== undefined ||
-          ['heading', 'text', 'button'].includes(element.type)) && (
+          ['heading', 'text', 'button', 'card'].includes(element.type)) && (
             <div className="space-y-2">
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                 Tipografi
               </span>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
                   <label className="text-[10px] text-slate-500 block mb-1">Ukuran Font</label>
                   <input
                     type="number"
                     value={element.fontSize || 16}
                     onChange={e => handleChange('fontSize', Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
                   />
                 </div>
                 <div>
@@ -582,13 +582,25 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   <select
                     value={element.fontWeight || 'normal'}
                     onChange={e => handleChange('fontWeight', e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-1.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
                   >
-                    <option value="normal">Reguler (400)</option>
-                    <option value="medium">Medium (500)</option>
-                    <option value="semibold">Semibold (600)</option>
-                    <option value="bold">Tebal (700)</option>
-                    <option value="extrabold">Ekstra Tebal (800)</option>
+                    <option value="normal">Reguler</option>
+                    <option value="medium">Medium</option>
+                    <option value="semibold">Semibold</option>
+                    <option value="bold">Tebal</option>
+                    <option value="extrabold">Ekstra</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 block mb-1">Font Family</label>
+                  <select
+                    value={element.fontFamily || 'sans'}
+                    onChange={e => handleChange('fontFamily', e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-1.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+                  >
+                    <option value="sans">Sans (Inter)</option>
+                    <option value="serif">Serif (Elegan)</option>
+                    <option value="mono">Monospace</option>
                   </select>
                 </div>
               </div>

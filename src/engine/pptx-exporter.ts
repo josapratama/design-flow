@@ -133,6 +133,42 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
           break;
         }
 
+        case 'triangle': {
+          slide.addShape(pptx.ShapeType.triangle, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '6366F1' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
+          });
+          break;
+        }
+
+        case 'star': {
+          slide.addShape(pptx.ShapeType.star5, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: 'F59E0B' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
+          });
+          break;
+        }
+
+        case 'arrow': {
+          slide.addShape(pptx.ShapeType.rightArrow, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '3B82F6' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
+          });
+          break;
+        }
+
         case 'metric-card':
         case 'card':
         case 'rect':

@@ -53,10 +53,146 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
       ? 'dotted'
       : 'solid';
 
+  const fontClass =
+    element.fontFamily === 'serif'
+      ? 'font-serif'
+      : element.fontFamily === 'mono'
+      ? 'font-mono'
+      : 'font-sans';
+
   // Dynamic Lucide Icon
-  const IconComponent = iconName && (Icons as any)[iconName] ? (Icons as any)[iconName] : null;
+  const IconComponent =
+    iconName && (Icons as any)[iconName]
+      ? (Icons as any)[iconName]
+      : (Icons as any)['Sparkles'];
 
   switch (type) {
+    case 'icon': {
+      const LucideIcon = iconName && (Icons as any)[iconName] ? (Icons as any)[iconName] : Icons.Sparkles;
+      return (
+        <div
+          className={`w-full h-full flex items-center justify-center select-none ${shadowClass}`}
+          style={{ color: color || '#818cf8' }}
+        >
+          <LucideIcon
+            className="w-full h-full"
+            strokeWidth={strokeWidth || 2}
+            style={{ color: color || '#818cf8' }}
+          />
+        </div>
+      );
+    }
+
+    case 'avatar': {
+      return (
+        <div
+          className={`w-full h-full relative rounded-full overflow-hidden select-none border-2 ${shadowClass}`}
+          style={{
+            borderColor: stroke || '#6366f1',
+            backgroundColor: fill || '#1e293b',
+          }}
+        >
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={name || 'Avatar'}
+              className="w-full h-full object-cover pointer-events-none"
+            />
+          ) : (
+            <div
+              className={`w-full h-full flex items-center justify-center font-bold text-lg select-none ${fontClass}`}
+              style={{ color: color || '#ffffff' }}
+            >
+              {content || 'DF'}
+            </div>
+          )}
+          <span className="absolute bottom-1 right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-900" />
+        </div>
+      );
+    }
+
+    case 'badge-shape': {
+      return (
+        <div
+          className={`w-full h-full inline-flex items-center justify-center px-3 py-1 font-semibold rounded-full select-none ${fontClass} ${shadowClass}`}
+          style={{
+            backgroundColor: fill || 'rgba(99, 102, 241, 0.2)',
+            color: color || '#818cf8',
+            border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : '1px solid rgba(99, 102, 241, 0.4)',
+            fontSize: `${fontSize || 12}px`,
+          }}
+        >
+          {iconName && (Icons as any)[iconName] && (
+            React.createElement((Icons as any)[iconName], { className: 'w-3.5 h-3.5 mr-1.5' })
+          )}
+          <span>{content || element.badgeText || 'NEW FEATURE'}</span>
+        </div>
+      );
+    }
+
+    case 'toggle': {
+      const isActive = content !== 'off';
+      return (
+        <div
+          className={`w-full h-full rounded-full p-1 flex items-center cursor-pointer transition-colors duration-200 select-none ${shadowClass}`}
+          style={{
+            backgroundColor: isActive ? (fill || '#6366f1') : '#334155',
+          }}
+        >
+          <div
+            className={`h-full aspect-square rounded-full bg-white shadow-md transition-transform duration-200 transform ${
+              isActive ? 'translate-x-[110%]' : 'translate-x-0'
+            }`}
+          />
+        </div>
+      );
+    }
+
+    case 'triangle': {
+      return (
+        <div className={`w-full h-full select-none ${shadowClass}`}>
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polygon
+              points="50,0 100,100 0,100"
+              fill={fill || '#6366f1'}
+              stroke={stroke || 'transparent'}
+              strokeWidth={strokeWidth || 0}
+            />
+          </svg>
+        </div>
+      );
+    }
+
+    case 'star': {
+      return (
+        <div className={`w-full h-full select-none ${shadowClass}`}>
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polygon
+              points="50,2 62,38 100,38 69,60 81,96 50,74 19,96 31,60 0,38 38,38"
+              fill={fill || '#f59e0b'}
+              stroke={stroke || 'transparent'}
+              strokeWidth={strokeWidth || 0}
+            />
+          </svg>
+        </div>
+      );
+    }
+
+    case 'arrow': {
+      return (
+        <div className={`w-full h-full select-none ${shadowClass}`}>
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polygon
+              points="0,35 60,35 60,10 100,50 60,90 60,65 0,65"
+              fill={fill || '#3b82f6'}
+              stroke={stroke || 'transparent'}
+              strokeWidth={strokeWidth || 0}
+            />
+          </svg>
+        </div>
+      );
+    }
+
     case 'image':
       return (
         <div
@@ -79,7 +215,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
     case 'quote':
       return (
         <div
-          className={`w-full h-full flex flex-col justify-center select-none overflow-hidden ${shadowClass}`}
+          className={`w-full h-full flex flex-col justify-center select-none overflow-hidden ${fontClass} ${shadowClass}`}
           style={{
             color: color || '#ffffff',
             fontSize: `${fontSize || 24}px`,
@@ -96,7 +232,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
     case 'button':
       return (
         <div
-          className={`w-full h-full flex items-center justify-center font-medium transition-all select-none cursor-pointer ${shadowClass}`}
+          className={`w-full h-full flex items-center justify-center font-medium transition-all select-none cursor-pointer ${fontClass} ${shadowClass}`}
           style={{
             backgroundColor: fill || '#6366f1',
             border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : 'none',

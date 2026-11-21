@@ -29,9 +29,11 @@ export function generateDesignDSL(project: DesignProject): string {
       if (el.opacity !== undefined && el.opacity < 1) lines.push(`    opacity: ${el.opacity}`);
       if (el.locked) lines.push(`    locked: true`);
       if (el.hidden) lines.push(`    hidden: true`);
+      if (el.groupId) lines.push(`    groupId: "${escapeString(el.groupId)}"`);
 
       // Content & Typography
       if (el.content !== undefined) lines.push(`    content: "${escapeString(el.content)}"`);
+      if (el.fontFamily && el.fontFamily !== 'sans') lines.push(`    fontFamily: "${el.fontFamily}"`);
       if (el.fontSize) lines.push(`    fontSize: ${el.fontSize}`);
       if (el.fontWeight && el.fontWeight !== 'normal') lines.push(`    fontWeight: "${el.fontWeight}"`);
       if (el.textAlign && el.textAlign !== 'left') lines.push(`    textAlign: "${el.textAlign}"`);

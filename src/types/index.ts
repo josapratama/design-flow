@@ -31,6 +31,9 @@ export type ElementType =
   // Basic Shapes
   | 'rect'
   | 'circle'
+  | 'triangle'
+  | 'star'
+  | 'arrow'
   | 'line'
   | 'card'
   | 'badge-shape'

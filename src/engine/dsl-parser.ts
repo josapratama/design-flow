@@ -54,7 +54,7 @@ export function parseDesignDSL(dsl: string, currentMode: DesignMode = 'slide'): 
 
     // Element declaration inside artboard
     const elementMatch = line.match(
-      /^(heading|text|quote|rect|circle|line|card|badge-shape|button|input|navbar|bottom-nav|avatar|metric-card|toggle|table|icon|image)\s+([a-zA-Z0-9_-]+)\s*\{/
+      /^(heading|text|quote|rect|circle|triangle|star|arrow|line|card|badge-shape|button|input|navbar|bottom-nav|avatar|metric-card|toggle|table|icon|image)\s+([a-zA-Z0-9_-]+)\s*\{/
     );
     if (elementMatch && currentSlide) {
       const type = elementMatch[1] as ElementType;
@@ -170,7 +170,7 @@ function parseElementProperty(line: string, el: Partial<DesignElement>) {
   const strProps: (keyof DesignElement)[] = [
     'content', 'color', 'fill', 'stroke', 'variant', 'placeholder', 
     'iconName', 'subTitle', 'badgeText', 'shadow', 'strokeDash', 
-    'fontWeight', 'textAlign', 'imageUrl'
+    'fontWeight', 'textAlign', 'imageUrl', 'groupId', 'fontFamily'
   ];
 
   for (const prop of strProps) {

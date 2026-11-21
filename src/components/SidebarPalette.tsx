@@ -5,6 +5,9 @@ import {
   Type,
   Square,
   Circle,
+  Triangle,
+  Star,
+  MoveRight,
   Minus,
   MousePointerClick,
   TextCursorInput,
@@ -25,6 +28,9 @@ import {
   Trash2,
   ArrowUp,
   ArrowDown,
+  UserCheck,
+  ToggleLeft,
+  Tag,
   Image as ImageIcon,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -222,10 +228,24 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         return <Square className="w-3.5 h-3.5 text-blue-400" />;
       case 'circle':
         return <Circle className="w-3.5 h-3.5 text-emerald-400" />;
+      case 'triangle':
+        return <Triangle className="w-3.5 h-3.5 text-amber-400" />;
+      case 'star':
+        return <Star className="w-3.5 h-3.5 text-yellow-400" />;
+      case 'arrow':
+        return <MoveRight className="w-3.5 h-3.5 text-cyan-400" />;
       case 'button':
         return <MousePointerClick className="w-3.5 h-3.5 text-amber-400" />;
       case 'input':
         return <TextCursorInput className="w-3.5 h-3.5 text-teal-400" />;
+      case 'avatar':
+        return <UserCheck className="w-3.5 h-3.5 text-indigo-400" />;
+      case 'badge-shape':
+        return <Tag className="w-3.5 h-3.5 text-pink-400" />;
+      case 'toggle':
+        return <ToggleLeft className="w-3.5 h-3.5 text-teal-400" />;
+      case 'icon':
+        return <Sparkles className="w-3.5 h-3.5 text-yellow-400" />;
       case 'image':
         return <ImageIcon className="w-3.5 h-3.5 text-purple-400" />;
       case 'metric-card':
@@ -467,6 +487,73 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                 <Smartphone className="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform" />
                 <span className="text-slate-200 font-medium">Nav Header</span>
               </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('avatar', 'Avatar User', 64, 64, {
+                      content: 'DF',
+                      stroke: '#6366f1',
+                      fill: '#1e1b4b',
+                      color: '#c7d2fe',
+                      shadow: 'md',
+                    })
+                  )
+                }
+                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+              >
+                <UserCheck className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-200 font-medium">Avatar Profil</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('badge-shape', 'Badge Pill', 140, 36, {
+                      content: 'VERIFIED',
+                      fill: 'rgba(99, 102, 241, 0.2)',
+                      color: '#818cf8',
+                      iconName: 'Shield',
+                      borderRadius: 9999,
+                    })
+                  )
+                }
+                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+              >
+                <Tag className="w-5 h-5 text-pink-400 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-200 font-medium">Badge Pill</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('toggle', 'Switch Toggle', 52, 30, {
+                      content: 'on',
+                      fill: '#10b981',
+                      shadow: 'sm',
+                    })
+                  )
+                }
+                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+              >
+                <ToggleLeft className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-200 font-medium">Switch Toggle</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('icon', 'Ikon Vektor', 64, 64, {
+                      iconName: 'Sparkles',
+                      color: '#f59e0b',
+                    })
+                  )
+                }
+                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+              >
+                <Sparkles className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-200 font-medium">Ikon Vektor</span>
+              </button>
             </div>
           </div>
         )}
@@ -521,6 +608,48 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
               >
                 <Minus className="w-6 h-6 text-slate-400 group-hover:scale-110 transition-transform" />
                 <span className="text-slate-200 font-medium">Garis Dividers</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('triangle', 'Segitiga Vektor', 120, 120, {
+                      fill: '#6366f1',
+                    })
+                  )
+                }
+                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+              >
+                <Triangle className="w-6 h-6 text-indigo-400 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-200 font-medium">Segitiga</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('star', 'Bintang Vektor', 120, 120, {
+                      fill: '#f59e0b',
+                    })
+                  )
+                }
+                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+              >
+                <Star className="w-6 h-6 text-amber-400 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-200 font-medium">Bintang</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('arrow', 'Panah Vektor', 160, 60, {
+                      fill: '#06b6d4',
+                    })
+                  )
+                }
+                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+              >
+                <MoveRight className="w-6 h-6 text-cyan-400 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-200 font-medium">Panah Arah</span>
               </button>
             </div>
           </div>

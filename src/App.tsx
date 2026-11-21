@@ -43,6 +43,8 @@ export default function App() {
     nudgeSelectedElements,
     alignSelectedElement,
     distributeSelectedElements,
+    selectAllElements,
+    deselectAllElements,
     reorderSelectedElement,
     addSlide,
     duplicateSlide,
@@ -138,6 +140,20 @@ export default function App() {
         return;
       }
 
+      // 0.2 Select All: Ctrl+A / Cmd+A
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        selectAllElements();
+        return;
+      }
+
+      // 0.3 Deselect All: Escape
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        deselectAllElements();
+        return;
+      }
+
       // 1. Delete / Backspace
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (project.selectedElementIds.length > 0) {
@@ -222,6 +238,8 @@ export default function App() {
     groupSelectedElements,
     ungroupSelectedElements,
     nudgeSelectedElements,
+    selectAllElements,
+    deselectAllElements,
   ]);
 
   return (

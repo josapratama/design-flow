@@ -8,6 +8,9 @@ import {
   Smartphone,
   Square,
   Circle,
+  Triangle,
+  Star,
+  MoveRight,
   Minus,
   Upload,
   GitCommit,
@@ -15,6 +18,8 @@ import {
   Grid,
   CreditCard,
   Sparkles,
+  UserCheck,
+  Tag,
   X,
 } from 'lucide-react';
 import { DesignElement, ElementType } from '../types';
@@ -199,6 +204,78 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
         onAddElement(
           createBaseElement('circle', 'Lingkaran', 160, 160, {
             fill: '#312e81',
+            borderRadius: 9999,
+          })
+        ),
+    },
+    {
+      id: 'triangle',
+      title: 'Segitiga Vektor',
+      subtitle: 'Bentuk segitiga geometris poligon',
+      category: 'Bentuk',
+      icon: <Triangle className="w-4 h-4 text-indigo-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('triangle', 'Segitiga', 140, 140, {
+            fill: '#6366f1',
+          })
+        ),
+    },
+    {
+      id: 'star',
+      title: 'Bintang Vektor',
+      subtitle: 'Bentuk bintang 5-sudut untuk rating/penghargaan',
+      category: 'Bentuk',
+      icon: <Star className="w-4 h-4 text-amber-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('star', 'Bintang', 140, 140, {
+            fill: '#f59e0b',
+          })
+        ),
+    },
+    {
+      id: 'arrow',
+      title: 'Panah Arah Vektor',
+      subtitle: 'Bentuk panah penunjuk alur diagram',
+      category: 'Bentuk',
+      icon: <MoveRight className="w-4 h-4 text-cyan-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('arrow', 'Panah', 160, 60, {
+            fill: '#06b6d4',
+          })
+        ),
+    },
+    {
+      id: 'avatar',
+      title: 'Avatar Profil Pengguna',
+      subtitle: 'Foto profil bulat dengan status badge',
+      category: 'UI Kit',
+      icon: <UserCheck className="w-4 h-4 text-indigo-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('avatar', 'Avatar', 64, 64, {
+            content: 'DF',
+            fill: '#1e1b4b',
+            stroke: '#6366f1',
+            color: '#c7d2fe',
+            shadow: 'md',
+          })
+        ),
+    },
+    {
+      id: 'badge',
+      title: 'Badge Pill Status',
+      subtitle: 'Label pill dengan teks status atau verifikasi',
+      category: 'UI Kit',
+      icon: <Tag className="w-4 h-4 text-pink-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('badge-shape', 'Badge Pill', 130, 36, {
+            content: 'NEW FEATURE',
+            fill: 'rgba(99, 102, 241, 0.2)',
+            color: '#818cf8',
             borderRadius: 9999,
           })
         ),

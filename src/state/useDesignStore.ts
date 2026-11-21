@@ -80,10 +80,17 @@ export function useDesignStore() {
   }, [pushHistory]);
 
   const addElement = useCallback((element: DesignElement) => {
-    updateActiveSlide(slide => ({
-      ...slide,
-      elements: [...slide.elements, element],
-    }));
+    updateActiveSlide(slide => {
+      const highestZ = slide.elements.reduce((max, el) => Math.max(max, el.zIndex || 0), 0);
+      const elementWithZ = {
+        ...element,
+        zIndex: element.zIndex && element.zIndex > highestZ ? element.zIndex : highestZ + 1,
+      };
+      return {
+        ...slide,
+        elements: [...slide.elements, elementWithZ],
+      };
+    });
     setProject(prev => ({ ...prev, selectedElementIds: [element.id] }));
   }, [updateActiveSlide]);
 
@@ -279,38 +286,94 @@ export function useDesignStore() {
   const alignSelectedElement = useCallback(
     (alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => {
       if (project.selectedElementIds.length === 0 || !activeSlide) return;
-      const targetId = project.selectedElementIds[0];
-      const targetEl = activeSlide.elements.find(el => el.id === targetId);
-      if (!targetEl) return;
+      const selected = activeSlide.elements.filter(el => project.selectedElementIds.includes(el.id));
+      if (selected.length === 0) return;
 
-      let newX = targetEl.x;
-      let newY = targetEl.y;
+      if (selected.length === 1) {
+        // Single element: align relative to canvas / artboard
+        const targetEl = selected[0];
+        let newX = targetEl.x;
+        let newY = targetEl.y;
 
-      switch (alignment) {
-        case 'left':
-          newX = 0;
-          break;
-        case 'center':
-          newX = Math.round((activeSlide.width - targetEl.width) / 2);
-          break;
-        case 'right':
-          newX = activeSlide.width - targetEl.width;
-          break;
-        case 'top':
-          newY = 0;
-          break;
-        case 'middle':
-          newY = Math.round((activeSlide.height - targetEl.height) / 2);
-          break;
-        case 'bottom':
-          newY = activeSlide.height - targetEl.height;
-          break;
+        switch (alignment) {
+          case 'left':
+            newX = 0;
+            break;
+          case 'center':
+            newX = Math.round((activeSlide.width - targetEl.width) / 2);
+            break;
+          case 'right':
+            newX = activeSlide.width - targetEl.width;
+            break;
+          case 'top':
+            newY = 0;
+            break;
+          case 'middle':
+            newY = Math.round((activeSlide.height - targetEl.height) / 2);
+            break;
+          case 'bottom':
+            newY = activeSlide.height - targetEl.height;
+            break;
+        }
+
+        updateElement(targetEl.id, { x: newX, y: newY });
+      } else {
+        // Multi-element: align relative to selection bounding box
+        const minX = Math.min(...selected.map(el => el.x));
+        const maxX = Math.max(...selected.map(el => el.x + el.width));
+        const minY = Math.min(...selected.map(el => el.y));
+        const maxY = Math.max(...selected.map(el => el.y + el.height));
+        const midX = (minX + maxX) / 2;
+        const midY = (minY + maxY) / 2;
+
+        updateActiveSlide(slide => ({
+          ...slide,
+          elements: slide.elements.map(el => {
+            if (!project.selectedElementIds.includes(el.id)) return el;
+            let newX = el.x;
+            let newY = el.y;
+
+            switch (alignment) {
+              case 'left':
+                newX = minX;
+                break;
+              case 'center':
+                newX = Math.round(midX - el.width / 2);
+                break;
+              case 'right':
+                newX = maxX - el.width;
+                break;
+              case 'top':
+                newY = minY;
+                break;
+              case 'middle':
+                newY = Math.round(midY - el.height / 2);
+                break;
+              case 'bottom':
+                newY = maxY - el.height;
+                break;
+            }
+
+            return { ...el, x: newX, y: newY };
+          }),
+        }));
       }
-
-      updateElement(targetId, { x: newX, y: newY });
     },
-    [activeSlide, project.selectedElementIds, updateElement]
+    [activeSlide, project.selectedElementIds, updateActiveSlide, updateElement]
   );
+
+  // Select / Deselect all selectable elements
+  const selectAllElements = useCallback(() => {
+    if (!activeSlide) return;
+    const selectableIds = activeSlide.elements
+      .filter(el => !el.locked && !el.hidden)
+      .map(el => el.id);
+    setProject(prev => ({ ...prev, selectedElementIds: selectableIds }));
+  }, [activeSlide]);
+
+  const deselectAllElements = useCallback(() => {
+    setProject(prev => ({ ...prev, selectedElementIds: [] }));
+  }, []);
 
   // Distribute spacing evenly horizontally or vertically (for 3+ elements)
   const distributeSelectedElements = useCallback((direction: 'horizontal' | 'vertical') => {
@@ -563,6 +626,8 @@ export function useDesignStore() {
     nudgeSelectedElements,
     alignSelectedElement,
     distributeSelectedElements,
+    selectAllElements,
+    deselectAllElements,
     reorderSelectedElement,
     addSlide,
     duplicateSlide,
