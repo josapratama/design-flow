@@ -237,6 +237,33 @@ export function useDesignStore() {
     setProject(prev => ({ ...prev, selectedElementIds: newSelectedIds }));
   }, [activeSlide, addElements]);
 
+  // Group selected elements into a single cohesive group
+  const groupSelectedElements = useCallback(() => {
+    if (project.selectedElementIds.length < 2 || !activeSlide) return;
+    const newGroupId = `grp_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    updateActiveSlide(slide => ({
+      ...slide,
+      elements: slide.elements.map(el =>
+        project.selectedElementIds.includes(el.id)
+          ? { ...el, groupId: newGroupId }
+          : el
+      ),
+    }));
+  }, [activeSlide, project.selectedElementIds, updateActiveSlide]);
+
+  // Ungroup selected elements
+  const ungroupSelectedElements = useCallback(() => {
+    if (project.selectedElementIds.length === 0 || !activeSlide) return;
+    updateActiveSlide(slide => ({
+      ...slide,
+      elements: slide.elements.map(el =>
+        project.selectedElementIds.includes(el.id)
+          ? { ...el, groupId: undefined }
+          : el
+      ),
+    }));
+  }, [activeSlide, project.selectedElementIds, updateActiveSlide]);
+
   const nudgeSelectedElements = useCallback((deltaX: number, deltaY: number) => {
     if (project.selectedElementIds.length === 0) return;
     updateActiveSlide(slide => ({
@@ -531,6 +558,8 @@ export function useDesignStore() {
     duplicateSelectedElements,
     copySelectedElements,
     pasteElements,
+    groupSelectedElements,
+    ungroupSelectedElements,
     nudgeSelectedElements,
     alignSelectedElement,
     distributeSelectedElements,

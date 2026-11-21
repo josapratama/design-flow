@@ -38,6 +38,8 @@ export default function App() {
     duplicateSelectedElements,
     copySelectedElements,
     pasteElements,
+    groupSelectedElements,
+    ungroupSelectedElements,
     nudgeSelectedElements,
     alignSelectedElement,
     distributeSelectedElements,
@@ -67,6 +69,33 @@ export default function App() {
   const artboardRef = useRef<HTMLDivElement>(null);
 
   const selectedElement = selectedElements.length > 0 ? selectedElements[0] : null;
+
+  // Group-aware element selection helper
+  const handleSelectElementWithGroup = React.useCallback(
+    (elementId: string, multi: boolean) => {
+      if (!elementId) {
+        setProject(prev => ({ ...prev, selectedElementIds: [] }));
+        return;
+      }
+      const targetEl = activeSlide.elements.find(el => el.id === elementId);
+      const groupMemberIds = targetEl?.groupId
+        ? activeSlide.elements.filter(el => el.groupId === targetEl.groupId).map(el => el.id)
+        : [elementId];
+
+      setProject(prev => {
+        if (multi) {
+          const alreadySelected = groupMemberIds.every(id => prev.selectedElementIds.includes(id));
+          const newIds = alreadySelected
+            ? prev.selectedElementIds.filter(id => !groupMemberIds.includes(id))
+            : [...new Set([...prev.selectedElementIds, ...groupMemberIds])];
+          return { ...prev, selectedElementIds: newIds };
+        } else {
+          return { ...prev, selectedElementIds: groupMemberIds };
+        }
+      });
+    },
+    [activeSlide]
+  );
 
   // Zoom To Fit calculation
   const handleZoomToFit = React.useCallback(() => {
@@ -151,6 +180,18 @@ export default function App() {
         pasteElements();
       }
 
+      // 6.1 Group: Ctrl+G (without Shift)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'g' && !e.shiftKey) {
+        e.preventDefault();
+        groupSelectedElements();
+      }
+
+      // 6.2 Ungroup: Ctrl+Shift+G
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'g' && e.shiftKey) {
+        e.preventDefault();
+        ungroupSelectedElements();
+      }
+
       // 7. Arrow Key Nudge
       const step = e.shiftKey ? 10 : 1;
       if (e.key === 'ArrowLeft') {
@@ -178,6 +219,8 @@ export default function App() {
     duplicateSelectedElements,
     copySelectedElements,
     pasteElements,
+    groupSelectedElements,
+    ungroupSelectedElements,
     nudgeSelectedElements,
   ]);
 
@@ -209,18 +252,7 @@ export default function App() {
           mode={project.mode}
           activeSlide={activeSlide}
           selectedElementIds={project.selectedElementIds}
-          onSelectElement={(elementId, multi) => {
-            setProject(prev => ({
-              ...prev,
-              selectedElementIds: elementId
-                ? multi
-                  ? prev.selectedElementIds.includes(elementId)
-                    ? prev.selectedElementIds.filter(id => id !== elementId)
-                    : [...prev.selectedElementIds, elementId]
-                  : [elementId]
-                : [],
-            }));
-          }}
+          onSelectElement={handleSelectElementWithGroup}
           onToggleLock={toggleLockElement}
           onToggleHide={toggleHideElement}
           onDeleteElement={deleteElementById}
@@ -244,18 +276,7 @@ export default function App() {
             artboardRef={artboardRef}
             onPanChange={(panX, panY) => setProject(prev => ({ ...prev, panX, panY }))}
             onScaleChange={scale => setProject(prev => ({ ...prev, scale }))}
-            onSelectElement={(elementId, multi) => {
-              setProject(prev => ({
-                ...prev,
-                selectedElementIds: elementId
-                  ? multi
-                    ? prev.selectedElementIds.includes(elementId)
-                      ? prev.selectedElementIds.filter(id => id !== elementId)
-                      : [...prev.selectedElementIds, elementId]
-                    : [elementId]
-                  : [],
-              }));
-            }}
+            onSelectElement={handleSelectElementWithGroup}
             onSelectMultipleElements={ids => {
               setProject(prev => ({ ...prev, selectedElementIds: ids }));
             }}
@@ -347,10 +368,13 @@ export default function App() {
           x={contextMenu.x}
           y={contextMenu.y}
           element={contextMenu.element}
+          selectedCount={project.selectedElementIds.length}
           onClose={() => setContextMenu(null)}
           onCopy={copySelectedElements}
           onPaste={pasteElements}
           onDuplicate={duplicateSelectedElements}
+          onGroup={groupSelectedElements}
+          onUngroup={ungroupSelectedElements}
           onReorder={reorderSelectedElement}
           onToggleLock={toggleLockElement}
           onDelete={deleteSelectedElements}

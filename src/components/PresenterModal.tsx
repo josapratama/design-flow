@@ -22,8 +22,21 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLaserActive, setIsLaserActive] = useState(false);
   const [laserPos, setLaserPos] = useState({ x: -100, y: -100 });
+  const [isAutoPlay, setIsAutoPlay] = useState(false);
+  const [autoPlayInterval, setAutoPlayInterval] = useState(5);
 
   const slideAreaRef = useRef<HTMLDivElement>(null);
+
+  // Auto-play interval
+  useEffect(() => {
+    let timer: any;
+    if (isAutoPlay) {
+      timer = setInterval(() => {
+        setCurrentIndex(prev => (prev + 1) % slides.length);
+      }, autoPlayInterval * 1000);
+    }
+    return () => clearInterval(timer);
+  }, [isAutoPlay, autoPlayInterval, slides.length]);
 
   // Timer interval
   useEffect(() => {
@@ -126,6 +139,29 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             <span className="font-semibold text-slate-200">{formatTimer(secondsElapsed)}</span>
           </div>
 
+          {/* Auto-Play Toggle */}
+          <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700 rounded-lg p-0.5 text-xs">
+            <button
+              onClick={() => setIsAutoPlay(!isAutoPlay)}
+              title={isAutoPlay ? 'Hentikan Putar Otomatis' : 'Mulai Putar Otomatis'}
+              className={`px-2 py-1 rounded flex items-center gap-1.5 transition-colors font-semibold ${
+                isAutoPlay ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Play className="w-3.5 h-3.5" />
+              <span>Auto-Play</span>
+            </button>
+            <select
+              value={autoPlayInterval}
+              onChange={e => setAutoPlayInterval(Number(e.target.value))}
+              className="bg-transparent text-[11px] text-slate-300 outline-none pr-1 cursor-pointer font-mono"
+            >
+              <option value={3} className="bg-slate-900">3d</option>
+              <option value={5} className="bg-slate-900">5d</option>
+              <option value={10} className="bg-slate-900">10d</option>
+            </select>
+          </div>
+
           {/* Laser Pointer Toggle */}
           <button
             onClick={() => setIsLaserActive(!isLaserActive)}
@@ -179,7 +215,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             style={{
               width: `${currentSlide.width}px`,
               height: `${currentSlide.height}px`,
-              backgroundColor: currentSlide.background || '#0f172a',
+              background: currentSlide.background || '#0f172a',
               transform: `scale(${scale})`,
               transformOrigin: 'center center',
             }}

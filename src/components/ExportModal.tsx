@@ -24,6 +24,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'pptx' | 'image' | 'pdf' | 'code'>('pptx');
   const [isExporting, setIsExporting] = useState(false);
+  const [imageScale, setImageScale] = useState<number>(2);
   const [copiedCode, setCopiedCode] = useState(false);
   const [exportProgress, setExportProgress] = useState<string>('');
 
@@ -46,9 +47,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const handleExportImage = async (format: 'png' | 'jpeg' | 'svg') => {
     if (!artboardRef.current) return;
     setIsExporting(true);
-    setExportProgress(`Mengambil tangkapan kanvas (${format.toUpperCase()})...`);
+    setExportProgress(`Mengambil tangkapan kanvas (${format.toUpperCase()} ${imageScale}x)...`);
     try {
-      await exportArtboardToImage(artboardRef.current, format, activeSlide.title.toLowerCase().replace(/\s+/g, '_'));
+      await exportArtboardToImage(artboardRef.current, format, activeSlide.title.toLowerCase().replace(/\s+/g, '_'), imageScale);
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
     } catch (err: any) {
       alert('Gagal mengekspor gambar: ' + err.message);
@@ -208,8 +209,35 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {activeTab === 'image' && (
             <div className="space-y-4">
               <p className="text-xs text-slate-400">
-                Ekspor artboard aktif ({activeSlide.title}) menjadi berkas gambar resolusi tinggi (2x Retina scale).
+                Ekspor artboard aktif ({activeSlide.title}) menjadi berkas gambar berkualitas tinggi.
               </p>
+
+              {/* Resolution Options */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                  Pilihan Skala Resolusi
+                </span>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { scale: 1, label: '1x Web', desc: 'Ringan (72 DPI)' },
+                    { scale: 2, label: '2x Retina', desc: 'Tajam HD (144 DPI)' },
+                    { scale: 3, label: '3x Ultra', desc: 'Cetak Poster (300 DPI)' },
+                  ].map(opt => (
+                    <button
+                      key={opt.scale}
+                      onClick={() => setImageScale(opt.scale)}
+                      className={`p-2 rounded-xl border text-left transition-colors ${
+                        imageScale === opt.scale
+                          ? 'bg-indigo-600/20 border-indigo-500 text-white'
+                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <div className="font-bold text-xs">{opt.label}</div>
+                      <div className="text-[10px] text-slate-500">{opt.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <button
@@ -293,7 +321,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             style={{
               width: `${s.width}px`,
               height: `${s.height}px`,
-              backgroundColor: s.background || '#0f172a',
+              background: s.background || '#0f172a',
               position: 'relative',
               overflow: 'hidden',
             }}

@@ -47,7 +47,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
         style={{
           width: `${slide.width}px`,
           height: `${slide.height}px`,
-          backgroundColor: slide.background || '#0f172a',
+          background: slide.background || '#0f172a',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)',
         }}
         onClick={e => {

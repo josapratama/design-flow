@@ -50,6 +50,8 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
     const initialHeight = element.height;
     const initialX = element.x;
     const initialY = element.y;
+    const initialRatio = initialWidth / initialHeight;
+    const isCorner = ['nw', 'ne', 'se', 'sw'].includes(direction);
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       const deltaX = (moveEvent.clientX - startX) / scale;
@@ -74,6 +76,21 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         if (potentialHeight > 20) {
           newHeight = applySnap(potentialHeight);
           newY = applySnap(initialY + deltaY);
+        }
+      }
+
+      // Proportional Aspect Ratio Lock on Corner Drag + Shift key
+      if (isCorner && moveEvent.shiftKey) {
+        if (Math.abs(deltaX) >= Math.abs(deltaY)) {
+          newHeight = Math.max(20, Math.round(newWidth / initialRatio));
+          if (direction.includes('n')) {
+            newY = initialY + (initialHeight - newHeight);
+          }
+        } else {
+          newWidth = Math.max(20, Math.round(newHeight * initialRatio));
+          if (direction.includes('w')) {
+            newX = initialX + (initialWidth - newWidth);
+          }
         }
       }
 

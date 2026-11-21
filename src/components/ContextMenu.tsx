@@ -8,6 +8,7 @@ import {
   Lock,
   Unlock,
   Trash2,
+  Boxes,
 } from 'lucide-react';
 import { DesignElement } from '../types';
 
@@ -15,10 +16,13 @@ interface ContextMenuProps {
   x: number;
   y: number;
   element: DesignElement | null;
+  selectedCount?: number;
   onClose: () => void;
   onCopy: () => void;
   onPaste: () => void;
   onDuplicate: () => void;
+  onGroup?: () => void;
+  onUngroup?: () => void;
   onReorder: (direction: 'front' | 'back' | 'up' | 'down') => void;
   onToggleLock: (elementId: string) => void;
   onDelete: () => void;
@@ -28,10 +32,13 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   x,
   y,
   element,
+  selectedCount = 1,
   onClose,
   onCopy,
   onPaste,
   onDuplicate,
+  onGroup,
+  onUngroup,
   onReorder,
   onToggleLock,
   onDelete,
@@ -97,6 +104,39 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             </span>
             <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+D</kbd>
           </button>
+
+          {/* Grouping / Ungrouping */}
+          {selectedCount >= 2 && onGroup && (
+            <button
+              onClick={() => {
+                onGroup();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Boxes className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Kelompokkan Elemen</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+G</kbd>
+            </button>
+          )}
+
+          {element.groupId && onUngroup && (
+            <button
+              onClick={() => {
+                onUngroup();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Boxes className="w-3.5 h-3.5 text-amber-400" />
+                <span>Pisahkan Grup</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+Shift+G</kbd>
+            </button>
+          )}
 
           <div className="my-1 border-t border-slate-800" />
 

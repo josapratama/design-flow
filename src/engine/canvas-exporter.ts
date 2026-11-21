@@ -18,13 +18,14 @@ const exportFilter = (node: HTMLElement) => {
 export async function exportArtboardToImage(
   element: HTMLElement,
   format: 'png' | 'jpeg' | 'svg',
-  fileName: string = 'designflow-export'
+  fileName: string = 'designflow-export',
+  pixelRatio: number = 2
 ): Promise<void> {
   let dataUrl: string;
 
   const options = {
     quality: 0.98,
-    pixelRatio: 2, // 2x high resolution
+    pixelRatio, // 1x, 2x, or 3x resolution
     filter: exportFilter,
   };
 

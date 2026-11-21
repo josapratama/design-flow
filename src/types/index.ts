@@ -91,6 +91,7 @@ export interface DesignElement {
   imageUrl?: string;
   subTitle?: string;
   badgeText?: string;
+  groupId?: string;
   
   // Custom user meta
   meta?: Record<string, any>;
