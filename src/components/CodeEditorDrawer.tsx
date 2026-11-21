@@ -1,0 +1,122 @@
+import React, { useState, useEffect } from 'react';
+import { DesignProject } from '../types';
+import { generateDesignDSL } from '../engine/dsl-generator';
+import { parseDesignDSL } from '../engine/dsl-parser';
+import { Code, Check, AlertCircle, Copy, RefreshCw } from 'lucide-react';
+
+interface CodeEditorDrawerProps {
+  isOpen: boolean;
+  project: DesignProject;
+  onClose: () => void;
+  onApplyCode: (updatedProject: Partial<DesignProject>) => void;
+}
+
+export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
+  isOpen,
+  project,
+  onClose,
+  onApplyCode,
+}) => {
+  const [code, setCode] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Synchronize visual state to DSL code whenever project updates
+  useEffect(() => {
+    if (isOpen) {
+      setCode(generateDesignDSL(project));
+      setError(null);
+    }
+  }, [isOpen, project]);
+
+  if (!isOpen) return null;
+
+  const handleApply = () => {
+    try {
+      const parsed = parseDesignDSL(code, project.mode);
+      onApplyCode({
+        title: parsed.title,
+        mode: parsed.mode,
+        slides: parsed.slides,
+        activeSlideId: parsed.slides[0]?.id || project.activeSlideId,
+      });
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'Gagal mem-parsing sintaks kode DSL.');
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="absolute top-14 bottom-0 right-0 w-[480px] bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col z-30 select-none animate-in slide-in-from-right duration-200">
+      {/* Drawer Header */}
+      <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div className="flex items-center gap-2">
+          <div className="p-1 rounded bg-indigo-500/10 text-indigo-400">
+            <Code className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-xs font-bold text-slate-100">Declarative Design DSL</h3>
+            <span className="text-[10px] text-slate-400">Sinkronisasi 2 arah visual & kode</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={handleCopy}
+            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex items-center gap-1.5 transition-colors"
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copied ? 'Tersalin' : 'Salin'}</span>
+          </button>
+          <button
+            onClick={onClose}
+            className="px-2 py-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg text-xs"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+
+      {/* Code Editor Body */}
+      <div className="flex-1 relative bg-slate-950 font-mono text-xs">
+        <textarea
+          value={code}
+          onChange={e => {
+            setCode(e.target.value);
+            setError(null);
+          }}
+          spellCheck={false}
+          className="w-full h-full p-4 bg-transparent text-emerald-400 placeholder-slate-600 outline-none resize-none leading-relaxed selection:bg-indigo-600 selection:text-white font-mono"
+        />
+      </div>
+
+      {/* Error Alert if any */}
+      {error && (
+        <div className="p-2.5 bg-rose-500/10 border-t border-rose-500/30 text-rose-400 text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span className="truncate">{error}</span>
+        </div>
+      )}
+
+      {/* Drawer Footer Actions */}
+      <div className="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-900">
+        <span className="text-[11px] text-slate-500">
+          Ubah kode lalu tekan Terapkan ke Visual
+        </span>
+        <button
+          onClick={handleApply}
+          className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span>Terapkan ke Visual</span>
+        </button>
+      </div>
+    </div>
+  );
+};
