@@ -130,68 +130,68 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
       return;
     }
 
-    // Left-click (0) on background -> Marquee Selection Box
-    if (e.button === 0) {
-      if (!artboardRef.current) return;
-      const rect = artboardRef.current.getBoundingClientRect();
-      const startArtboardX = (e.clientX - rect.left) / scale;
-      const startArtboardY = (e.clientY - rect.top) / scale;
+      // Left-click (0) on background -> Marquee Selection Box
+      if (e.button === 0) {
+        if (!artboardRef.current) return;
+        const rect = artboardRef.current.getBoundingClientRect();
+        const startArtboardX = (e.clientX - rect.left) / scale;
+        const startArtboardY = (e.clientY - rect.top) / scale;
 
-      setMarquee({
-        startX: startArtboardX,
-        startY: startArtboardY,
-        currentX: startArtboardX,
-        currentY: startArtboardY,
-      });
+        setMarquee({
+          startX: startArtboardX,
+          startY: startArtboardY,
+          currentX: startArtboardX,
+          currentY: startArtboardY,
+        });
 
-      const handlePointerMove = (moveEvent: PointerEvent) => {
-        const curArtboardX = (moveEvent.clientX - rect.left) / scale;
-        const curArtboardY = (moveEvent.clientY - rect.top) / scale;
+        const handlePointerMove = (moveEvent: PointerEvent) => {
+          const curArtboardX = (moveEvent.clientX - rect.left) / scale;
+          const curArtboardY = (moveEvent.clientY - rect.top) / scale;
 
-        setMarquee(prev => prev ? { ...prev, currentX: curArtboardX, currentY: curArtboardY } : null);
+          setMarquee(prev => prev ? { ...prev, currentX: curArtboardX, currentY: curArtboardY } : null);
 
-        // Find intersecting elements
-        const minX = Math.min(startArtboardX, curArtboardX);
-        const maxX = Math.max(startArtboardX, curArtboardX);
-        const minY = Math.min(startArtboardY, curArtboardY);
-        const maxY = Math.max(startArtboardY, curArtboardY);
+          // Find intersecting elements
+          const minX = Math.min(startArtboardX, curArtboardX);
+          const maxX = Math.max(startArtboardX, curArtboardX);
+          const minY = Math.min(startArtboardY, curArtboardY);
+          const maxY = Math.max(startArtboardY, curArtboardY);
 
-        const intersectingIds = slide.elements
-          .filter(el => {
-            if (el.locked || el.hidden) return false;
-            return (
-              el.x + el.width >= minX &&
-              el.x <= maxX &&
-              el.y + el.height >= minY &&
-              el.y <= maxY
-            );
-          })
-          .map(el => el.id);
+          const intersectingIds = slide.elements
+            .filter(el => {
+              if (el.locked || el.hidden) return false;
+              return (
+                el.x + el.width >= minX &&
+                el.x <= maxX &&
+                el.y + el.height >= minY &&
+                el.y <= maxY
+              );
+            })
+            .map(el => el.id);
 
-        onSelectMultipleElements(intersectingIds);
-      };
+          onSelectMultipleElements(intersectingIds);
+        };
 
-      const handlePointerUp = () => {
-        setMarquee(null);
-        window.removeEventListener('pointermove', handlePointerMove);
-        window.removeEventListener('pointerup', handlePointerUp);
-      };
+        const handlePointerUp = () => {
+          setMarquee(null);
+          window.removeEventListener('pointermove', handlePointerMove);
+          window.removeEventListener('pointerup', handlePointerUp);
+        };
 
-      window.addEventListener('pointermove', handlePointerMove);
-      window.addEventListener('pointerup', handlePointerUp);
-    }
-  };
+        window.addEventListener('pointermove', handlePointerMove);
+        window.addEventListener('pointerup', handlePointerUp);
+      }
+    };
 
-  return (
-    <div
-      ref={containerRef}
-      className={`relative w-full h-full overflow-hidden select-none bg-slate-950 ${
-        isPanning
-          ? 'cursor-grabbing'
-          : isSpaceDown
-          ? 'cursor-grab'
-          : 'cursor-default'
-      }`}
+    return (
+      <div
+        ref={containerRef}
+        className={`relative w-full h-full overflow-hidden select-none bg-slate-950 ${
+          isPanning
+            ? 'cursor-grabbing'
+            : isSpaceDown
+            ? 'cursor-grab'
+            : 'cursor-default'
+        }`}
       onWheel={handleWheel}
       onPointerDown={handlePointerDown}
       onClick={e => {
@@ -211,9 +211,9 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
         <div
           className="absolute inset-0 pointer-events-none opacity-20"
           style={{
-            backgroundImage: `radial-gradient(circle, #64748b 1px, transparent 1px)`,
-            backgroundSize: `${24 * scale}px ${24 * scale}px`,
-            backgroundPosition: `${panX}px ${panY}px`,
+            backgroundImage: `radial - gradient(circle, #64748b 1px, transparent 1px)`,
+            backgroundSize: `${ 24 * scale }px ${ 24 * scale } px`,
+            backgroundPosition: `${ panX }px ${ panY } px`,
           }}
         />
       )}
@@ -222,9 +222,9 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
       <div
         className="absolute transition-transform duration-75 origin-top-left"
         style={{
-          transform: `translate(${panX}px, ${panY}px) scale(${scale})`,
-          width: `${slide.width}px`,
-          height: `${slide.height}px`,
+          transform: `translate(${ panX }px, ${ panY }px) scale(${ scale })`,
+          width: `${ slide.width } px`,
+          height: `${ slide.height } px`,
         }}
       >
         <ArtboardRenderer
@@ -249,10 +249,10 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
             className="absolute border border-indigo-400 bg-indigo-500/20 pointer-events-none z-50 rounded-sm"
             data-export-ignore="true"
             style={{
-              left: `${Math.min(marquee.startX, marquee.currentX)}px`,
-              top: `${Math.min(marquee.startY, marquee.currentY)}px`,
-              width: `${Math.abs(marquee.currentX - marquee.startX)}px`,
-              height: `${Math.abs(marquee.currentY - marquee.startY)}px`,
+              left: `${ Math.min(marquee.startX, marquee.currentX) } px`,
+              top: `${ Math.min(marquee.startY, marquee.currentY) } px`,
+              width: `${ Math.abs(marquee.currentX - marquee.startX) } px`,
+              height: `${ Math.abs(marquee.currentY - marquee.startY) } px`,
             }}
           />
         )}

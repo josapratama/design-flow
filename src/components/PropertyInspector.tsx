@@ -254,9 +254,8 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             <button
               onClick={() => onToggleLock(element.id)}
               title={element.locked ? 'Buka Kunci' : 'Kunci Elemen'}
-              className={`p-1.5 rounded-lg transition-colors ${
-                element.locked ? 'bg-amber-500/20 text-amber-400' : 'hover:bg-slate-800 text-slate-400'
-              }`}
+              className={`p-1.5 rounded-lg transition-colors ${element.locked ? 'bg-amber-500/20 text-amber-400' : 'hover:bg-slate-800 text-slate-400'
+                }`}
             >
               {element.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
             </button>
@@ -510,11 +509,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                           setShowIconPicker(false);
                         }}
                         title={name}
-                        className={`p-1.5 rounded flex items-center justify-center transition-colors ${
-                          isPicked
-                            ? 'bg-indigo-600 text-white'
-                            : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'
-                        }`}
+                        className={`p-1.5 rounded flex items-center justify-center transition-colors ${isPicked
+                          ? 'bg-indigo-600 text-white'
+                          : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'
+                          }`}
                       >
                         <IconComp className="w-4 h-4" />
                       </button>
@@ -545,57 +543,57 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         {/* Konten Teks */}
         {(element.content !== undefined ||
           ['heading', 'text', 'button', 'card'].includes(element.type)) && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                Konten Teks
-              </span>
-              <span className="text-[10px] text-slate-500">(Double-click di kanvas untuk edit cepat)</span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Konten Teks
+                </span>
+                <span className="text-[10px] text-slate-500">(Double-click di kanvas untuk edit cepat)</span>
+              </div>
+              <textarea
+                rows={3}
+                value={element.content || ''}
+                onChange={e => handleChange('content', e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+                placeholder="Ketik teks konten..."
+              />
             </div>
-            <textarea
-              rows={3}
-              value={element.content || ''}
-              onChange={e => handleChange('content', e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
-              placeholder="Ketik teks konten..."
-            />
-          </div>
-        )}
+          )}
 
         {/* Tipografi */}
         {(element.fontSize !== undefined ||
           ['heading', 'text', 'button'].includes(element.type)) && (
-          <div className="space-y-2">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Tipografi
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="text-[10px] text-slate-500 block mb-1">Ukuran Font</label>
-                <input
-                  type="number"
-                  value={element.fontSize || 16}
-                  onChange={e => handleChange('fontSize', Number(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] text-slate-500 block mb-1">Ketebalan</label>
-                <select
-                  value={element.fontWeight || 'normal'}
-                  onChange={e => handleChange('fontWeight', e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
-                >
-                  <option value="normal">Reguler (400)</option>
-                  <option value="medium">Medium (500)</option>
-                  <option value="semibold">Semibold (600)</option>
-                  <option value="bold">Tebal (700)</option>
-                  <option value="extrabold">Ekstra Tebal (800)</option>
-                </select>
+            <div className="space-y-2">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Tipografi
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] text-slate-500 block mb-1">Ukuran Font</label>
+                  <input
+                    type="number"
+                    value={element.fontSize || 16}
+                    onChange={e => handleChange('fontSize', Number(e.target.value))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-500 block mb-1">Ketebalan</label>
+                  <select
+                    value={element.fontWeight || 'normal'}
+                    onChange={e => handleChange('fontWeight', e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+                  >
+                    <option value="normal">Reguler (400)</option>
+                    <option value="medium">Medium (500)</option>
+                    <option value="semibold">Semibold (600)</option>
+                    <option value="bold">Tebal (700)</option>
+                    <option value="extrabold">Ekstra Tebal (800)</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Warna & Gaya Visual */}
         <div className="space-y-3">
@@ -661,11 +659,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 <button
                   key={r}
                   onClick={() => handleChange('borderRadius', r)}
-                  className={`flex-1 py-1 rounded text-[10px] font-mono border transition-colors ${
-                    (element.borderRadius || 0) === r
-                      ? 'bg-indigo-600 border-indigo-500 text-white'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
+                  className={`flex-1 py-1 rounded text-[10px] font-mono border transition-colors ${(element.borderRadius || 0) === r
+                    ? 'bg-indigo-600 border-indigo-500 text-white'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
                 >
                   {r === 9999 ? 'Pill' : `${r}px`}
                 </button>
@@ -681,11 +678,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 <button
                   key={s}
                   onClick={() => handleChange('shadow', s)}
-                  className={`py-1 rounded text-[10px] uppercase font-semibold border transition-colors ${
-                    (element.shadow || 'none') === s
-                      ? 'bg-indigo-600 border-indigo-500 text-white'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
+                  className={`py-1 rounded text-[10px] uppercase font-semibold border transition-colors ${(element.shadow || 'none') === s
+                    ? 'bg-indigo-600 border-indigo-500 text-white'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
                 >
                   {s}
                 </button>

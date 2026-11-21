@@ -31,11 +31,10 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
           <div
             key={slide.id}
             onClick={() => onSelectSlide(slide.id)}
-            className={`group relative h-26 w-38 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between p-2 shrink-0 overflow-hidden ${
-              isActive
-                ? 'border-indigo-500 bg-slate-800/90 shadow-xl shadow-indigo-500/20 ring-1 ring-indigo-400/50'
-                : 'border-slate-800 bg-slate-950/80 hover:border-slate-700'
-            }`}
+            className={`group relative h-26 w-38 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between p-2 shrink-0 overflow-hidden ${isActive
+              ? 'border-indigo-500 bg-slate-800/90 shadow-xl shadow-indigo-500/20 ring-1 ring-indigo-400/50'
+              : 'border-slate-800 bg-slate-950/80 hover:border-slate-700'
+              }`}
           >
             {/* Header: Slide Number & Title */}
             <div className="flex items-center justify-between pointer-events-none z-10">
@@ -74,12 +73,12 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
                         (el.type === 'heading'
                           ? '#ffffff'
                           : el.type === 'text'
-                          ? '#94a3b8'
-                          : el.type === 'button'
-                          ? '#6366f1'
-                          : el.type === 'image'
-                          ? '#8b5cf6'
-                          : '#334155'),
+                            ? '#94a3b8'
+                            : el.type === 'button'
+                              ? '#6366f1'
+                              : el.type === 'image'
+                                ? '#8b5cf6'
+                                : '#334155'),
                       borderRadius: `${el.borderRadius || 2}px`,
                       opacity: el.opacity !== undefined ? el.opacity : 0.8,
                     }}

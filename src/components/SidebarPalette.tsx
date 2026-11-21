@@ -242,11 +242,10 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         <button
           onClick={() => setActiveTab('elements')}
           title="Tipografi & Teks"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${
-            activeTab === 'elements'
-              ? 'bg-indigo-600 text-white shadow'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
+          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'elements'
+            ? 'bg-indigo-600 text-white shadow'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
         >
           <Type className="w-4 h-4" />
           <span className="text-[9px] mt-1 font-medium">Teks</span>
@@ -255,11 +254,10 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         <button
           onClick={() => setActiveTab('ui')}
           title="UI Kit & Komponen Antarmuka"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${
-            activeTab === 'ui'
-              ? 'bg-indigo-600 text-white shadow'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
+          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'ui'
+            ? 'bg-indigo-600 text-white shadow'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
         >
           <MousePointerClick className="w-4 h-4" />
           <span className="text-[9px] mt-1 font-medium">UI Kit</span>
@@ -268,11 +266,10 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         <button
           onClick={() => setActiveTab('shapes')}
           title="Bentuk & Garis Vektor"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${
-            activeTab === 'shapes'
-              ? 'bg-indigo-600 text-white shadow'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
+          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'shapes'
+            ? 'bg-indigo-600 text-white shadow'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
         >
           <Square className="w-4 h-4" />
           <span className="text-[9px] mt-1 font-medium">Bentuk</span>
@@ -281,11 +278,10 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         <button
           onClick={() => setActiveTab('media')}
           title="Gambar & Unggah Foto"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${
-            activeTab === 'media'
-              ? 'bg-indigo-600 text-white shadow'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
+          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'media'
+            ? 'bg-indigo-600 text-white shadow'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
         >
           <Upload className="w-4 h-4" />
           <span className="text-[9px] mt-1 font-medium">Media</span>
@@ -294,11 +290,10 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         <button
           onClick={() => setActiveTab('blocks')}
           title="Blok Tata Letak AI Cepat"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${
-            activeTab === 'blocks'
-              ? 'bg-indigo-600 text-white shadow'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
+          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'blocks'
+            ? 'bg-indigo-600 text-white shadow'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
         >
           <Sparkles className="w-4 h-4 text-amber-300" />
           <span className="text-[9px] mt-1 font-medium">Blok AI</span>
@@ -307,11 +302,10 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         <button
           onClick={() => setActiveTab('layers')}
           title="Daftar Layer & Susunan Elemen"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${
-            activeTab === 'layers'
-              ? 'bg-indigo-600 text-white shadow'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
-          }`}
+          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'layers'
+            ? 'bg-indigo-600 text-white shadow'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
         >
           <Layers className="w-4 h-4" />
           <span className="text-[9px] mt-1 font-medium">Layer</span>
@@ -693,11 +687,10 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                     <div
                       key={el.id}
                       onClick={() => onSelectElement(el.id, false)}
-                      className={`group flex items-center justify-between p-2 rounded-lg border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                          : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/40 text-slate-300'
-                      }`}
+                      className={`group flex items-center justify-between p-2 rounded-lg border transition-all cursor-pointer ${isSelected
+                        ? 'bg-indigo-600/20 border-indigo-500 text-white'
+                        : 'bg-slate-950/40 border-slate-800/80 hover:bg-slate-800/40 text-slate-300'
+                        }`}
                     >
                       <div className="flex items-center gap-2 truncate">
                         {getElementIcon(el.type)}

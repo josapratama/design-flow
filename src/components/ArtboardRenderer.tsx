@@ -142,10 +142,10 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                         element.fontWeight === 'extrabold'
                           ? 800
                           : element.fontWeight === 'bold'
-                          ? 700
-                          : element.fontWeight === 'semibold'
-                          ? 600
-                          : 400,
+                            ? 700
+                            : element.fontWeight === 'semibold'
+                              ? 600
+                              : 400,
                       textAlign: element.textAlign || 'left',
                       lineHeight: 1.25,
                     }}
