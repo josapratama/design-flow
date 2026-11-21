@@ -1,4 +1,4 @@
-import { toPng, toJpeg, toSvg } from 'html-to-image';
+import { toPng, toJpeg, toSvg, toCanvas } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { DesignProject } from '../types';
 
@@ -13,11 +13,11 @@ const exportFilter = (node: HTMLElement) => {
 };
 
 /**
- * Exports the active HTML artboard node as PNG or JPEG image.
+ * Exports the active HTML artboard node as PNG, JPEG, SVG or WebP image.
  */
 export async function exportArtboardToImage(
   element: HTMLElement,
-  format: 'png' | 'jpeg' | 'svg',
+  format: 'png' | 'jpeg' | 'svg' | 'webp',
   fileName: string = 'designflow-export',
   pixelRatio: number = 2
 ): Promise<void> {
@@ -33,6 +33,9 @@ export async function exportArtboardToImage(
     dataUrl = await toPng(element, options);
   } else if (format === 'jpeg') {
     dataUrl = await toJpeg(element, options);
+  } else if (format === 'webp') {
+    const canvas = await toCanvas(element, options);
+    dataUrl = canvas.toDataURL('image/webp', 0.95);
   } else {
     dataUrl = await toSvg(element, options);
   }

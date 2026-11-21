@@ -7,6 +7,8 @@ import {
   Ruler,
   Trash2,
   Copy,
+  RotateCcw,
+  RotateCw,
 } from 'lucide-react';
 
 interface ToolbarProps {
@@ -14,6 +16,10 @@ interface ToolbarProps {
   showGrid: boolean;
   showRulers?: boolean;
   hasSelectedElements: boolean;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetZoom: () => void;
@@ -29,6 +35,10 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   showGrid,
   showRulers = true,
   hasSelectedElements,
+  canUndo = false,
+  canRedo = false,
+  onUndo,
+  onRedo,
   onZoomIn,
   onZoomOut,
   onResetZoom,
@@ -125,6 +135,27 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           <Ruler className="w-4 h-4" />
         </button>
       )}
+
+      {/* Undo & Redo History Controls */}
+      <div className="h-4 w-[1px] bg-slate-800 mx-1" />
+
+      <button
+        onClick={onUndo}
+        disabled={!canUndo}
+        title="Urungkan Tindakan (Ctrl+Z)"
+        className="p-1.5 hover:bg-slate-800 disabled:opacity-25 disabled:hover:bg-transparent text-slate-400 hover:text-white rounded-xl transition-colors"
+      >
+        <RotateCcw className="w-4 h-4" />
+      </button>
+
+      <button
+        onClick={onRedo}
+        disabled={!canRedo}
+        title="Ulangi Tindakan (Ctrl+Y)"
+        className="p-1.5 hover:bg-slate-800 disabled:opacity-25 disabled:hover:bg-transparent text-slate-400 hover:text-white rounded-xl transition-colors"
+      >
+        <RotateCw className="w-4 h-4" />
+      </button>
 
       {/* Contextual actions for selected element */}
       {hasSelectedElements && (

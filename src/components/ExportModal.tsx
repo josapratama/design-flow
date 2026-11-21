@@ -44,7 +44,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     }
   };
 
-  const handleExportImage = async (format: 'png' | 'jpeg' | 'svg') => {
+  const handleExportImage = async (format: 'png' | 'jpeg' | 'svg' | 'webp') => {
     if (!artboardRef.current) return;
     setIsExporting(true);
     setExportProgress(`Mengambil tangkapan kanvas (${format.toUpperCase()} ${imageScale}x)...`);
@@ -239,32 +239,41 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-2">
                 <button
                   onClick={() => handleExportImage('png')}
                   disabled={isExporting}
-                  className="p-4 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-2 transition-all hover:border-indigo-500"
+                  className="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-1.5 transition-all hover:border-indigo-500"
                 >
                   <span className="font-bold text-sm text-slate-100">PNG</span>
-                  <span className="text-[10px] text-slate-400">Transparan / Tajam</span>
+                  <span className="text-[9px] text-slate-400">Transparan / Tajam</span>
                 </button>
 
                 <button
                   onClick={() => handleExportImage('jpeg')}
                   disabled={isExporting}
-                  className="p-4 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-2 transition-all hover:border-indigo-500"
+                  className="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-1.5 transition-all hover:border-indigo-500"
                 >
                   <span className="font-bold text-sm text-slate-100">JPEG</span>
-                  <span className="text-[10px] text-slate-400">Kompresi Ringan</span>
+                  <span className="text-[9px] text-slate-400">Kompresi Ringan</span>
+                </button>
+
+                <button
+                  onClick={() => handleExportImage('webp')}
+                  disabled={isExporting}
+                  className="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-1.5 transition-all hover:border-indigo-500 group"
+                >
+                  <span className="font-bold text-sm text-indigo-400 group-hover:text-white">WebP</span>
+                  <span className="text-[9px] text-slate-400">Super Cepat Web</span>
                 </button>
 
                 <button
                   onClick={() => handleExportImage('svg')}
                   disabled={isExporting}
-                  className="p-4 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-2 transition-all hover:border-indigo-500"
+                  className="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-1.5 transition-all hover:border-indigo-500"
                 >
                   <span className="font-bold text-sm text-slate-100">SVG</span>
-                  <span className="text-[10px] text-slate-400">Skalabilitas Vektor</span>
+                  <span className="text-[9px] text-slate-400">Vektor Murni</span>
                 </button>
               </div>
             </div>

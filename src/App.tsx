@@ -339,6 +339,10 @@ export default function App() {
             showGrid={project.showGrid}
             showRulers={project.showRulers !== false}
             hasSelectedElements={project.selectedElementIds.length > 0}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            onUndo={undo}
+            onRedo={redo}
             onZoomIn={() =>
               setProject(prev => ({ ...prev, scale: Math.min(3.0, Number((prev.scale + 0.1).toFixed(2))) }))
             }

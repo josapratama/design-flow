@@ -33,6 +33,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
+  const [resizingDims, setResizingDims] = useState<{ w: number; h: number } | null>(null);
   const hasPlayedSnap = useRef(false);
 
   const applySnap = (val: number): number => {
@@ -98,10 +99,12 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         }
       }
 
+      setResizingDims({ w: newWidth, h: newHeight });
       onUpdateLive({ width: newWidth, height: newHeight, x: newX, y: newY });
     };
 
     const handlePointerUp = () => {
+      setResizingDims(null);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
       onCommitHistory();
@@ -380,11 +383,21 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         onPointerDown={e => handleResizePointerDown(e, 'w')}
       />
 
-      {/* Floating Coordinates & Rotation Tag */}
+      {/* Floating Coordinates, Live Resize Dimensions & Rotation Tag */}
       <div
-        className="absolute -top-7 left-0 px-1.5 py-0.5 bg-indigo-600 text-[10px] font-mono text-white rounded shadow pointer-events-none whitespace-nowrap"
+        className={`absolute -top-7 left-0 px-2 py-0.5 text-[10px] font-mono text-white rounded shadow-lg pointer-events-none whitespace-nowrap transition-all duration-75 flex items-center gap-1.5 ${
+          resizingDims
+            ? 'bg-amber-600 ring-2 ring-amber-400 scale-105 z-50 shadow-amber-500/30'
+            : isDragging
+            ? 'bg-emerald-600 ring-1 ring-emerald-400'
+            : 'bg-indigo-600'
+        }`}
+        data-export-ignore="true"
       >
-        {element.width} × {element.height} px {element.rotation ? `(${element.rotation}°)` : ''}
+        <span>
+          {resizingDims ? Math.round(resizingDims.w) : element.width} × {resizingDims ? Math.round(resizingDims.h) : element.height} px
+        </span>
+        {element.rotation ? <span className="opacity-80">({element.rotation}°)</span> : null}
       </div>
     </div>
   );

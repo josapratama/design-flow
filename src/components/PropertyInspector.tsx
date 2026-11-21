@@ -25,6 +25,7 @@ import {
   ArrowLeftRight,
   ArrowUpDown,
   Pipette,
+  Image as ImageIcon,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { POPULAR_FONTS } from '../utils/fontLoader';
@@ -229,6 +230,87 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     </span>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Wallpaper & Gambar Latar Slide (Unsplash HD Presets) */}
+            <div className="space-y-2 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Gambar Latar / Wallpaper HD</span>
+                </span>
+                {activeSlide.background?.includes('url(') && (
+                  <button
+                    onClick={() => onUpdateSlide(activeSlide.id, { background: '#0f172a' })}
+                    className="text-[9px] text-rose-400 hover:underline"
+                  >
+                    Hapus Wallpaper
+                  </button>
+                )}
+              </div>
+
+              {/* 4 Wallpaper Preset Thumbnails */}
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  {
+                    name: 'Mesh Glow',
+                    url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1920&q=80',
+                  },
+                  {
+                    name: 'Cyber Wave',
+                    url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=1920&q=80',
+                  },
+                  {
+                    name: 'Deep Tech Glow',
+                    url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?w=1920&q=80',
+                  },
+                  {
+                    name: 'Minimal Arch',
+                    url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1920&q=80',
+                  },
+                ].map(wp => (
+                  <button
+                    key={wp.name}
+                    onClick={() =>
+                      onUpdateSlide(activeSlide.id, {
+                        background: `url('${wp.url}') center / cover no-repeat`,
+                      })
+                    }
+                    className="group relative h-12 rounded-lg overflow-hidden border border-slate-800 hover:border-indigo-500 transition-all text-left"
+                  >
+                    <img
+                      src={wp.url}
+                      alt={wp.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 to-transparent flex items-end p-1.5">
+                      <span className="text-[9px] font-semibold text-white/90 truncate">
+                        {wp.name}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Custom Image URL input */}
+              <div className="pt-1">
+                <input
+                  type="text"
+                  placeholder="Atau tempel URL gambar latar..."
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      const val = e.currentTarget.value.trim();
+                      if (val) {
+                        onUpdateSlide(activeSlide.id, {
+                          background: `url('${val}') center / cover no-repeat`,
+                        });
+                        e.currentTarget.value = '';
+                      }
+                    }
+                  }}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-[11px] font-mono placeholder:text-slate-600"
+                />
               </div>
             </div>
           </div>

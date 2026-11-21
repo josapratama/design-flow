@@ -13,6 +13,7 @@ import {
   Volume2,
   VolumeX,
   FileEdit,
+  RotateCcw,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../utils/audioEffects';
@@ -32,6 +33,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialSlideIndex);
   const [secondsElapsed, setSecondsElapsed] = useState(0);
+  const [targetMinutes, setTargetMinutes] = useState<number>(0);
   const [isTimerRunning, setIsTimerRunning] = useState(true);
   const [showNotes, setShowNotes] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -163,17 +165,63 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           </span>
         </div>
 
-        {/* Timer & Controls */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1 bg-slate-800 rounded-lg text-xs font-mono">
-            <button
-              onClick={() => setIsTimerRunning(!isTimerRunning)}
-              className="text-slate-400 hover:text-white"
-            >
-              {isTimerRunning ? <Pause className="w-3.5 h-3.5 text-amber-400" /> : <Play className="w-3.5 h-3.5 text-emerald-400" />}
-            </button>
-            <span className="font-semibold text-slate-200">{formatTimer(secondsElapsed)}</span>
-          </div>
+        {/* Timer, Target Duration & Controls */}
+        <div className="flex items-center gap-2">
+          {(() => {
+            const isTimeOver = targetMinutes > 0 && secondsElapsed >= targetMinutes * 60;
+            const isTimeWarning =
+              targetMinutes > 0 && !isTimeOver && secondsElapsed >= targetMinutes * 60 * 0.8;
+
+            return (
+              <div
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono border transition-all ${
+                  isTimeOver
+                    ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse font-bold'
+                    : isTimeWarning
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-semibold'
+                    : 'bg-slate-800 border-slate-700 text-slate-200'
+                }`}
+              >
+                <button
+                  onClick={() => setIsTimerRunning(!isTimerRunning)}
+                  title={isTimerRunning ? 'Jeda Timer' : 'Lanjutkan Timer'}
+                  className="text-slate-400 hover:text-white"
+                >
+                  {isTimerRunning ? (
+                    <Pause className="w-3.5 h-3.5 text-amber-400" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5 text-emerald-400" />
+                  )}
+                </button>
+                <span className="font-semibold">{formatTimer(secondsElapsed)}</span>
+                {targetMinutes > 0 && (
+                  <span className="text-[10px] text-slate-400 font-normal">/ {targetMinutes}m</span>
+                )}
+                <button
+                  onClick={() => setSecondsElapsed(0)}
+                  title="Reset Stopwatch (00:00)"
+                  className="text-slate-500 hover:text-slate-300 ml-0.5"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                </button>
+              </div>
+            );
+          })()}
+
+          {/* Target Duration Selector */}
+          <select
+            value={targetMinutes}
+            onChange={e => setTargetMinutes(Number(e.target.value))}
+            title="Target Batas Waktu Presentasi"
+            className="bg-slate-800/80 border border-slate-700 rounded-lg px-2 py-1 text-[11px] text-slate-300 outline-none cursor-pointer font-medium"
+          >
+            <option value={0} className="bg-slate-900">Stopwatch Bebas</option>
+            <option value={3} className="bg-slate-900">Target 3m (Pitch)</option>
+            <option value={5} className="bg-slate-900">Target 5m</option>
+            <option value={10} className="bg-slate-900">Target 10m</option>
+            <option value={15} className="bg-slate-900">Target 15m</option>
+            <option value={20} className="bg-slate-900">Target 20m</option>
+          </select>
 
           {/* Auto-Play Toggle */}
           <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700 rounded-lg p-0.5 text-xs">
