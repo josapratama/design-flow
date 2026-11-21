@@ -12,6 +12,7 @@ import { TemplatesModal } from './components/TemplatesModal';
 import { Toolbar } from './components/Toolbar';
 import { QuickCommandPalette } from './components/QuickCommandPalette';
 import { ContextMenu } from './components/ContextMenu';
+import { ShortcutsModal } from './components/ShortcutsModal';
 import { DesignElement } from './types';
 
 export default function App() {
@@ -60,6 +61,7 @@ export default function App() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   // Floating Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -158,6 +160,13 @@ export default function App() {
       if (e.shiftKey && e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         setProject(prev => ({ ...prev, showRulers: prev.showRulers === false ? true : false }));
+        return;
+      }
+
+      // 0.5 Shortcuts Help Modal: ? or Ctrl+/
+      if (e.key === '?' || ((e.ctrlKey || e.metaKey) && e.key === '/')) {
+        e.preventDefault();
+        setIsShortcutsOpen(prev => !prev);
         return;
       }
 
@@ -266,6 +275,7 @@ export default function App() {
         onOpenTemplates={() => setIsTemplatesOpen(true)}
         onOpenPresenter={() => setIsPresenterOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
+        onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onSaveProject={saveProjectToFile}
         onLoadProject={loadProjectData}
       />
@@ -436,6 +446,12 @@ export default function App() {
           onClose={() => setIsTemplatesOpen(false)}
         />
       )}
+
+      {/* Keyboard Shortcuts Cheat Sheet Modal */}
+      <ShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
     </div>
   );
 }

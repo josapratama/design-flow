@@ -12,6 +12,7 @@ import {
   Palette,
   Save,
   FolderOpen,
+  HelpCircle,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -28,6 +29,7 @@ interface NavbarProps {
   onOpenTemplates: () => void;
   onOpenPresenter: () => void;
   onOpenExport: () => void;
+  onOpenShortcuts?: () => void;
   onSaveProject: () => void;
   onLoadProject: (project: DesignProject) => void;
 }
@@ -46,6 +48,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTemplates,
   onOpenPresenter,
   onOpenExport,
+  onOpenShortcuts,
   onSaveProject,
   onLoadProject,
 }) => {
@@ -224,6 +227,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           <Download className="w-3.5 h-3.5" />
           <span>Ekspor</span>
         </button>
+
+        {onOpenShortcuts && (
+          <button
+            onClick={onOpenShortcuts}
+            title="Panduan Pintasan Keyboard (?)"
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors border border-slate-700/60 ml-0.5"
+          >
+            <HelpCircle className="w-4 h-4 text-slate-300" />
+          </button>
+        )}
       </div>
     </header>
   );
