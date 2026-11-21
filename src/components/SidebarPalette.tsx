@@ -7,6 +7,7 @@ import {
   Circle,
   Triangle,
   Star,
+  Hexagon,
   MoveRight,
   Minus,
   MousePointerClick,
@@ -670,6 +671,20 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
               >
                 <MoveRight className="w-6 h-6 text-cyan-400 group-hover:scale-110 transition-transform" />
                 <span className="text-slate-200 font-medium">Panah Arah</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('hexagon', 'Segi Enam (Hexagon)', 140, 130, {
+                      fill: '#8b5cf6',
+                    })
+                  )
+                }
+                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+              >
+                <Hexagon className="w-6 h-6 text-purple-400 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-200 font-medium">Segi Enam</span>
               </button>
             </div>
           </div>

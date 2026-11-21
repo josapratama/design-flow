@@ -700,6 +700,44 @@ export function useDesignStore() {
     });
   }, [project.slides, pushHistory]);
 
+  // Apply a unified color theme to the active slide and all its elements
+  const applyThemeToActiveSlide = useCallback(
+    (theme: {
+      background: string;
+      primaryAccent: string;
+      cardFill: string;
+      textColor: string;
+    }) => {
+      pushHistory(project.slides);
+      setProject(prev => {
+        const newSlides = prev.slides.map(slide => {
+          if (slide.id !== prev.activeSlideId) return slide;
+          const newElements = slide.elements.map(el => {
+            const updated = { ...el };
+            if (['button', 'metric-card', 'badge-shape', 'chart'].includes(el.type)) {
+              updated.fill = theme.primaryAccent;
+            } else if (['card', 'rect'].includes(el.type)) {
+              updated.fill = theme.cardFill;
+            }
+            if (['heading'].includes(el.type)) {
+              updated.color = '#ffffff';
+            } else if (['text', 'quote'].includes(el.type)) {
+              updated.color = theme.textColor;
+            }
+            return updated;
+          });
+          return {
+            ...slide,
+            background: theme.background,
+            elements: newElements,
+          };
+        });
+        return { ...prev, slides: newSlides };
+      });
+    },
+    [project.slides, pushHistory]
+  );
+
   return {
     project,
     setProject,
@@ -741,5 +779,6 @@ export function useDesignStore() {
     loadProjectData,
     replaceTextInElements,
     resetProjectToDefault,
+    applyThemeToActiveSlide,
   };
 }

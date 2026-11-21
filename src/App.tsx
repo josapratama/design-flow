@@ -59,6 +59,7 @@ export default function App() {
     lastSaved,
     replaceTextInElements,
     resetProjectToDefault,
+    applyThemeToActiveSlide,
   } = useDesignStore();
 
   const [isCodeDrawerOpen, setIsCodeDrawerOpen] = useState(false);
@@ -225,8 +226,15 @@ export default function App() {
         redo();
       }
 
-      // 4. Duplicate: Ctrl+D / Cmd+D
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+      // 4. Duplicate Slide: Ctrl+Shift+D / Cmd+Shift+D
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        if (activeSlide) duplicateSlide(activeSlide.id);
+        return;
+      }
+
+      // 4.1 Duplicate Element: Ctrl+D / Cmd+D (without Shift)
+      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         duplicateSelectedElements();
       }
@@ -412,6 +420,7 @@ export default function App() {
           onReorder={reorderSelectedElement}
           onAlignElement={alignSelectedElement}
           onDistributeElements={distributeSelectedElements}
+          onApplySlideTheme={applyThemeToActiveSlide}
           onToggleLock={toggleLockElement}
           onToggleHide={toggleHideElement}
         />
@@ -477,6 +486,7 @@ export default function App() {
           onDuplicateSlide={() => duplicateSlide(project.activeSlideId)}
           onToggleSafeMargin={() => setShowSafeMargin(prev => !prev)}
           onAlign={alignSelectedElement}
+          onDistribute={distributeSelectedElements}
         />
       )}
 

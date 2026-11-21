@@ -43,6 +43,7 @@ interface PropertyInspectorProps {
   onReorder: (direction: 'front' | 'back' | 'up' | 'down') => void;
   onAlignElement: (alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
   onDistributeElements?: (direction: 'horizontal' | 'vertical') => void;
+  onApplySlideTheme?: (theme: { background: string; primaryAccent: string; cardFill: string; textColor: string }) => void;
   onToggleLock?: (elementId: string) => void;
   onToggleHide?: (elementId: string) => void;
 }
@@ -58,6 +59,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   onReorder,
   onAlignElement,
   onDistributeElements,
+  onApplySlideTheme,
   onToggleLock,
   onToggleHide,
 }) => {
@@ -209,27 +211,68 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               </div>
             </div>
 
-            {/* Tema Palet Warna Slide (1-Klik) */}
-            <div className="space-y-1.5 pt-2 border-t border-slate-800">
-              <span className="text-[10px] text-slate-500 uppercase font-semibold block">
-                Tema Palet Harmonis (1-Klik)
-              </span>
+            {/* Tema Palet Harmonis Slide (1-Klik) */}
+            <div className="space-y-2 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                  Tema Palet Harmonis (1-Klik)
+                </span>
+                <span className="text-[9px] text-indigo-400 font-mono font-medium">Auto-Theming</span>
+              </div>
               <div className="grid grid-cols-2 gap-1.5">
                 {[
-                  { name: 'Midnight', bg: 'linear-gradient(135deg, #090d16 0%, #1e1b4b 100%)', dot: '#6366f1' },
-                  { name: 'Cyberpunk', bg: 'linear-gradient(135deg, #0e0b1f 0%, #3b0764 100%)', dot: '#d946ef' },
-                  { name: 'Deep Emerald', bg: 'linear-gradient(135deg, #021a12 0%, #064e3b 100%)', dot: '#10b981' },
-                  { name: 'Sunset Warm', bg: 'linear-gradient(135deg, #180512 0%, #4c0519 100%)', dot: '#f43f5e' },
+                  {
+                    name: 'Midnight',
+                    background: 'linear-gradient(135deg, #090d16 0%, #1e1b4b 100%)',
+                    primaryAccent: '#6366f1',
+                    cardFill: 'rgba(30, 27, 75, 0.7)',
+                    textColor: '#cbd5e1',
+                    dot: '#6366f1',
+                  },
+                  {
+                    name: 'Cyberpunk',
+                    background: 'linear-gradient(135deg, #0e0b1f 0%, #3b0764 100%)',
+                    primaryAccent: '#d946ef',
+                    cardFill: 'rgba(59, 7, 100, 0.7)',
+                    textColor: '#e2e8f0',
+                    dot: '#d946ef',
+                  },
+                  {
+                    name: 'Deep Emerald',
+                    background: 'linear-gradient(135deg, #021a12 0%, #064e3b 100%)',
+                    primaryAccent: '#10b981',
+                    cardFill: 'rgba(6, 78, 59, 0.7)',
+                    textColor: '#a7f3d0',
+                    dot: '#10b981',
+                  },
+                  {
+                    name: 'Sunset Warm',
+                    background: 'linear-gradient(135deg, #180512 0%, #4c0519 100%)',
+                    primaryAccent: '#f43f5e',
+                    cardFill: 'rgba(76, 5, 25, 0.7)',
+                    textColor: '#fecdd3',
+                    dot: '#f43f5e',
+                  },
                 ].map(theme => (
                   <button
                     key={theme.name}
-                    onClick={() => onUpdateSlide(activeSlide.id, { background: theme.bg })}
-                    className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-indigo-500 flex items-center gap-2 group transition-all text-left"
+                    onClick={() => {
+                      if (onApplySlideTheme) {
+                        onApplySlideTheme(theme);
+                      } else {
+                        onUpdateSlide(activeSlide.id, { background: theme.background });
+                      }
+                    }}
+                    title={`Terapkan tema ${theme.name} ke background dan seluruh elemen`}
+                    className="p-2 rounded-lg bg-slate-950 border border-slate-800 hover:border-indigo-500 hover:scale-[1.02] flex items-center gap-2 group transition-all text-left shadow-sm"
                   >
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: theme.dot }} />
-                    <span className="text-[10px] font-medium text-slate-300 group-hover:text-white truncate">
-                      {theme.name}
-                    </span>
+                    <span className="w-3 h-3 rounded-full shrink-0 shadow" style={{ backgroundColor: theme.dot }} />
+                    <div className="truncate">
+                      <div className="text-[10px] font-bold text-slate-200 group-hover:text-white truncate">
+                        {theme.name}
+                      </div>
+                      <div className="text-[9px] text-slate-500 truncate">Seleraskan Elemen</div>
+                    </div>
                   </button>
                 ))}
               </div>

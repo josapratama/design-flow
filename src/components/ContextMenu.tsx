@@ -43,6 +43,7 @@ interface ContextMenuProps {
   onDuplicateSlide?: () => void;
   onToggleSafeMargin?: () => void;
   onAlign?: (type: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
+  onDistribute?: (direction: 'horizontal' | 'vertical') => void;
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -65,6 +66,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onDuplicateSlide,
   onToggleSafeMargin,
   onAlign,
+  onDistribute,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -212,6 +214,27 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                   <AlignEndVertical className="w-3.5 h-3.5" />
                 </button>
               </div>
+
+              {/* Distribute Spacing Option for 3+ elements */}
+              {selectedCount >= 3 && onDistribute && (
+                <div className="px-3 py-1 flex items-center justify-between gap-1 border-t border-slate-800/80 pt-1.5 mt-1">
+                  <span className="text-[10px] text-slate-500 font-semibold">Ratakan Spasi:</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => { onDistribute('horizontal'); onClose(); }}
+                      className="px-2 py-0.5 rounded bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[10px] font-medium transition-colors"
+                    >
+                      Horisontal
+                    </button>
+                    <button
+                      onClick={() => { onDistribute('vertical'); onClose(); }}
+                      className="px-2 py-0.5 rounded bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[10px] font-medium transition-colors"
+                    >
+                      Vertikal
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           )}
 
