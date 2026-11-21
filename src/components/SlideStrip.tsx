@@ -10,6 +10,7 @@ interface SlideStripProps {
   onDuplicateSlide: (slideId: string) => void;
   onDeleteSlide: (slideId: string) => void;
   onReorderSlide: (slideId: string, direction: 'left' | 'right') => void;
+  onUpdateSlideTitle?: (slideId: string, newTitle: string) => void;
 }
 
 export const SlideStrip: React.FC<SlideStripProps> = ({
@@ -20,7 +21,10 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
   onDuplicateSlide,
   onDeleteSlide,
   onReorderSlide,
+  onUpdateSlideTitle,
 }) => {
+  const [editingSlideId, setEditingSlideId] = React.useState<string | null>(null);
+  const [tempTitle, setTempTitle] = React.useState('');
   return (
     <div className="h-32 bg-slate-900 border-t border-slate-800 px-4 py-2 flex items-center gap-3 overflow-x-auto select-none shrink-0 z-10">
       {slides.map((slide, index) => {
@@ -37,13 +41,49 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
               }`}
           >
             {/* Header: Slide Number & Title */}
-            <div className="flex items-center justify-between pointer-events-none z-10">
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900/90 text-slate-200">
+            <div className="flex items-center justify-between z-10">
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900/90 text-slate-200 pointer-events-none">
                 {index + 1}
               </span>
-              <span className="text-[10px] font-semibold text-slate-300 truncate max-w-[90px]">
-                {slide.title}
-              </span>
+              {editingSlideId === slide.id ? (
+                <input
+                  autoFocus
+                  type="text"
+                  value={tempTitle}
+                  onChange={e => setTempTitle(e.target.value)}
+                  onBlur={() => {
+                    if (tempTitle.trim() && onUpdateSlideTitle) {
+                      onUpdateSlideTitle(slide.id, tempTitle.trim());
+                    }
+                    setEditingSlideId(null);
+                  }}
+                  onKeyDown={e => {
+                    e.stopPropagation();
+                    if (e.key === 'Enter') {
+                      if (tempTitle.trim() && onUpdateSlideTitle) {
+                        onUpdateSlideTitle(slide.id, tempTitle.trim());
+                      }
+                      setEditingSlideId(null);
+                    } else if (e.key === 'Escape') {
+                      setEditingSlideId(null);
+                    }
+                  }}
+                  onClick={e => e.stopPropagation()}
+                  className="text-[10px] font-semibold bg-slate-800 border border-indigo-500 rounded px-1 py-0.5 text-white outline-none w-24"
+                />
+              ) : (
+                <span
+                  onDoubleClick={e => {
+                    e.stopPropagation();
+                    setEditingSlideId(slide.id);
+                    setTempTitle(slide.title);
+                  }}
+                  title="Klik ganda untuk mengubah judul slide"
+                  className="text-[10px] font-semibold text-slate-300 truncate max-w-[90px] cursor-text hover:text-white hover:underline decoration-dotted"
+                >
+                  {slide.title}
+                </span>
+              )}
             </div>
 
             {/* Scaled Mini Visual Canvas Thumbnail */}

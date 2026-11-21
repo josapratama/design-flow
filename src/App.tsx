@@ -383,6 +383,7 @@ export default function App() {
           <Toolbar
             scale={project.scale}
             showGrid={project.showGrid}
+            snapToGrid={project.snapToGrid}
             showRulers={project.showRulers !== false}
             showSafeMargin={showSafeMargin}
             hasSelectedElements={project.selectedElementIds.length > 0}
@@ -399,6 +400,7 @@ export default function App() {
             onResetZoom={handleZoomToFit}
             onSetScale={scale => setProject(prev => ({ ...prev, scale }))}
             onToggleGrid={() => setProject(prev => ({ ...prev, showGrid: !prev.showGrid }))}
+            onToggleSnapToGrid={() => setProject(prev => ({ ...prev, snapToGrid: !prev.snapToGrid }))}
             onToggleRulers={() =>
               setProject(prev => ({ ...prev, showRulers: prev.showRulers === false ? true : false }))
             }
@@ -448,6 +450,7 @@ export default function App() {
           onDuplicateSlide={duplicateSlide}
           onDeleteSlide={deleteSlide}
           onReorderSlide={reorderSlide}
+          onUpdateSlideTitle={(slideId, title) => updateSlideSettings(slideId, { title })}
         />
       )}
 
@@ -462,6 +465,8 @@ export default function App() {
         onOpenPresenter={() => setIsPresenterOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenTemplates={() => setIsTemplatesOpen(true)}
+        onOpenFindReplace={() => setIsFindReplaceOpen(true)}
+        onDuplicateActiveSlide={() => duplicateSlide(project.activeSlideId)}
       />
 
       {/* Floating Right-Click Context Menu */}

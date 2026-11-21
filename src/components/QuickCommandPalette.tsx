@@ -10,6 +10,8 @@ import {
   Circle,
   Triangle,
   Star,
+  Hexagon,
+  Copy,
   MoveRight,
   Minus,
   Upload,
@@ -38,6 +40,8 @@ interface QuickCommandPaletteProps {
   onOpenPresenter?: () => void;
   onOpenExport?: () => void;
   onOpenTemplates?: () => void;
+  onOpenFindReplace?: () => void;
+  onDuplicateActiveSlide?: () => void;
 }
 
 interface CommandItem {
@@ -59,6 +63,8 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
   onOpenPresenter,
   onOpenExport,
   onOpenTemplates,
+  onOpenFindReplace,
+  onDuplicateActiveSlide,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -120,6 +126,30 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
             category: 'Aksi Studio',
             icon: <LayoutTemplate className="w-4 h-4 text-indigo-400" />,
             action: () => onOpenTemplates(),
+          },
+        ]
+      : []),
+    ...(onOpenFindReplace
+      ? [
+          {
+            id: 'action-find-replace',
+            title: 'Cari & Ganti Teks (Ctrl+H)',
+            subtitle: 'Temukan dan ganti kata di slide aktif atau seluruh presentasi',
+            category: 'Aksi Studio',
+            icon: <Search className="w-4 h-4 text-amber-400" />,
+            action: () => onOpenFindReplace(),
+          },
+        ]
+      : []),
+    ...(onDuplicateActiveSlide
+      ? [
+          {
+            id: 'action-dup-slide',
+            title: 'Duplikat Slide Aktif (Ctrl+Shift+D)',
+            subtitle: 'Gandakan slide saat ini beserta seluruh elemen dan posisinya',
+            category: 'Aksi Studio',
+            icon: <Copy className="w-4 h-4 text-purple-400" />,
+            action: () => onDuplicateActiveSlide(),
           },
         ]
       : []),
@@ -309,6 +339,19 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
         onAddElement(
           createBaseElement('arrow', 'Panah', 160, 60, {
             fill: '#06b6d4',
+          })
+        ),
+    },
+    {
+      id: 'hexagon',
+      title: 'Segi Enam / Hexagon Vektor',
+      subtitle: 'Bentuk sarang lebah geometris poligon 6-sisi',
+      category: 'Bentuk',
+      icon: <Hexagon className="w-4 h-4 text-emerald-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('hexagon', 'Segi Enam', 160, 160, {
+            fill: '#10b981',
           })
         ),
     },

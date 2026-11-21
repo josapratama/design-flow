@@ -4,6 +4,7 @@ import {
   ZoomOut,
   Maximize,
   Grid,
+  Magnet,
   Ruler,
   Trash2,
   Copy,
@@ -15,6 +16,7 @@ import {
 interface ToolbarProps {
   scale: number;
   showGrid: boolean;
+  snapToGrid?: boolean;
   showRulers?: boolean;
   showSafeMargin?: boolean;
   hasSelectedElements: boolean;
@@ -27,6 +29,7 @@ interface ToolbarProps {
   onResetZoom: () => void;
   onSetScale?: (scale: number) => void;
   onToggleGrid: () => void;
+  onToggleSnapToGrid?: () => void;
   onToggleRulers?: () => void;
   onToggleSafeMargin?: () => void;
   onDeleteSelected: () => void;
@@ -36,6 +39,7 @@ interface ToolbarProps {
 export const Toolbar: React.FC<ToolbarProps> = ({
   scale,
   showGrid,
+  snapToGrid = false,
   showRulers = true,
   showSafeMargin = false,
   hasSelectedElements,
@@ -48,6 +52,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onResetZoom,
   onSetScale,
   onToggleGrid,
+  onToggleSnapToGrid,
   onToggleRulers,
   onToggleSafeMargin,
   onDeleteSelected,
@@ -127,6 +132,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       >
         <Grid className="w-4 h-4" />
       </button>
+
+      {/* Snap to Grid toggle */}
+      {onToggleSnapToGrid && (
+        <button
+          onClick={onToggleSnapToGrid}
+          title={`Snap ke Grid: ${snapToGrid ? 'Aktif' : 'Nonaktif'}`}
+          className={`p-1.5 rounded-xl transition-colors ${
+            snapToGrid ? 'bg-indigo-600/20 text-indigo-400 font-bold' : 'hover:bg-slate-800 text-slate-400'
+          }`}
+        >
+          <Magnet className="w-4 h-4" />
+        </button>
+      )}
 
       {/* Rulers toggle */}
       {onToggleRulers && (

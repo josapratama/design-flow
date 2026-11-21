@@ -311,4 +311,242 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+  // 6. DASHBOARD 4 KPI & METRIK
+  {
+    id: 'kpi-dashboard-4-metrics',
+    name: 'Dashboard 4 KPI & Metrik',
+    description: '4 kartu ringkasan metrik statistik kinerja dengan indikator pertumbuhan persentase.',
+    icon: 'TrendingUp',
+    category: 'all',
+    generateElements: (startX = 80, startY = 320) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+      const w = 340;
+      const h = 200;
+      const gap = 30;
+
+      const metrics = [
+        { label: 'Total Pengguna Aktif', value: '124,500+', growth: '+24.8%', color: '#38bdf8' },
+        { label: 'Pendapatan Bulanan (MRR)', value: 'Rp 485 Juta', growth: '+18.2%', color: '#34d399' },
+        { label: 'Tingkat Konversi Pitch', value: '42.6%', growth: '+8.4%', color: '#a78bfa' },
+        { label: 'Uptime Sistem & Server', value: '99.98%', growth: 'Stabil', color: '#fbbf24' },
+      ];
+
+      metrics.forEach((m, idx) => {
+        const xPos = startX + idx * (w + gap);
+
+        elements.push({
+          id: `el_${now}_kpicard_${idx}`,
+          type: 'card',
+          name: `Kartu KPI ${m.label}`,
+          x: xPos,
+          y: startY,
+          width: w,
+          height: h,
+          zIndex: 1,
+          fill: '#131b2e',
+          stroke: '#1e293b',
+          strokeWidth: 1.5,
+          borderRadius: 20,
+          shadow: 'md',
+        });
+
+        elements.push({
+          id: `el_${now}_kpilbl_${idx}`,
+          type: 'text',
+          name: `Label ${m.label}`,
+          x: xPos + 24,
+          y: startY + 24,
+          width: w - 48,
+          height: 28,
+          zIndex: 2,
+          content: m.label,
+          fontSize: 14,
+          color: '#94a3b8',
+        });
+
+        elements.push({
+          id: `el_${now}_kpival_${idx}`,
+          type: 'heading',
+          name: `Nilai ${m.label}`,
+          x: xPos + 24,
+          y: startY + 60,
+          width: w - 48,
+          height: 52,
+          zIndex: 2,
+          content: m.value,
+          fontSize: 34,
+          fontWeight: 'bold',
+          color: '#ffffff',
+        });
+
+        // Badge growth
+        elements.push({
+          id: `el_${now}_kpibadge_${idx}`,
+          type: 'button',
+          name: `Growth ${m.label}`,
+          x: xPos + 24,
+          y: startY + 128,
+          width: 110,
+          height: 32,
+          zIndex: 2,
+          content: m.growth,
+          fill: '#064e3b',
+          stroke: '#059669',
+          color: '#34d399',
+          borderRadius: 9999,
+          fontSize: 13,
+        });
+      });
+
+      return elements;
+    },
+  },
+  // 7. KOMPARASI: MASALAH VS SOLUSI
+  {
+    id: 'problem-solution-comparison',
+    name: 'Komparasi Masalah vs Solusi',
+    description: '2 kartu komparasi berdampingan untuk slide pitch deck masalah utama audiens & solusi produk.',
+    icon: 'Split',
+    category: 'all',
+    generateElements: (startX = 120, startY = 240) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+      const cardW = 700;
+      const cardH = 500;
+      const gap = 80;
+
+      // Problem card (Rose theme)
+      elements.push({
+        id: `el_${now}_prob_bg`,
+        type: 'card',
+        name: 'Kartu Masalah (Problem)',
+        x: startX,
+        y: startY,
+        width: cardW,
+        height: cardH,
+        zIndex: 1,
+        fill: '#1c131a',
+        stroke: '#f43f5e',
+        strokeWidth: 2,
+        borderRadius: 24,
+        shadow: 'lg',
+      });
+
+      elements.push({
+        id: `el_${now}_prob_badge`,
+        type: 'button',
+        name: 'Badge Masalah',
+        x: startX + 36,
+        y: startY + 36,
+        width: 170,
+        height: 36,
+        zIndex: 2,
+        content: 'TANTANGAN SAAT INI',
+        fill: '#4c0519',
+        stroke: '#f43f5e',
+        color: '#fda4af',
+        borderRadius: 9999,
+        fontSize: 12,
+      });
+
+      elements.push({
+        id: `el_${now}_prob_title`,
+        type: 'heading',
+        name: 'Judul Masalah',
+        x: startX + 36,
+        y: startY + 90,
+        width: cardW - 72,
+        height: 50,
+        zIndex: 2,
+        content: 'Proses Manual, Lambat, & Rawan Kesalahan',
+        fontSize: 26,
+        fontWeight: 'bold',
+        color: '#ffffff',
+      });
+
+      elements.push({
+        id: `el_${now}_prob_desc`,
+        type: 'text',
+        name: 'Deskripsi Masalah',
+        x: startX + 36,
+        y: startY + 160,
+        width: cardW - 72,
+        height: 280,
+        zIndex: 2,
+        content:
+          '• Waktu pembuatan slide presentasi memakan rata-rata 6-10 jam kerja per sesi.\n\n• Desain inkonsisten antar anggota tim dan format file berantakan.\n\n• Sulit mengubah format desain menjadi kode web siap produksi secara instan.\n\n• Ketiadaan live annotation saat presentasi dan feedback kolaborasi tertunda.',
+        fontSize: 18,
+        color: '#cbd5e1',
+      });
+
+      // Solution card (Emerald theme)
+      const solX = startX + cardW + gap;
+
+      elements.push({
+        id: `el_${now}_sol_bg`,
+        type: 'card',
+        name: 'Kartu Solusi (Solution)',
+        x: solX,
+        y: startY,
+        width: cardW,
+        height: cardH,
+        zIndex: 1,
+        fill: '#0d1f1b',
+        stroke: '#10b981',
+        strokeWidth: 2,
+        borderRadius: 24,
+        shadow: 'lg',
+      });
+
+      elements.push({
+        id: `el_${now}_sol_badge`,
+        type: 'button',
+        name: 'Badge Solusi',
+        x: solX + 36,
+        y: startY + 36,
+        width: 170,
+        height: 36,
+        zIndex: 2,
+        content: 'SOLUSI TEROBOSAN',
+        fill: '#022c22',
+        stroke: '#10b981',
+        color: '#6ee7b7',
+        borderRadius: 9999,
+        fontSize: 12,
+      });
+
+      elements.push({
+        id: `el_${now}_sol_title`,
+        type: 'heading',
+        name: 'Judul Solusi',
+        x: solX + 36,
+        y: startY + 90,
+        width: cardW - 72,
+        height: 50,
+        zIndex: 2,
+        content: 'DesignFlow Studio Otomatis Berbasis Vektor & Kode',
+        fontSize: 26,
+        fontWeight: 'bold',
+        color: '#ffffff',
+      });
+
+      elements.push({
+        id: `el_${now}_sol_desc`,
+        type: 'text',
+        name: 'Deskripsi Solusi',
+        x: solX + 36,
+        y: startY + 160,
+        width: cardW - 72,
+        height: 280,
+        zIndex: 2,
+        content:
+          '• Buat presentasi profesional dalam hitungan detik dengan Smart Blocks siap pakai.\n\n• Sistem tema global konsisten dengan 1 klik (Midnight, Cyberpunk, Emerald).\n\n• Ekspor instan ke PowerPoint PPTX asli, PDF resolusi tinggi, atau Tailwind React.\n\n• Live interactive laser pointer & live doodle annotation saat mode presentasi F5.',
+        fontSize: 18,
+        color: '#cbd5e1',
+      });
+
+      return elements;
+    },
+  },
 ];
