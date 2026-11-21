@@ -177,6 +177,36 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
               </div>
             );
           })}
+
+        {/* Collective Multi-Selection Bounding Box & Dimensions Pill */}
+        {selectedElements.length >= 2 && (() => {
+          const minX = Math.min(...selectedElements.map(e => e.x));
+          const maxX = Math.max(...selectedElements.map(e => e.x + e.width));
+          const minY = Math.min(...selectedElements.map(e => e.y));
+          const maxY = Math.max(...selectedElements.map(e => e.y + e.height));
+          const width = maxX - minX;
+          const height = maxY - minY;
+
+          return (
+            <div
+              className="absolute pointer-events-none z-30 border border-indigo-500/70 border-dashed rounded"
+              data-export-ignore="true"
+              style={{
+                left: `${minX}px`,
+                top: `${minY}px`,
+                width: `${width}px`,
+                height: `${height}px`,
+              }}
+            >
+              <div
+                className="absolute -top-7 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-indigo-600 text-white font-mono text-[10px] font-bold shadow-lg flex items-center gap-1.5 whitespace-nowrap"
+              >
+                <span>{selectedElements.length} elemen dipilih</span>
+                <span className="opacity-70">({Math.round(width)} × {Math.round(height)}px)</span>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     );
   }

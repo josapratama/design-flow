@@ -24,6 +24,7 @@ import {
   EyeOff,
   ArrowLeftRight,
   ArrowUpDown,
+  Pipette,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 
@@ -253,6 +254,22 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   // 2. IF AN ELEMENT IS SELECTED: SHOW ELEMENT PROPERTIES
   const handleChange = (field: keyof DesignElement, val: any) => {
     onUpdateElement(element.id, { [field]: val });
+  };
+
+  const handleEyeDropper = async (field: 'fill' | 'color' | 'stroke') => {
+    if ('EyeDropper' in window) {
+      try {
+        const eyeDropper = new (window as any).EyeDropper();
+        const res = await eyeDropper.open();
+        if (res?.sRGBHex) {
+          handleChange(field, res.sRGBHex);
+        }
+      } catch (err) {
+        // User cancelled sampling
+      }
+    } else {
+      alert('Fitur Pipet Eyedropper didukung di browser modern (Chrome, Edge, Opera, Brave).');
+    }
   };
 
   const filteredIcons = popularIconNames.filter(name =>
@@ -705,7 +722,17 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
           </span>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Warna Isi (Fill)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] text-slate-500">Warna Isi (Fill)</label>
+                <button
+                  type="button"
+                  onClick={() => handleEyeDropper('fill')}
+                  title="Ambil warna dari layar (Pipet Eyedropper)"
+                  className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded"
+                >
+                  <Pipette className="w-3 h-3" />
+                </button>
+              </div>
               <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
                 <input
                   type="color"
@@ -720,7 +747,17 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             </div>
 
             <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Warna Teks</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] text-slate-500">Warna Teks</label>
+                <button
+                  type="button"
+                  onClick={() => handleEyeDropper('color')}
+                  title="Ambil warna dari layar (Pipet Eyedropper)"
+                  className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded"
+                >
+                  <Pipette className="w-3 h-3" />
+                </button>
+              </div>
               <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
                 <input
                   type="color"
