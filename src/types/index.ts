@@ -75,7 +75,7 @@ export interface DesignElement {
   strokeWidth?: number;
   strokeDash?: 'solid' | 'dashed' | 'dotted';
   borderRadius?: number;
-  shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+  shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'glow-indigo' | 'glow-cyan' | 'glow-emerald' | 'glow-rose';
 
   // Typography
   content?: string;

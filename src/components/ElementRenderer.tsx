@@ -35,7 +35,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
 
   const resolvedFontFamily = getFontFamilyStyle(element.fontFamily);
 
-  // Shadow class mapping
+  // Shadow and Glow class mapping
   const shadowClass =
     shadow === 'sm'
       ? 'shadow-sm'
@@ -47,6 +47,14 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
       ? 'shadow-xl'
       : shadow === '2xl'
       ? 'shadow-2xl'
+      : shadow === 'glow-indigo'
+      ? 'shadow-[0_0_24px_rgba(99,102,241,0.55)]'
+      : shadow === 'glow-cyan'
+      ? 'shadow-[0_0_24px_rgba(56,189,248,0.55)]'
+      : shadow === 'glow-emerald'
+      ? 'shadow-[0_0_24px_rgba(16,185,129,0.55)]'
+      : shadow === 'glow-rose'
+      ? 'shadow-[0_0_24px_rgba(244,63,94,0.55)]'
       : '';
 
   const borderDashStyle =

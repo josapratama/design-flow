@@ -241,6 +241,10 @@ function getShadowClass(shadow?: string): string {
     case 'lg': return 'shadow-lg';
     case 'xl': return 'shadow-xl';
     case '2xl': return 'shadow-2xl';
+    case 'glow-indigo': return 'shadow-[0_0_24px_rgba(99,102,241,0.55)]';
+    case 'glow-cyan': return 'shadow-[0_0_24px_rgba(56,189,248,0.55)]';
+    case 'glow-emerald': return 'shadow-[0_0_24px_rgba(16,185,129,0.55)]';
+    case 'glow-rose': return 'shadow-[0_0_24px_rgba(244,63,94,0.55)]';
     default: return '';
   }
 }

@@ -3,6 +3,7 @@ import { DesignElement, PRESET_SIZES, Slide } from '../types';
 import {
   Trash2,
   Copy,
+  Plus,
   BringToFront,
   SendToBack,
   ArrowUp,
@@ -635,6 +636,113 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
               />
             </div>
+
+            {/* Chart Data Editor */}
+            <div className="space-y-2 pt-2 border-t border-slate-900">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Titik Data ({element.chartData?.length || 4})
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      handleChange('chartData', [
+                        { label: 'Q1', value: 35 },
+                        { label: 'Q2', value: 65 },
+                        { label: 'Q3', value: 45 },
+                        { label: 'Q4', value: 90 },
+                      ]);
+                    }}
+                    className="text-[9px] text-indigo-400 hover:underline"
+                    title="Reset ke Q1-Q4"
+                  >
+                    Preset Q1-Q4
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleChange('chartData', [
+                        { label: 'Jan', value: 24 },
+                        { label: 'Feb', value: 38 },
+                        { label: 'Mar', value: 52 },
+                        { label: 'Apr', value: 61 },
+                        { label: 'Mei', value: 78 },
+                        { label: 'Jun', value: 95 },
+                      ]);
+                    }}
+                    className="text-[9px] text-indigo-400 hover:underline"
+                    title="Preset Semester"
+                  >
+                    Preset 6 Bulan
+                  </button>
+                </div>
+              </div>
+
+              {/* Data Items List */}
+              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                {(element.chartData || [
+                  { label: 'Q1', value: 35 },
+                  { label: 'Q2', value: 65 },
+                  { label: 'Q3', value: 45 },
+                  { label: 'Q4', value: 90 },
+                ]).map((item, idx, arr) => (
+                  <div key={idx} className="flex items-center gap-1.5 bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
+                    <input
+                      type="text"
+                      value={item.label}
+                      onChange={e => {
+                        const nextData = [...arr];
+                        nextData[idx] = { ...item, label: e.target.value };
+                        handleChange('chartData', nextData);
+                      }}
+                      placeholder="Label"
+                      className="w-16 bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-[11px] text-slate-200 font-mono outline-none focus:border-indigo-500"
+                    />
+                    <input
+                      type="number"
+                      value={item.value}
+                      onChange={e => {
+                        const val = Number(e.target.value) || 0;
+                        const nextData = [...arr];
+                        nextData[idx] = { ...item, value: val };
+                        handleChange('chartData', nextData);
+                      }}
+                      className="flex-1 bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-[11px] text-indigo-300 font-mono text-right outline-none focus:border-indigo-500"
+                    />
+                    {arr.length > 1 && (
+                      <button
+                        onClick={() => {
+                          const nextData = arr.filter((_, i) => i !== idx);
+                          handleChange('chartData', nextData);
+                        }}
+                        className="p-1 text-slate-500 hover:text-rose-400 rounded transition-colors"
+                        title="Hapus baris"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => {
+                  const current = element.chartData || [
+                    { label: 'Q1', value: 35 },
+                    { label: 'Q2', value: 65 },
+                    { label: 'Q3', value: 45 },
+                    { label: 'Q4', value: 90 },
+                  ];
+                  handleChange('chartData', [
+                    ...current,
+                    { label: `Item ${current.length + 1}`, value: Math.round(Math.random() * 60 + 20) },
+                  ]);
+                }}
+                className="w-full py-1.5 px-2 rounded-lg border border-dashed border-slate-700 hover:border-indigo-500/60 bg-slate-900/50 hover:bg-indigo-950/20 text-slate-400 hover:text-indigo-300 text-xs flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <Plus className="w-3 h-3" />
+                <span>Tambah Titik Data</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -974,7 +1082,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
           {/* Efek Bayangan (Shadow) */}
           <div className="space-y-1.5">
             <label className="text-[10px] text-slate-500 block">Efek Bayangan (Shadow)</label>
-            <div className="grid grid-cols-4 gap-1">
+            <div className="grid grid-cols-6 gap-1">
               {['none', 'sm', 'md', 'lg', 'xl', '2xl'].map(s => (
                 <button
                   key={s}
@@ -987,6 +1095,37 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   {s}
                 </button>
               ))}
+            </div>
+
+            {/* Neon Glow Presets */}
+            <div className="pt-2 space-y-1">
+              <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">
+                Efek Pendaran Neon (Glow)
+              </span>
+              <div className="grid grid-cols-4 gap-1.5">
+                {[
+                  { id: 'glow-indigo', name: 'Indigo', color: 'bg-indigo-500', border: 'border-indigo-500/60' },
+                  { id: 'glow-cyan', name: 'Cyan', color: 'bg-cyan-400', border: 'border-cyan-500/60' },
+                  { id: 'glow-emerald', name: 'Emerald', color: 'bg-emerald-400', border: 'border-emerald-500/60' },
+                  { id: 'glow-rose', name: 'Rose', color: 'bg-rose-500', border: 'border-rose-500/60' },
+                ].map(glow => {
+                  const isSelected = element.shadow === glow.id;
+                  return (
+                    <button
+                      key={glow.id}
+                      onClick={() => handleChange('shadow', isSelected ? 'none' : glow.id)}
+                      className={`flex items-center justify-center gap-1.5 py-1 px-1.5 rounded-lg border text-[10px] font-medium transition-all ${
+                        isSelected
+                          ? `${glow.border} bg-slate-800 text-white shadow-sm ring-1 ring-white/20`
+                          : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${glow.color} shadow-sm shrink-0`} />
+                      <span className="truncate">{glow.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

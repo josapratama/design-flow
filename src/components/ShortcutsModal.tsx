@@ -29,6 +29,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Shift', 'R'], description: 'Nyalakan / Matikan Penggaris Piksel (Rulers)' },
         { keys: ['Shift', 'M'], description: 'Nyalakan / Matikan Batas Area Aman (Safe Margin)' },
         { keys: ['Ctrl', 'K'], description: 'Buka Spotlight Command Palette Cepat' },
+        { keys: ['Ctrl', 'E'], description: 'Buka Modal Ekspor Desain (PNG/WebP/PDF/React)' },
       ],
     },
     {
@@ -58,6 +59,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
     {
       title: 'Riwayat & Mode Presentasi',
       items: [
+        { keys: ['F5'], description: 'Mulai Mode Slideshow Presentasi Interaktif' },
         { keys: ['Ctrl', 'Z'], description: 'Urungkan tindakan terakhir (Undo)' },
         { keys: ['Ctrl', 'Y'], description: 'Ulangi tindakan (Redo)' },
         { keys: ['L'], description: 'Nyalakan / Matikan Laser Pointer saat presentasi' },

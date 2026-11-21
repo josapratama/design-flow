@@ -176,6 +176,20 @@ export default function App() {
         return;
       }
 
+      // 0.6 Presenter Slideshow: F5
+      if (e.key === 'F5') {
+        e.preventDefault();
+        setIsPresenterOpen(true);
+        return;
+      }
+
+      // 0.7 Export Dialog: Ctrl+E / Cmd+E
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e') {
+        e.preventDefault();
+        setIsExportOpen(true);
+        return;
+      }
+
       // 1. Delete / Backspace
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (project.selectedElementIds.length > 0) {
