@@ -158,6 +158,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       } else if (e.key === 'Escape') {
         onClose();
       } else if (e.key.toLowerCase() === 'l') {
+        setIsLaserActive(prev => !prev);
         setIsLaserActive(prev => {
           if (!prev) setIsPenActive(false);
           return !prev;
@@ -261,13 +262,12 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
             return (
               <div
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono border transition-all ${
-                  isTimeOver
-                    ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse font-bold'
-                    : isTimeWarning
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono border transition-all ${isTimeOver
+                  ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse font-bold'
+                  : isTimeWarning
                     ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-semibold'
                     : 'bg-slate-800 border-slate-700 text-slate-200'
-                }`}
+                  }`}
               >
                 <button
                   onClick={() => setIsTimerRunning(!isTimerRunning)}
@@ -315,9 +315,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             <button
               onClick={() => setIsAutoPlay(!isAutoPlay)}
               title={isAutoPlay ? 'Hentikan Putar Otomatis' : 'Mulai Putar Otomatis'}
-              className={`px-2 py-1 rounded flex items-center gap-1.5 transition-colors font-semibold ${
-                isAutoPlay ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
-              }`}
+              className={`px-2 py-1 rounded flex items-center gap-1.5 transition-colors font-semibold ${isAutoPlay ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                }`}
             >
               <Play className="w-3.5 h-3.5" />
               <span>Auto-Play</span>
@@ -337,11 +336,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           <button
             onClick={toggleSound}
             title={`Efek Suara Transisi: ${isSoundMuted ? 'Mati (Tekan M)' : 'Aktif (Tekan M)'}`}
-            className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center transition-all ${
-              !isSoundMuted
-                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300'
-            }`}
+            className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center transition-all ${!isSoundMuted
+              ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+              : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300'
+              }`}
           >
             {!isSoundMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
@@ -354,8 +352,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             }}
             title="Laser Pointer (Tekan 'L')"
             className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all ${isLaserActive
-                ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20'
-                : 'bg-slate-800 border-slate-700 text-slate-400'
+              ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20'
+              : 'bg-slate-800 border-slate-700 text-slate-400'
               }`}
           >
             <CircleDot className="w-3.5 h-3.5" />
@@ -370,11 +368,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 if (!isPenActive) setIsLaserActive(false);
               }}
               title="Anotasi Pena Coretan (Tekan 'P')"
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
-                isPenActive
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
-                  : 'text-slate-400 hover:text-white'
-              }`}
+              className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${isPenActive
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
+                : 'text-slate-400 hover:text-white'
+                }`}
             >
               <Pen className="w-3.5 h-3.5" />
               <span>Pena {isPenActive ? 'Aktif' : ''}</span>
@@ -392,9 +389,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                       key={c.color}
                       onClick={() => setPenColor(c.color)}
                       title={`Warna ${c.name}`}
-                      className={`w-3.5 h-3.5 rounded-full border transition-transform ${
-                        penColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-70 hover:opacity-100'
-                      }`}
+                      className={`w-3.5 h-3.5 rounded-full border transition-transform ${penColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-70 hover:opacity-100'
+                        }`}
                       style={{ backgroundColor: c.color }}
                     />
                   ))}
@@ -428,8 +424,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             onClick={() => setShowNotes(!showNotes)}
             title="Tampilkan / Sembunyikan Catatan (Tekan 'N')"
             className={`px-3 py-1 rounded-lg text-xs font-medium border ${showNotes
-                ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
-                : 'bg-slate-800 border-slate-700 text-slate-400'
+              ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
+              : 'bg-slate-800 border-slate-700 text-slate-400'
               }`}
           >
             {showNotes ? 'Sembunyikan Catatan' : 'Lihat Catatan'}
@@ -447,11 +443,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           <button
             onClick={() => setIsBlackScreen(!isBlackScreen)}
             title={`Layar Kosong / Hitam (Tekan 'B'): ${isBlackScreen ? 'Aktif' : 'Nonaktif'}`}
-            className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center transition-all ${
-              isBlackScreen
-                ? 'bg-purple-500/20 border-purple-500 text-purple-300'
-                : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-            }`}
+            className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center transition-all ${isBlackScreen
+              ? 'bg-purple-500/20 border-purple-500 text-purple-300'
+              : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+              }`}
           >
             <EyeOff className="w-4 h-4" />
           </button>
@@ -489,13 +484,12 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
           <div
             key={currentIndex}
-            className={`relative shadow-2xl rounded-sm overflow-hidden ${
-              transitionEffect === 'slide'
-                ? 'animate-in slide-in-from-right-10 duration-300'
-                : transitionEffect === 'zoom'
+            className={`relative shadow-2xl rounded-sm overflow-hidden ${transitionEffect === 'slide'
+              ? 'animate-in slide-in-from-right-10 duration-300'
+              : transitionEffect === 'zoom'
                 ? 'animate-in zoom-in-95 duration-200'
                 : 'animate-in fade-in duration-200'
-            }`}
+              }`}
             style={{
               width: `${currentSlide.width}px`,
               height: `${currentSlide.height}px`,
@@ -531,9 +525,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               ref={penCanvasRef}
               width={currentSlide.width}
               height={currentSlide.height}
-              className={`absolute inset-0 z-30 transition-opacity ${
-                isPenActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
-              }`}
+              className={`absolute inset-0 z-30 transition-opacity ${isPenActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
+                }`}
               onPointerDown={handlePenPointerDown}
               onPointerMove={handlePenPointerMove}
               onPointerUp={handlePenPointerUp}

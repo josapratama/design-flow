@@ -137,67 +137,66 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
       return;
     }
 
-      // Left-click (0) on background -> Marquee Selection Box
-      if (e.button === 0) {
-        if (!artboardRef.current) return;
-        const rect = artboardRef.current.getBoundingClientRect();
-        const startArtboardX = (e.clientX - rect.left) / scale;
-        const startArtboardY = (e.clientY - rect.top) / scale;
+    // Left-click (0) on background -> Marquee Selection Box
+    if (e.button === 0) {
+      if (!artboardRef.current) return;
+      const rect = artboardRef.current.getBoundingClientRect();
+      const startArtboardX = (e.clientX - rect.left) / scale;
+      const startArtboardY = (e.clientY - rect.top) / scale;
 
-        setMarquee({
-          startX: startArtboardX,
-          startY: startArtboardY,
-          currentX: startArtboardX,
-          currentY: startArtboardY,
-        });
+      setMarquee({
+        startX: startArtboardX,
+        startY: startArtboardY,
+        currentX: startArtboardX,
+        currentY: startArtboardY,
+      });
 
-        const handlePointerMove = (moveEvent: PointerEvent) => {
-          const curArtboardX = (moveEvent.clientX - rect.left) / scale;
-          const curArtboardY = (moveEvent.clientY - rect.top) / scale;
+      const handlePointerMove = (moveEvent: PointerEvent) => {
+        const curArtboardX = (moveEvent.clientX - rect.left) / scale;
+        const curArtboardY = (moveEvent.clientY - rect.top) / scale;
 
-          setMarquee(prev => prev ? { ...prev, currentX: curArtboardX, currentY: curArtboardY } : null);
+        setMarquee(prev => prev ? { ...prev, currentX: curArtboardX, currentY: curArtboardY } : null);
 
-          // Find intersecting elements
-          const minX = Math.min(startArtboardX, curArtboardX);
-          const maxX = Math.max(startArtboardX, curArtboardX);
-          const minY = Math.min(startArtboardY, curArtboardY);
-          const maxY = Math.max(startArtboardY, curArtboardY);
+        // Find intersecting elements
+        const minX = Math.min(startArtboardX, curArtboardX);
+        const maxX = Math.max(startArtboardX, curArtboardX);
+        const minY = Math.min(startArtboardY, curArtboardY);
+        const maxY = Math.max(startArtboardY, curArtboardY);
 
-          const intersectingIds = slide.elements
-            .filter(el => {
-              if (el.locked || el.hidden) return false;
-              return (
-                el.x + el.width >= minX &&
-                el.x <= maxX &&
-                el.y + el.height >= minY &&
-                el.y <= maxY
-              );
-            })
-            .map(el => el.id);
+        const intersectingIds = slide.elements
+          .filter(el => {
+            if (el.locked || el.hidden) return false;
+            return (
+              el.x + el.width >= minX &&
+              el.x <= maxX &&
+              el.y + el.height >= minY &&
+              el.y <= maxY
+            );
+          })
+          .map(el => el.id);
 
-          onSelectMultipleElements(intersectingIds);
-        };
+        onSelectMultipleElements(intersectingIds);
+      };
 
-        const handlePointerUp = () => {
-          setMarquee(null);
-          window.removeEventListener('pointermove', handlePointerMove);
-          window.removeEventListener('pointerup', handlePointerUp);
-        };
+      const handlePointerUp = () => {
+        setMarquee(null);
+        window.removeEventListener('pointermove', handlePointerMove);
+        window.removeEventListener('pointerup', handlePointerUp);
+      };
 
-        window.addEventListener('pointermove', handlePointerMove);
-        window.addEventListener('pointerup', handlePointerUp);
-      }
-    };
+      window.addEventListener('pointermove', handlePointerMove);
+      window.addEventListener('pointerup', handlePointerUp);
+    }
+  };
 
-    return (
-      <div
-        ref={containerRef}
-        className={`relative w-full h-full overflow-hidden select-none bg-slate-950 ${
-          isPanning
-            ? 'cursor-grabbing'
-            : isSpaceDown
-            ? 'cursor-grab'
-            : 'cursor-default'
+  return (
+    <div
+      ref={containerRef}
+      className={`relative w-full h-full overflow-hidden select-none bg-slate-950 ${isPanning
+        ? 'cursor-grabbing'
+        : isSpaceDown
+          ? 'cursor-grab'
+          : 'cursor-default'
         }`}
       onWheel={handleWheel}
       onPointerDown={handlePointerDown}
@@ -260,18 +259,16 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
               setUserGuides(prev => prev.filter(item => item.id !== g.id));
             }}
             title={`${g.type.toUpperCase()}: ${g.pos}px (Klik 2x untuk hapus)`}
-            className={`absolute pointer-events-auto z-40 group cursor-pointer ${
-              g.type === 'x'
-                ? 'top-0 bottom-0 border-l border-dashed border-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.8)]'
-                : 'left-0 right-0 border-t border-dashed border-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.8)]'
-            }`}
+            className={`absolute pointer-events-auto z-40 group cursor-pointer ${g.type === 'x'
+              ? 'top-0 bottom-0 border-l border-dashed border-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.8)]'
+              : 'left-0 right-0 border-t border-dashed border-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.8)]'
+              }`}
             data-export-ignore="true"
             style={g.type === 'x' ? { left: `${g.pos}px` } : { top: `${g.pos}px` }}
           >
             <div
-              className={`absolute px-1.5 py-0.5 rounded bg-sky-500 text-slate-950 font-mono text-[9px] font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity select-none ${
-                g.type === 'x' ? 'top-2 -translate-x-1/2' : 'left-2 -translate-y-1/2'
-              }`}
+              className={`absolute px-1.5 py-0.5 rounded bg-sky-500 text-slate-950 font-mono text-[9px] font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity select-none ${g.type === 'x' ? 'top-2 -translate-x-1/2' : 'left-2 -translate-y-1/2'
+                }`}
             >
               {g.type.toUpperCase()}: {g.pos}px ✕
             </div>

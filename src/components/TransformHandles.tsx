@@ -393,13 +393,12 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
 
       {/* Floating Coordinates, Live Resize Dimensions & Rotation Tag */}
       <div
-        className={`absolute -top-7 left-0 px-2 py-0.5 text-[10px] font-mono text-white rounded shadow-lg pointer-events-none whitespace-nowrap transition-all duration-75 flex items-center gap-1.5 ${
-          resizingDims
-            ? 'bg-amber-600 ring-2 ring-amber-400 scale-105 z-50 shadow-amber-500/30'
-            : isDragging
+        className={`absolute -top-7 left-0 px-2 py-0.5 text-[10px] font-mono text-white rounded shadow-lg pointer-events-none whitespace-nowrap transition-all duration-75 flex items-center gap-1.5 ${resizingDims
+          ? 'bg-amber-600 ring-2 ring-amber-400 scale-105 z-50 shadow-amber-500/30'
+          : isDragging
             ? 'bg-emerald-600 ring-1 ring-emerald-400'
             : 'bg-indigo-600'
-        }`}
+          }`}
         data-export-ignore="true"
       >
         <span>

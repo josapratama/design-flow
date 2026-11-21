@@ -623,11 +623,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               <button
                 onClick={() => handleChange('flipX', !element.flipX)}
                 title="Cermin Horisontal"
-                className={`px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 font-medium transition-colors ${
-                  element.flipX
-                    ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                }`}
+                className={`px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 font-medium transition-colors ${element.flipX
+                  ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
               >
                 <ArrowLeftRight className="w-3.5 h-3.5" />
                 <span>Horisontal</span>
@@ -635,11 +634,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               <button
                 onClick={() => handleChange('flipY', !element.flipY)}
                 title="Cermin Vertikal"
-                className={`px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 font-medium transition-colors ${
-                  element.flipY
-                    ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                }`}
+                className={`px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 font-medium transition-colors ${element.flipY
+                  ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
               >
                 <ArrowUpDown className="w-3.5 h-3.5" />
                 <span>Vertikal</span>
@@ -659,11 +657,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 <button
                   key={mode}
                   onClick={() => handleChange('chartType', mode)}
-                  className={`py-1 text-xs font-semibold rounded capitalize transition-colors ${
-                    (element.chartType || 'bar') === mode
-                      ? 'bg-indigo-600 text-white shadow'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
+                  className={`py-1 text-xs font-semibold rounded capitalize transition-colors ${(element.chartType || 'bar') === mode
+                    ? 'bg-indigo-600 text-white shadow'
+                    : 'text-slate-400 hover:text-white'
+                    }`}
                 >
                   {mode === 'bar' ? 'Batang' : mode === 'line' ? 'Garis' : 'Donat'}
                 </button>
@@ -947,11 +944,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                         key={sz}
                         type="button"
                         onClick={() => handleChange('fontSize', sz)}
-                        className={`py-1 rounded text-center text-[10px] font-mono border transition-all ${
-                          (element.fontSize || 16) === sz
-                            ? 'bg-indigo-600 border-indigo-500 text-white font-bold shadow'
-                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-                        }`}
+                        className={`py-1 rounded text-center text-[10px] font-mono border transition-all ${(element.fontSize || 16) === sz
+                          ? 'bg-indigo-600 border-indigo-500 text-white font-bold shadow'
+                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                          }`}
                       >
                         {sz}
                       </button>
@@ -1125,88 +1121,89 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
           {/* Efek Bayangan (Shadow) */}
           <div className="space-y-1.5">
             <label className="text-[10px] text-slate-500 block">Efek Bayangan (Shadow)</label>
-            <div className="grid grid-cols-6 gap-1">
-              {['none', 'sm', 'md', 'lg', 'xl', '2xl'].map(s => (
-                <button
-                  key={s}
-                  onClick={() => handleChange('shadow', s)}
-                  className={`py-1 rounded text-[10px] uppercase font-semibold border transition-colors ${(element.shadow || 'none') === s
-                    ? 'bg-indigo-600 border-indigo-500 text-white'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
+            <div className="grid grid-cols-4 gap-1">
+              <div className="grid grid-cols-6 gap-1">
+                {['none', 'sm', 'md', 'lg', 'xl', '2xl'].map(s => (
+                  <button
+                    key={s}
+                    onClick={() => handleChange('shadow', s)}
+                    className={`py-1 rounded text-[10px] uppercase font-semibold border transition-colors ${(element.shadow || 'none') === s
+                      ? 'bg-indigo-600 border-indigo-500 text-white'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
 
-            {/* Neon Glow Presets */}
-            <div className="pt-2 space-y-1">
-              <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">
-                Efek Pendaran Neon (Glow)
-              </span>
-              <div className="grid grid-cols-4 gap-1.5">
-                {[
-                  { id: 'glow-indigo', name: 'Indigo', color: 'bg-indigo-500', border: 'border-indigo-500/60' },
-                  { id: 'glow-cyan', name: 'Cyan', color: 'bg-cyan-400', border: 'border-cyan-500/60' },
-                  { id: 'glow-emerald', name: 'Emerald', color: 'bg-emerald-400', border: 'border-emerald-500/60' },
-                  { id: 'glow-rose', name: 'Rose', color: 'bg-rose-500', border: 'border-rose-500/60' },
-                ].map(glow => {
-                  const isSelected = element.shadow === glow.id;
-                  return (
-                    <button
-                      key={glow.id}
-                      onClick={() => handleChange('shadow', isSelected ? 'none' : glow.id)}
-                      className={`flex items-center justify-center gap-1.5 py-1 px-1.5 rounded-lg border text-[10px] font-medium transition-all ${
-                        isSelected
+              {/* Neon Glow Presets */}
+              <div className="pt-2 space-y-1">
+                <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">
+                  Efek Pendaran Neon (Glow)
+                </span>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[
+                    { id: 'glow-indigo', name: 'Indigo', color: 'bg-indigo-500', border: 'border-indigo-500/60' },
+                    { id: 'glow-cyan', name: 'Cyan', color: 'bg-cyan-400', border: 'border-cyan-500/60' },
+                    { id: 'glow-emerald', name: 'Emerald', color: 'bg-emerald-400', border: 'border-emerald-500/60' },
+                    { id: 'glow-rose', name: 'Rose', color: 'bg-rose-500', border: 'border-rose-500/60' },
+                  ].map(glow => {
+                    const isSelected = element.shadow === glow.id;
+                    return (
+                      <button
+                        key={glow.id}
+                        onClick={() => handleChange('shadow', isSelected ? 'none' : glow.id)}
+                        className={`flex items-center justify-center gap-1.5 py-1 px-1.5 rounded-lg border text-[10px] font-medium transition-all ${isSelected
                           ? `${glow.border} bg-slate-800 text-white shadow-sm ring-1 ring-white/20`
                           : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                      }`}
-                    >
-                      <span className={`w-2 h-2 rounded-full ${glow.color} shadow-sm shrink-0`} />
-                      <span className="truncate">{glow.name}</span>
-                    </button>
-                  );
-                })}
+                          }`}
+                      >
+                        <span className={`w-2 h-2 rounded-full ${glow.color} shadow-sm shrink-0`} />
+                        <span className="truncate">{glow.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Susunan Layer */}
-        <div className="space-y-2 pt-2 border-t border-slate-800">
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            Urutan Layer (Z-Index)
-          </span>
-          <div className="grid grid-cols-4 gap-1">
-            <button
-              onClick={() => onReorder('front')}
-              title="Paling Depan"
-              className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
-            >
-              <BringToFront className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => onReorder('up')}
-              title="Maju Satu Tingkat"
-              className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
-            >
-              <ArrowUp className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => onReorder('down')}
-              title="Mundur Satu Tingkat"
-              className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
-            >
-              <ArrowDown className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => onReorder('back')}
-              title="Paling Belakang"
-              className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
-            >
-              <SendToBack className="w-4 h-4" />
-            </button>
+          {/* Susunan Layer */}
+          <div className="space-y-2 pt-2 border-t border-slate-800">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Urutan Layer (Z-Index)
+            </span>
+            <div className="grid grid-cols-4 gap-1">
+              <button
+                onClick={() => onReorder('front')}
+                title="Paling Depan"
+                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
+              >
+                <BringToFront className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => onReorder('up')}
+                title="Maju Satu Tingkat"
+                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
+              >
+                <ArrowUp className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => onReorder('down')}
+                title="Mundur Satu Tingkat"
+                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
+              >
+                <ArrowDown className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => onReorder('back')}
+                title="Paling Belakang"
+                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
+              >
+                <SendToBack className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
