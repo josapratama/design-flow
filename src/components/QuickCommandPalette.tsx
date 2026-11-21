@@ -21,6 +21,9 @@ import {
   UserCheck,
   Tag,
   X,
+  Play,
+  Download,
+  LayoutTemplate,
 } from 'lucide-react';
 import { DesignElement, ElementType } from '../types';
 import { SMART_BLOCKS } from '../templates/smart-blocks';
@@ -32,6 +35,9 @@ interface QuickCommandPaletteProps {
   onClose: () => void;
   onAddElement: (element: DesignElement) => void;
   onAddElements: (elements: DesignElement[]) => void;
+  onOpenPresenter?: () => void;
+  onOpenExport?: () => void;
+  onOpenTemplates?: () => void;
 }
 
 interface CommandItem {
@@ -50,6 +56,9 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
   onClose,
   onAddElement,
   onAddElements,
+  onOpenPresenter,
+  onOpenExport,
+  onOpenTemplates,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -77,6 +86,43 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
   });
 
   const commands: CommandItem[] = [
+    // Aksi Studio
+    ...(onOpenPresenter
+      ? [
+          {
+            id: 'action-presenter',
+            title: 'Mulai Presentasi Slideshow (F5)',
+            subtitle: 'Buka mode layar penuh dengan laser pointer & catatan presenter',
+            category: 'Aksi Studio',
+            icon: <Play className="w-4 h-4 text-emerald-400" />,
+            action: () => onOpenPresenter(),
+          },
+        ]
+      : []),
+    ...(onOpenExport
+      ? [
+          {
+            id: 'action-export',
+            title: 'Buka Dialog Ekspor (Ctrl+E)',
+            subtitle: 'Simpan ke PNG HD, WebP, PDF atau Kode React Tailwind',
+            category: 'Aksi Studio',
+            icon: <Download className="w-4 h-4 text-cyan-400" />,
+            action: () => onOpenExport(),
+          },
+        ]
+      : []),
+    ...(onOpenTemplates
+      ? [
+          {
+            id: 'action-templates',
+            title: 'Buka Galeri Template Desain',
+            subtitle: 'Pilih template siap pakai (Pitch deck, Portofolio, UI Wireframe)',
+            category: 'Aksi Studio',
+            icon: <LayoutTemplate className="w-4 h-4 text-indigo-400" />,
+            action: () => onOpenTemplates(),
+          },
+        ]
+      : []),
     // Tipografi
     {
       id: 'h1',

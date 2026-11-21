@@ -434,6 +434,9 @@ export default function App() {
         onClose={() => setIsCommandPaletteOpen(false)}
         onAddElement={addElement}
         onAddElements={addElements}
+        onOpenPresenter={() => setIsPresenterOpen(true)}
+        onOpenExport={() => setIsExportOpen(true)}
+        onOpenTemplates={() => setIsTemplatesOpen(true)}
       />
 
       {/* Floating Right-Click Context Menu */}
