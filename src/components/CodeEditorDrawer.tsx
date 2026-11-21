@@ -68,6 +68,16 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
 
         <div className="flex items-center gap-1.5">
           <button
+            onClick={() => {
+              setCode(generateDesignDSL(project));
+              setError(null);
+            }}
+            title="Sinkron ulang dari kanvas visual saat ini"
+            className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg text-xs transition-colors"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+          <button
             onClick={handleCopy}
             className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex items-center gap-1.5 transition-colors"
           >
@@ -91,6 +101,13 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
             setCode(e.target.value);
             setError(null);
           }}
+          onKeyDown={e => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+              e.preventDefault();
+              handleApply();
+            }
+          }}
+          placeholder="// Kode DesignFlow DSL..."
           spellCheck={false}
           className="w-full h-full p-4 bg-transparent text-emerald-400 placeholder-slate-600 outline-none resize-none leading-relaxed selection:bg-indigo-600 selection:text-white font-mono"
         />
@@ -106,11 +123,14 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
 
       {/* Drawer Footer Actions */}
       <div className="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-900">
-        <span className="text-[11px] text-slate-500">
-          Ubah kode lalu tekan Terapkan ke Visual
-        </span>
+        <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+          <span>{code.split('\n').length} baris</span>
+          <span>•</span>
+          <span className="text-slate-500"><kbd className="text-indigo-400">Ctrl+Enter</kbd> terapkan</span>
+        </div>
         <button
           onClick={handleApply}
+          title="Terapkan kode ke visual kanvas (Ctrl+Enter)"
           className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
         >
           <RefreshCw className="w-3.5 h-3.5" />

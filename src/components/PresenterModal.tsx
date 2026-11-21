@@ -16,6 +16,7 @@ import {
   RotateCcw,
   Pen,
   Eraser,
+  EyeOff,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../utils/audioEffects';
@@ -39,6 +40,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [isTimerRunning, setIsTimerRunning] = useState(true);
   const [showNotes, setShowNotes] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isBlackScreen, setIsBlackScreen] = useState(false);
   const [isLaserActive, setIsLaserActive] = useState(false);
   const [isPenActive, setIsPenActive] = useState(false);
   const [penColor, setPenColor] = useState('#f43f5e');
@@ -134,10 +136,25 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         return;
       }
 
+      if (isBlackScreen) {
+        setIsBlackScreen(false);
+        return;
+      }
+
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         goToNext();
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
         goToPrev();
+      } else if (e.key === 'Home') {
+        clearPenCanvas();
+        setCurrentIndex(0);
+        soundEffects.playSlideTransition();
+      } else if (e.key === 'End') {
+        clearPenCanvas();
+        setCurrentIndex(slides.length - 1);
+        soundEffects.playSlideTransition();
+      } else if (e.key.toLowerCase() === 'b' || e.key === '.') {
+        setIsBlackScreen(prev => !prev);
       } else if (e.key === 'Escape') {
         onClose();
       } else if (e.key.toLowerCase() === 'l') {
@@ -163,7 +180,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, slides.length]);
+  }, [currentIndex, slides.length, isBlackScreen]);
 
   const toggleSound = () => {
     const nextState = !isSoundMuted;
@@ -426,6 +443,19 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
 
+          {/* Black Screen / Blank Screen Toggle */}
+          <button
+            onClick={() => setIsBlackScreen(!isBlackScreen)}
+            title={`Layar Kosong / Hitam (Tekan 'B'): ${isBlackScreen ? 'Aktif' : 'Nonaktif'}`}
+            className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center transition-all ${
+              isBlackScreen
+                ? 'bg-purple-500/20 border-purple-500 text-purple-300'
+                : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
+            }`}
+          >
+            <EyeOff className="w-4 h-4" />
+          </button>
+
           <button
             onClick={onClose}
             title="Keluar Presentasi (Esc)"
@@ -445,6 +475,18 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           className={`flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden ${isLaserActive ? 'cursor-none' : 'cursor-default'
             }`}
         >
+          {/* Black Screen Overlay for Audience Attention */}
+          {isBlackScreen && (
+            <div
+              onClick={() => setIsBlackScreen(false)}
+              className="absolute inset-0 bg-black z-40 flex flex-col items-center justify-center cursor-pointer select-none animate-in fade-in duration-150"
+            >
+              <div className="text-slate-600 text-xs font-mono px-3.5 py-1.5 rounded-full border border-slate-800/80 bg-slate-950/80 shadow-lg">
+                Mode Layar Hitam (Fokus Audiens) • Tekan <kbd className="text-slate-400 font-bold">B</kbd> atau klik untuk lanjut
+              </div>
+            </div>
+          )}
+
           <div
             key={currentIndex}
             className={`relative shadow-2xl rounded-sm overflow-hidden ${
@@ -542,6 +584,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             <div className="px-3 py-0.5 rounded-full bg-slate-950/70 border border-slate-800/60 text-[10px] font-mono text-slate-400 flex items-center gap-2 select-none shadow-sm">
               <span><kbd className="text-indigo-300">Spasi / →</kbd> Maju</span>
               <span>•</span>
+              <span><kbd className="text-indigo-300">B</kbd> Layar Hitam</span>
+              <span>•</span>
               <span><kbd className="text-indigo-300">L</kbd> Laser</span>
               <span>•</span>
               <span><kbd className="text-indigo-300">P</kbd> Pena</span>
@@ -550,9 +594,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               <span>•</span>
               <span><kbd className="text-indigo-300">N</kbd> Notes</span>
               <span>•</span>
-              <span><kbd className="text-indigo-300">M</kbd> Mute</span>
-              <span>•</span>
-              <span><kbd className="text-indigo-300">F</kbd> Layar Penuh</span>
+              <span><kbd className="text-indigo-300">F</kbd> Fullscreen</span>
             </div>
           </div>
         </div>

@@ -31,12 +31,13 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Ctrl', 'K'], description: 'Buka Spotlight Command Palette Cepat' },
         { keys: ['Ctrl', 'H'], description: 'Buka Dialog Cari & Ganti Teks (Find & Replace)' },
         { keys: ['Ctrl', 'E'], description: 'Buka Modal Ekspor Desain (PNG/WebP/PDF/React)' },
+        { keys: ['Double-Click Judul'], description: 'Ubah nama slide langsung di thumbnail slide strip' },
       ],
     },
     {
       title: 'Manipulasi & Edit Elemen',
       items: [
-        { keys: ['Double-Click'], description: 'Edit teks langsung pada kanvas (WYSIWYG)' },
+        { keys: ['Double-Click Teks'], description: 'Edit teks langsung pada kanvas (WYSIWYG)' },
         { keys: ['Ctrl', 'C'], description: 'Salin elemen ke clipboard antar-slide' },
         { keys: ['Ctrl', 'V'], description: 'Tempel elemen dari clipboard' },
         { keys: ['Ctrl', 'D'], description: 'Duplikat elemen terpilih instan' },
@@ -63,6 +64,8 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
       title: 'Riwayat & Mode Presentasi',
       items: [
         { keys: ['F5'], description: 'Mulai Mode Slideshow Presentasi Interaktif' },
+        { keys: ['B'], description: 'Layar Kosong / Hitam (Blank screen) untuk menarik fokus audiens' },
+        { keys: ['Home', 'End'], description: 'Lompat langsung ke slide pertama atau terakhir' },
         { keys: ['Ctrl', 'Z'], description: 'Urungkan tindakan terakhir (Undo)' },
         { keys: ['Ctrl', 'Y'], description: 'Ulangi tindakan (Redo)' },
         { keys: ['L'], description: 'Nyalakan / Matikan Laser Pointer saat presentasi' },
