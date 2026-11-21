@@ -1,5 +1,5 @@
-import React from 'react';
-import { DesignMode } from '../types';
+import React, { useRef } from 'react';
+import { DesignMode, DesignProject } from '../types';
 import {
   Undo2,
   Redo2,
@@ -10,6 +10,8 @@ import {
   Presentation,
   Smartphone,
   Palette,
+  Save,
+  FolderOpen,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -26,6 +28,8 @@ interface NavbarProps {
   onOpenTemplates: () => void;
   onOpenPresenter: () => void;
   onOpenExport: () => void;
+  onSaveProject: () => void;
+  onLoadProject: (project: DesignProject) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -42,11 +46,36 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTemplates,
   onOpenPresenter,
   onOpenExport,
+  onSaveProject,
+  onLoadProject,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const json = JSON.parse(ev.target?.result as string);
+        if (json && Array.isArray(json.slides)) {
+          onLoadProject(json);
+        } else {
+          alert('Format berkas tidak valid. Harap pilih berkas .designflow.json yang benar.');
+        }
+      } catch (err: any) {
+        alert('Gagal memuat berkas proyek: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   return (
     <header className="h-14 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between select-none z-20 shrink-0">
       {/* Brand & Project Title */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-600/30 text-white font-black text-sm">
             DF
@@ -62,18 +91,46 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="text"
               value={title}
               onChange={e => onTitleChange(e.target.value)}
-              className="text-xs text-slate-400 hover:text-slate-200 focus:text-white bg-transparent border-b border-transparent hover:border-slate-700 focus:border-indigo-500 outline-none w-52 truncate"
+              className="text-xs text-slate-400 hover:text-slate-200 focus:text-white bg-transparent border-b border-transparent hover:border-slate-700 focus:border-indigo-500 outline-none w-44 truncate"
               title="Klik untuk mengubah nama dokumen"
             />
           </div>
         </div>
 
+        {/* Save / Open Project File */}
+        <div className="flex items-center border-l border-slate-800 pl-2.5 gap-1">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            title="Buka File Proyek (.json)"
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors flex items-center gap-1 text-[11px]"
+          >
+            <FolderOpen className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Buka</span>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,.designflow"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          <button
+            onClick={onSaveProject}
+            title="Simpan File Proyek (.designflow.json)"
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors flex items-center gap-1 text-[11px]"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">Simpan</span>
+          </button>
+        </div>
+
         {/* Undo / Redo */}
-        <div className="flex items-center border-l border-slate-800 pl-3 gap-1">
+        <div className="flex items-center border-l border-slate-800 pl-2.5 gap-1">
           <button
             onClick={onUndo}
             disabled={!canUndo}
-            title="Urungkan (Undo)"
+            title="Urungkan (Ctrl+Z)"
             className="p-1.5 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent text-slate-300 rounded-lg transition-colors"
           >
             <Undo2 className="w-4 h-4" />
@@ -81,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onRedo}
             disabled={!canRedo}
-            title="Ulangi (Redo)"
+            title="Ulangi (Ctrl+Y)"
             className="p-1.5 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent text-slate-300 rounded-lg transition-colors"
           >
             <Redo2 className="w-4 h-4" />

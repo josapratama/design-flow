@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DesignElement, PRESET_SIZES, Slide } from '../types';
 import {
   Trash2,
@@ -13,12 +13,13 @@ import {
   AlignStartVertical,
   AlignCenterVertical,
   AlignEndVertical,
-  AlignHorizontalDistributeCenter,
-  Layers,
   Palette,
   Monitor,
   StickyNote,
+  Smile,
+  X,
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 interface PropertyInspectorProps {
   element: DesignElement | null;
@@ -41,6 +42,16 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   onReorder,
   onAlignElement,
 }) => {
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [iconFilter, setIconFilter] = useState('');
+
+  const popularIconNames = [
+    'Star', 'Heart', 'Shield', 'Check', 'User', 'Search', 'Settings', 'Home', 
+    'ArrowRight', 'Zap', 'Download', 'Compass', 'Laptop', 'Mail', 'Phone', 
+    'Calendar', 'Clock', 'Lock', 'Sparkles', 'Folder', 'FileText', 'BarChart3', 
+    'Smartphone', 'CreditCard', 'Camera', 'Bell', 'Tag', 'Bookmark', 'Globe', 'HelpCircle'
+  ];
+
   // 1. IF NO ELEMENT IS SELECTED: SHOW CANVAS & SLIDE SETTINGS
   if (!element) {
     const bgSwatches = [
@@ -177,6 +188,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     onUpdateElement(element.id, { [field]: val });
   };
 
+  const filteredIcons = popularIconNames.filter(name =>
+    name.toLowerCase().includes(iconFilter.toLowerCase())
+  );
+
   return (
     <aside className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 select-none z-10">
       {/* Header */}
@@ -298,6 +313,85 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Visual Icon Picker */}
+        {['button', 'input', 'metric-card', 'navbar'].includes(element.type) && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <Smile className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Pilihan Ikon</span>
+              </span>
+              {element.iconName && (
+                <button
+                  onClick={() => handleChange('iconName', undefined)}
+                  className="text-[10px] text-rose-400 hover:underline"
+                >
+                  Hapus Ikon
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowIconPicker(!showIconPicker)}
+              className="w-full p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-between text-xs"
+            >
+              <div className="flex items-center gap-2">
+                {element.iconName && (LucideIcons as any)[element.iconName] ? (
+                  React.createElement((LucideIcons as any)[element.iconName], {
+                    className: 'w-4 h-4 text-indigo-400',
+                  })
+                ) : (
+                  <Smile className="w-4 h-4 text-slate-500" />
+                )}
+                <span className="font-medium text-slate-300">
+                  {element.iconName || 'Pilih Ikon Lucide...'}
+                </span>
+              </div>
+              <span className="text-[10px] text-indigo-400 font-semibold">
+                {showIconPicker ? 'Tutup' : 'Ubah'}
+              </span>
+            </button>
+
+            {/* Pop-up Grid */}
+            {showIconPicker && (
+              <div className="p-2.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2 animate-in fade-in-50 duration-100">
+                <input
+                  type="text"
+                  placeholder="Cari ikon (misal: star, user)..."
+                  value={iconFilter}
+                  onChange={e => setIconFilter(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 outline-none"
+                />
+                <div className="grid grid-cols-6 gap-1 max-h-36 overflow-y-auto pt-1">
+                  {filteredIcons.map(name => {
+                    const IconComp = (LucideIcons as any)[name];
+                    if (!IconComp) return null;
+                    const isPicked = element.iconName === name;
+
+                    return (
+                      <button
+                        key={name}
+                        onClick={() => {
+                          handleChange('iconName', name);
+                          setShowIconPicker(false);
+                        }}
+                        title={name}
+                        className={`p-1.5 rounded flex items-center justify-center transition-colors ${
+                          isPicked
+                            ? 'bg-indigo-600 text-white'
+                            : 'hover:bg-slate-800 text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        <IconComp className="w-4 h-4" />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* URL Gambar (Jika tipe image) */}
         {element.type === 'image' && (

@@ -4,11 +4,24 @@ import { DesignElement } from '../types';
 interface TransformHandlesProps {
   element: DesignElement;
   scale: number;
+  snapToGrid?: boolean;
+  gridSize?: number;
   onUpdate: (updates: Partial<DesignElement>) => void;
 }
 
-export const TransformHandles: React.FC<TransformHandlesProps> = ({ element, scale, onUpdate }) => {
+export const TransformHandles: React.FC<TransformHandlesProps> = ({
+  element,
+  scale,
+  snapToGrid = true,
+  gridSize = 20,
+  onUpdate,
+}) => {
   const [isDragging, setIsDragging] = useState(false);
+
+  const applySnap = (val: number): number => {
+    if (!snapToGrid) return Math.round(val);
+    return Math.round(val / gridSize) * gridSize;
+  };
 
   // Resize handler
   const handleResizePointerDown = (
@@ -34,24 +47,24 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({ element, sca
       let newX = initialX;
       let newY = initialY;
 
-      if (direction.includes('e')) newWidth = Math.max(20, initialWidth + deltaX);
-      if (direction.includes('s')) newHeight = Math.max(20, initialHeight + deltaY);
+      if (direction.includes('e')) newWidth = Math.max(20, applySnap(initialWidth + deltaX));
+      if (direction.includes('s')) newHeight = Math.max(20, applySnap(initialHeight + deltaY));
       if (direction.includes('w')) {
         const potentialWidth = initialWidth - deltaX;
         if (potentialWidth > 20) {
-          newWidth = potentialWidth;
-          newX = initialX + deltaX;
+          newWidth = applySnap(potentialWidth);
+          newX = applySnap(initialX + deltaX);
         }
       }
       if (direction.includes('n')) {
         const potentialHeight = initialHeight - deltaY;
         if (potentialHeight > 20) {
-          newHeight = potentialHeight;
-          newY = initialY + deltaY;
+          newHeight = applySnap(potentialHeight);
+          newY = applySnap(initialY + deltaY);
         }
       }
 
-      onUpdate({ width: Math.round(newWidth), height: Math.round(newHeight), x: Math.round(newX), y: Math.round(newY) });
+      onUpdate({ width: newWidth, height: newHeight, x: newX, y: newY });
     };
 
     const handlePointerUp = () => {
@@ -78,8 +91,8 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({ element, sca
       const deltaY = (moveEvent.clientY - startY) / scale;
 
       onUpdate({
-        x: Math.round(initialX + deltaX),
-        y: Math.round(initialY + deltaY),
+        x: applySnap(initialX + deltaX),
+        y: applySnap(initialY + deltaY),
       });
     };
 

@@ -6,13 +6,15 @@ import { TransformHandles } from './TransformHandles';
 interface ArtboardRendererProps {
   slide: Slide;
   scale: number;
+  snapToGrid?: boolean;
+  gridSize?: number;
   selectedElementIds: string[];
   onSelectElement: (elementId: string, multiSelect: boolean) => void;
   onUpdateElement: (elementId: string, updates: Partial<DesignElement>) => void;
 }
 
 export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps>(
-  ({ slide, scale, selectedElementIds, onSelectElement, onUpdateElement }, ref) => {
+  ({ slide, scale, snapToGrid = true, gridSize = 20, selectedElementIds, onSelectElement, onUpdateElement }, ref) => {
     return (
       <div
         ref={ref}
@@ -25,7 +27,6 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)',
         }}
         onClick={e => {
-          // Click background to deselect if not clicking an element
           if (e.target === e.currentTarget) {
             onSelectElement('', false);
           }
@@ -64,6 +65,8 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                   <TransformHandles
                     element={element}
                     scale={scale}
+                    snapToGrid={snapToGrid}
+                    gridSize={gridSize}
                     onUpdate={updates => onUpdateElement(element.id, updates)}
                   />
                 )}

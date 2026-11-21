@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { DesignElement, DesignMode, ElementType } from '../types';
+import { SMART_BLOCKS } from '../templates/smart-blocks';
 import {
   Type,
   Square,
@@ -11,16 +12,22 @@ import {
   BarChart3,
   Smartphone,
   Upload,
-  Image as ImageIcon,
+  Sparkles,
+  GitCommit,
+  Users,
+  Grid,
+  CreditCard,
 } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 interface SidebarPaletteProps {
   mode: DesignMode;
   onAddElement: (element: DesignElement) => void;
+  onAddElements: (elements: DesignElement[]) => void;
 }
 
-export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddElement }) => {
-  const [activeTab, setActiveTab] = useState<'elements' | 'ui' | 'shapes' | 'media'>('elements');
+export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddElement, onAddElements }) => {
+  const [activeTab, setActiveTab] = useState<'elements' | 'ui' | 'shapes' | 'media' | 'blocks'>('elements');
 
   const createBaseElement = (
     type: ElementType,
@@ -82,9 +89,9 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
   return (
     <aside className="w-64 h-full bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 select-none z-10">
       {/* Tab Navigation */}
-      <div className="flex border-b border-slate-800 p-2 gap-1 bg-slate-950/40">
+      <div className="flex border-b border-slate-800 p-1.5 gap-1 bg-slate-950/40 overflow-x-auto">
         <button
-          className={`flex-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+          className={`flex-1 py-1.5 px-1 rounded-lg text-[10px] font-semibold transition-all shrink-0 ${
             activeTab === 'elements' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
           onClick={() => setActiveTab('elements')}
@@ -92,7 +99,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
           Teks
         </button>
         <button
-          className={`flex-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+          className={`flex-1 py-1.5 px-1 rounded-lg text-[10px] font-semibold transition-all shrink-0 ${
             activeTab === 'ui' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
           onClick={() => setActiveTab('ui')}
@@ -100,7 +107,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
           UI Kit
         </button>
         <button
-          className={`flex-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+          className={`flex-1 py-1.5 px-1 rounded-lg text-[10px] font-semibold transition-all shrink-0 ${
             activeTab === 'shapes' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
           onClick={() => setActiveTab('shapes')}
@@ -108,12 +115,20 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
           Bentuk
         </button>
         <button
-          className={`flex-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+          className={`flex-1 py-1.5 px-1 rounded-lg text-[10px] font-semibold transition-all shrink-0 ${
             activeTab === 'media' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
           onClick={() => setActiveTab('media')}
         >
           Media
+        </button>
+        <button
+          className={`flex-1 py-1.5 px-1 rounded-lg text-[10px] font-semibold transition-all shrink-0 ${
+            activeTab === 'blocks' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+          }`}
+          onClick={() => setActiveTab('blocks')}
+        >
+          Blok AI
         </button>
       </div>
 
@@ -383,7 +398,6 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
         {/* TAB 4: MEDIA & IMAGES */}
         {activeTab === 'media' && (
           <div className="space-y-4">
-            {/* File Upload Button */}
             <div className="space-y-2">
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                 Unggah Berkas Lokal
@@ -401,7 +415,6 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
               </label>
             </div>
 
-            {/* Stock Photos Presets */}
             <div className="space-y-2">
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                 Foto Contoh Siap Pakai
@@ -434,6 +447,51 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB 5: AI SMART BLOCKS */}
+        {activeTab === 'blocks' && (
+          <div className="space-y-3">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Blok Tata Letak Cerdas</span>
+            </span>
+
+            {SMART_BLOCKS.map(block => (
+              <button
+                key={block.id}
+                onClick={() => {
+                  const generated = block.generateElements(160, 280);
+                  onAddElements(generated);
+                  confetti({ particleCount: 50, spread: 50, origin: { y: 0.6 } });
+                }}
+                className="w-full p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-xl flex flex-col gap-1 text-left transition-all group"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded bg-indigo-500/20 text-indigo-400 group-hover:scale-110 transition-transform">
+                    {block.id.includes('timeline') ? (
+                      <GitCommit className="w-3.5 h-3.5" />
+                    ) : block.id.includes('team') ? (
+                      <Users className="w-3.5 h-3.5" />
+                    ) : block.id.includes('swot') ? (
+                      <Grid className="w-3.5 h-3.5" />
+                    ) : (
+                      <CreditCard className="w-3.5 h-3.5" />
+                    )}
+                  </div>
+                  <span className="text-xs font-bold text-slate-100 group-hover:text-indigo-300 transition-colors">
+                    {block.name}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed pl-6">
+                  {block.description}
+                </p>
+                <span className="text-[10px] text-indigo-400 font-semibold pl-6 mt-1 group-hover:underline">
+                  + Sisipkan Blok ke Slide
+                </span>
+              </button>
+            ))}
           </div>
         )}
       </div>

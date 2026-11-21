@@ -22,6 +22,7 @@ export default function App() {
     canUndo,
     canRedo,
     addElement,
+    addElements,
     updateElement,
     updateSlideSettings,
     deleteSelectedElements,
@@ -32,7 +33,10 @@ export default function App() {
     addSlide,
     duplicateSlide,
     deleteSlide,
+    reorderSlide,
     loadTemplate,
+    saveProjectToFile,
+    loadProjectData,
   } = useDesignStore();
 
   const [isCodeDrawerOpen, setIsCodeDrawerOpen] = useState(false);
@@ -47,7 +51,6 @@ export default function App() {
   // Global Keyboard Shortcuts (Figma / Canva style)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept when user is typing in input or textarea
       const target = e.target as HTMLElement;
       if (
         target &&
@@ -132,12 +135,18 @@ export default function App() {
         onOpenTemplates={() => setIsTemplatesOpen(true)}
         onOpenPresenter={() => setIsPresenterOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
+        onSaveProject={saveProjectToFile}
+        onLoadProject={loadProjectData}
       />
 
       {/* Main Workspace Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Elements Palette */}
-        <SidebarPalette mode={project.mode} onAddElement={addElement} />
+        {/* Left Elements Palette (Includes Smart Blocks & Media) */}
+        <SidebarPalette
+          mode={project.mode}
+          onAddElement={addElement}
+          onAddElements={addElements}
+        />
 
         {/* Center Visual Canvas */}
         <main className="flex-1 relative overflow-hidden bg-slate-950">
@@ -147,6 +156,8 @@ export default function App() {
             panX={project.panX}
             panY={project.panY}
             showGrid={project.showGrid}
+            snapToGrid={project.snapToGrid}
+            gridSize={project.gridSize}
             selectedElementIds={project.selectedElementIds}
             artboardRef={artboardRef}
             onPanChange={(panX, panY) => setProject(prev => ({ ...prev, panX, panY }))}
@@ -184,7 +195,7 @@ export default function App() {
           />
         </main>
 
-        {/* Right Property Inspector */}
+        {/* Right Property Inspector with Visual Icon Picker */}
         <PropertyInspector
           element={selectedElement}
           activeSlide={activeSlide}
@@ -207,7 +218,7 @@ export default function App() {
         />
       </div>
 
-      {/* Bottom Slide Strip for Presentation Mode */}
+      {/* Bottom Slide Strip for Presentation Mode with Reordering */}
       {project.mode === 'slide' && (
         <SlideStrip
           slides={project.slides}
@@ -218,6 +229,7 @@ export default function App() {
           onAddSlide={addSlide}
           onDuplicateSlide={duplicateSlide}
           onDeleteSlide={deleteSlide}
+          onReorderSlide={reorderSlide}
         />
       )}
 

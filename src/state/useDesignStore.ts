@@ -84,6 +84,14 @@ export function useDesignStore() {
     setProject(prev => ({ ...prev, selectedElementIds: [element.id] }));
   }, [updateActiveSlide]);
 
+  const addElements = useCallback((elements: DesignElement[]) => {
+    updateActiveSlide(slide => ({
+      ...slide,
+      elements: [...slide.elements, ...elements],
+    }));
+    setProject(prev => ({ ...prev, selectedElementIds: elements.map(e => e.id) }));
+  }, [updateActiveSlide]);
+
   const updateElement = useCallback((elementId: string, updates: Partial<DesignElement>) => {
     updateActiveSlide(slide => ({
       ...slide,
@@ -273,6 +281,27 @@ export function useDesignStore() {
     });
   }, [project.slides.length, pushHistory]);
 
+  const reorderSlide = useCallback((slideId: string, direction: 'left' | 'right') => {
+    setProject(prev => {
+      const index = prev.slides.findIndex(s => s.id === slideId);
+      if (index === -1) return prev;
+
+      const targetIndex = direction === 'left' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.slides.length) return prev;
+
+      pushHistory(prev.slides);
+      const newSlides = [...prev.slides];
+      const [moved] = newSlides.splice(index, 1);
+      newSlides.splice(targetIndex, 0, moved);
+
+      return {
+        ...prev,
+        slides: newSlides,
+        activeSlideId: moved.id,
+      };
+    });
+  }, [pushHistory]);
+
   // Load a complete template
   const loadTemplate = useCallback((template: typeof TEMPLATES[0]) => {
     pushHistory(project.slides);
@@ -282,6 +311,34 @@ export function useDesignStore() {
       slides: JSON.parse(JSON.stringify(template.slides)),
       activeSlideId: template.slides[0].id,
       selectedElementIds: [],
+    }));
+  }, [project.slides, pushHistory]);
+
+  // Save project as JSON file
+  const saveProjectToFile = useCallback(() => {
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(project, null, 2)
+    )}`;
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', jsonString);
+    downloadAnchor.setAttribute(
+      'download',
+      `${project.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.designflow.json`
+    );
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  }, [project]);
+
+  // Load project from parsed JSON
+  const loadProjectData = useCallback((importedProject: DesignProject) => {
+    pushHistory(project.slides);
+    setProject(prev => ({
+      ...importedProject,
+      activeSlideId: importedProject.slides[0]?.id || prev.activeSlideId,
+      scale: prev.scale,
+      panX: prev.panX,
+      panY: prev.panY,
     }));
   }, [project.slides, pushHistory]);
 
@@ -295,6 +352,7 @@ export function useDesignStore() {
     canUndo: pastRef.current.length > 0,
     canRedo: futureRef.current.length > 0,
     addElement,
+    addElements,
     updateElement,
     updateSlideSettings,
     deleteSelectedElements,
@@ -305,6 +363,9 @@ export function useDesignStore() {
     addSlide,
     duplicateSlide,
     deleteSlide,
+    reorderSlide,
     loadTemplate,
+    saveProjectToFile,
+    loadProjectData,
   };
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Slide } from '../types';
-import { Plus, Copy, Trash2 } from 'lucide-react';
+import { Plus, Copy, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface SlideStripProps {
   slides: Slide[];
@@ -9,6 +9,7 @@ interface SlideStripProps {
   onAddSlide: () => void;
   onDuplicateSlide: (slideId: string) => void;
   onDeleteSlide: (slideId: string) => void;
+  onReorderSlide: (slideId: string, direction: 'left' | 'right') => void;
 }
 
 export const SlideStrip: React.FC<SlideStripProps> = ({
@@ -18,6 +19,7 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
   onAddSlide,
   onDuplicateSlide,
   onDeleteSlide,
+  onReorderSlide,
 }) => {
   return (
     <div className="h-28 bg-slate-900 border-t border-slate-800 px-4 py-2 flex items-center gap-3 overflow-x-auto select-none shrink-0 z-10">
@@ -56,17 +58,34 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
             </div>
 
             {/* Hover Action Buttons */}
-            <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-opacity z-20">
+            <div className="absolute inset-0 bg-slate-950/85 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity z-20">
+              {/* Move Left */}
+              {index > 0 && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    onReorderSlide(slide.id, 'left');
+                  }}
+                  title="Geser Slide ke Kiri"
+                  className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                </button>
+              )}
+
+              {/* Duplicate */}
               <button
                 onClick={e => {
                   e.stopPropagation();
                   onDuplicateSlide(slide.id);
                 }}
                 title="Duplikat Slide"
-                className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition-colors"
+                className="p-1 hover:bg-slate-800 text-slate-300 rounded"
               >
                 <Copy className="w-3.5 h-3.5" />
               </button>
+
+              {/* Delete */}
               {slides.length > 1 && (
                 <button
                   onClick={e => {
@@ -74,9 +93,23 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
                     onDeleteSlide(slide.id);
                   }}
                   title="Hapus Slide"
-                  className="p-1.5 bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white rounded-lg transition-colors"
+                  className="p-1 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+
+              {/* Move Right */}
+              {index < slides.length - 1 && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    onReorderSlide(slide.id, 'right');
+                  }}
+                  title="Geser Slide ke Kanan"
+                  className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>

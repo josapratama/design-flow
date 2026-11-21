@@ -8,6 +8,8 @@ interface CanvasViewportProps {
   panX: number;
   panY: number;
   showGrid: boolean;
+  snapToGrid?: boolean;
+  gridSize?: number;
   selectedElementIds: string[];
   artboardRef: React.RefObject<HTMLDivElement | null>;
   onPanChange: (panX: number, panY: number) => void;
@@ -22,6 +24,8 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
   panX,
   panY,
   showGrid,
+  snapToGrid = true,
+  gridSize = 20,
   selectedElementIds,
   artboardRef,
   onPanChange,
@@ -36,19 +40,16 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     if (e.ctrlKey || e.metaKey) {
-      // Zoom
       const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
       const newScale = Math.min(3.0, Math.max(0.15, scale * zoomFactor));
       onScaleChange(Number(newScale.toFixed(2)));
     } else {
-      // Pan
       onPanChange(panX - e.deltaX, panY - e.deltaY);
     }
   };
 
   // Middle click or Spacebar drag
   const handlePointerDown = (e: React.PointerEvent) => {
-    // If middle mouse click (button === 1) or clicking the empty workspace
     if (e.button === 1 || e.target === containerRef.current) {
       e.preventDefault();
       setIsPanning(true);
@@ -113,6 +114,8 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
           ref={artboardRef}
           slide={slide}
           scale={scale}
+          snapToGrid={snapToGrid}
+          gridSize={gridSize}
           selectedElementIds={selectedElementIds}
           onSelectElement={onSelectElement}
           onUpdateElement={onUpdateElement}
