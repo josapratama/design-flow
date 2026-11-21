@@ -25,6 +25,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [activeTab, setActiveTab] = useState<'pptx' | 'image' | 'pdf' | 'code'>('pptx');
   const [isExporting, setIsExporting] = useState(false);
   const [imageScale, setImageScale] = useState<number>(2);
+  const [pdfScope, setPdfScope] = useState<'all' | 'active'>('all');
   const [copiedCode, setCopiedCode] = useState(false);
   const [exportProgress, setExportProgress] = useState<string>('');
 
@@ -59,11 +60,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     }
   };
 
-  // Multi-Slide PDF Exporter (renders every slide offscreen)
+  // Multi-Slide or Active-Slide PDF Exporter (renders slides offscreen)
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
-      const firstSlide = project.slides[0];
+      const targetSlides = pdfScope === 'active' ? [activeSlide] : project.slides;
+      const firstSlide = targetSlides[0];
       const orientation = firstSlide.width > firstSlide.height ? 'landscape' : 'portrait';
 
       const pdf = new jsPDF({
@@ -72,24 +74,26 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         format: [firstSlide.width, firstSlide.height],
       });
 
-      for (let i = 0; i < project.slides.length; i++) {
-        setExportProgress(`Merender Slide ${i + 1} dari ${project.slides.length} ke PDF...`);
-        const targetElement = document.getElementById(`export-slide-offscreen-${i}`);
+      for (let i = 0; i < targetSlides.length; i++) {
+        const curSlide = targetSlides[i];
+        setExportProgress(`Merender Slide ${i + 1} dari ${targetSlides.length} ke PDF...`);
+        const origIdx = project.slides.findIndex(s => s.id === curSlide.id);
+        const targetElement = document.getElementById(`export-slide-offscreen-${origIdx}`);
         if (targetElement) {
           const imgData = await toPng(targetElement, { quality: 0.95, pixelRatio: 1.5 });
           if (i > 0) {
-            const slide = project.slides[i];
-            pdf.addPage([slide.width, slide.height], slide.width > slide.height ? 'landscape' : 'portrait');
+            pdf.addPage([curSlide.width, curSlide.height], curSlide.width > curSlide.height ? 'landscape' : 'portrait');
           }
-          pdf.addImage(imgData, 'PNG', 0, 0, project.slides[i].width, project.slides[i].height);
+          pdf.addImage(imgData, 'PNG', 0, 0, curSlide.width, curSlide.height);
         }
       }
 
-      const fileName = `${project.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`;
+      const fileBase = pdfScope === 'active' ? activeSlide.title : project.title;
+      const fileName = `${fileBase.toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`;
       pdf.save(fileName);
       confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
     } catch (err: any) {
-      alert('Gagal mengekspor PDF multi-halaman: ' + err.message);
+      alert('Gagal mengekspor PDF: ' + err.message);
     } finally {
       setIsExporting(false);
       setExportProgress('');
@@ -283,8 +287,37 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {activeTab === 'pdf' && (
             <div className="space-y-4">
               <p className="text-xs text-slate-400 leading-relaxed">
-                Cetak seluruh slide (total <strong>{project.slides.length} slide / halaman</strong>) menjadi dokumen PDF terpadu yang siap dibagikan untuk naskah skripsi atau presentasi offline.
+                Pilih cakupan dokumen PDF yang ingin Anda cetak:
               </p>
+
+              {/* PDF Scope Selector */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPdfScope('all')}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    pdfScope === 'all'
+                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <div className="font-bold text-xs">Seluruh Slide Deck</div>
+                  <div className="text-[10px] text-slate-500">Total {project.slides.length} halaman terpadu</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPdfScope('active')}
+                  className={`p-3 rounded-xl border text-left transition-all ${
+                    pdfScope === 'active'
+                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <div className="font-bold text-xs truncate">Slide Aktif Saja</div>
+                  <div className="text-[10px] text-slate-500 truncate">Hanya: {activeSlide.title}</div>
+                </button>
+              </div>
 
               <button
                 onClick={handleExportPDF}
@@ -292,7 +325,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-[0.98]"
               >
                 {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                <span>{isExporting ? (exportProgress || 'Menyusun Dokumen PDF...') : `Unduh Dokumen PDF (${project.slides.length} Halaman)`}</span>
+                <span>
+                  {isExporting
+                    ? (exportProgress || 'Menyusun Dokumen PDF...')
+                    : pdfScope === 'active'
+                    ? 'Unduh PDF (1 Halaman Slide Ini)'
+                    : `Unduh Dokumen PDF (${project.slides.length} Halaman)`}
+                </span>
               </button>
             </div>
           )}

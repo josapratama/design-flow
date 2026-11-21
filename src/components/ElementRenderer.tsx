@@ -56,6 +56,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
       ? 'dotted'
       : 'solid';
 
+  const glassClass = fill && fill.includes('rgba(') ? 'backdrop-blur-md' : '';
+
   const fontClass =
     element.fontFamily === 'serif'
       ? 'font-serif'
@@ -510,7 +512,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
     default:
       return (
         <div
-          className={`w-full h-full p-4 overflow-hidden select-none border transition-all ${shadowClass}`}
+          className={`w-full h-full p-4 overflow-hidden select-none border transition-all ${glassClass} ${shadowClass}`}
           style={{
             backgroundColor: fill || '#1e293b',
             border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : '1px solid rgba(255,255,255,0.06)',

@@ -26,6 +26,7 @@ import {
   ArrowUpDown,
   Pipette,
   Image as ImageIcon,
+  Sparkles,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { POPULAR_FONTS } from '../utils/fontLoader';
@@ -857,9 +858,29 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
         {/* Warna & Gaya Visual */}
         <div className="space-y-3">
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            Warna & Tampilan Visual
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Warna & Tampilan Visual
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                onUpdateElement(element.id, {
+                  fill: 'rgba(255, 255, 255, 0.08)',
+                  stroke: 'rgba(255, 255, 255, 0.2)',
+                  strokeWidth: 1.5,
+                  borderRadius: 16,
+                  shadow: 'xl',
+                  color: '#ffffff',
+                });
+              }}
+              className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 hover:underline"
+              title="Terapkan gaya semi-transparan dengan border akrilik modern"
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>Efek Kaca (Glass)</span>
+            </button>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="flex items-center justify-between mb-1">

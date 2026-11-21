@@ -9,6 +9,17 @@ import {
   Unlock,
   Trash2,
   Boxes,
+  CheckSquare,
+  Command,
+  PlusCircle,
+  CopyPlus,
+  Shield,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignStartVertical,
+  AlignCenterVertical,
+  AlignEndVertical,
 } from 'lucide-react';
 import { DesignElement } from '../types';
 
@@ -26,6 +37,12 @@ interface ContextMenuProps {
   onReorder: (direction: 'front' | 'back' | 'up' | 'down') => void;
   onToggleLock: (elementId: string) => void;
   onDelete: () => void;
+  onSelectAll?: () => void;
+  onOpenCommandPalette?: () => void;
+  onAddSlide?: () => void;
+  onDuplicateSlide?: () => void;
+  onToggleSafeMargin?: () => void;
+  onAlign?: (type: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -42,6 +59,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onReorder,
   onToggleLock,
   onDelete,
+  onSelectAll,
+  onOpenCommandPalette,
+  onAddSlide,
+  onDuplicateSlide,
+  onToggleSafeMargin,
+  onAlign,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -60,21 +83,21 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   }, [onClose]);
 
   // Adjust menu position to keep within screen
-  const menuWidth = 200;
-  const menuHeight = 260;
+  const menuWidth = 220;
+  const menuHeight = selectedCount >= 2 ? 380 : element ? 280 : 220;
   const safeX = Math.min(x, window.innerWidth - menuWidth - 10);
   const safeY = Math.min(y, window.innerHeight - menuHeight - 10);
 
   return (
     <div
       ref={menuRef}
-      className="fixed z-50 w-52 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl py-1.5 text-xs text-slate-200 select-none animate-in fade-in-50 zoom-in-95 duration-100"
+      className="fixed z-50 w-56 bg-slate-900 border border-slate-700/80 rounded-xl shadow-2xl py-1.5 text-xs text-slate-200 select-none animate-in fade-in-50 zoom-in-95 duration-100"
       style={{ left: `${safeX}px`, top: `${safeY}px` }}
     >
       {element ? (
         <>
           <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800 truncate">
-            {element.name || element.type}
+            {selectedCount >= 2 ? `${selectedCount} Elemen Terpilih` : element.name || element.type}
           </div>
 
           <button
@@ -138,6 +161,60 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             </button>
           )}
 
+          {/* Multi-Element Alignment Quick Sub-actions */}
+          {selectedCount >= 2 && onAlign && (
+            <>
+              <div className="my-1 border-t border-slate-800" />
+              <div className="px-3 py-1 text-[9px] font-semibold text-slate-500 uppercase tracking-wider">
+                Perataan ({selectedCount} Elemen)
+              </div>
+              <div className="px-3 py-1 grid grid-cols-6 gap-1">
+                <button
+                  onClick={() => { onAlign('left'); onClose(); }}
+                  title="Rata Kiri"
+                  className="p-1.5 hover:bg-slate-800 rounded flex justify-center text-slate-400 hover:text-white"
+                >
+                  <AlignLeft className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => { onAlign('center'); onClose(); }}
+                  title="Rata Tengah Horisontal"
+                  className="p-1.5 hover:bg-slate-800 rounded flex justify-center text-slate-400 hover:text-white"
+                >
+                  <AlignCenter className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => { onAlign('right'); onClose(); }}
+                  title="Rata Kanan"
+                  className="p-1.5 hover:bg-slate-800 rounded flex justify-center text-slate-400 hover:text-white"
+                >
+                  <AlignRight className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => { onAlign('top'); onClose(); }}
+                  title="Rata Atas"
+                  className="p-1.5 hover:bg-slate-800 rounded flex justify-center text-slate-400 hover:text-white"
+                >
+                  <AlignStartVertical className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => { onAlign('middle'); onClose(); }}
+                  title="Rata Tengah Vertikal"
+                  className="p-1.5 hover:bg-slate-800 rounded flex justify-center text-slate-400 hover:text-white"
+                >
+                  <AlignCenterVertical className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => { onAlign('bottom'); onClose(); }}
+                  title="Rata Bawah"
+                  className="p-1.5 hover:bg-slate-800 rounded flex justify-center text-slate-400 hover:text-white"
+                >
+                  <AlignEndVertical className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </>
+          )}
+
           <div className="my-1 border-t border-slate-800" />
 
           <button
@@ -199,19 +276,101 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
           </button>
         </>
       ) : (
-        <button
-          onClick={() => {
-            onPaste();
-            onClose();
-          }}
-          className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
-        >
-          <span className="flex items-center gap-2">
-            <ClipboardPaste className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Tempel di Sini</span>
-          </span>
-          <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+V</kbd>
-        </button>
+        <>
+          <div className="px-3 py-1.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800">
+            Kanvas & Slide
+          </div>
+
+          <button
+            onClick={() => {
+              onPaste();
+              onClose();
+            }}
+            className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+          >
+            <span className="flex items-center gap-2">
+              <ClipboardPaste className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Tempel di Sini</span>
+            </span>
+            <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+V</kbd>
+          </button>
+
+          {onSelectAll && (
+            <button
+              onClick={() => {
+                onSelectAll();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <CheckSquare className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Pilih Semua Elemen</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+A</kbd>
+            </button>
+          )}
+
+          {onOpenCommandPalette && (
+            <button
+              onClick={() => {
+                onOpenCommandPalette();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Command className="w-3.5 h-3.5 text-purple-400" />
+                <span>Spotlight Command</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+K</kbd>
+            </button>
+          )}
+
+          <div className="my-1 border-t border-slate-800" />
+
+          {onAddSlide && (
+            <button
+              onClick={() => {
+                onAddSlide();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <PlusCircle className="w-3.5 h-3.5 text-sky-400" />
+              <span>Tambah Slide Baru</span>
+            </button>
+          )}
+
+          {onDuplicateSlide && (
+            <button
+              onClick={() => {
+                onDuplicateSlide();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <CopyPlus className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Duplikat Slide Ini</span>
+            </button>
+          )}
+
+          {onToggleSafeMargin && (
+            <button
+              onClick={() => {
+                onToggleSafeMargin();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Batas Area Aman</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Shift+M</kbd>
+            </button>
+          )}
+        </>
       )}
     </div>
   );

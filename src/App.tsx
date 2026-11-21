@@ -438,6 +438,12 @@ export default function App() {
           onReorder={reorderSelectedElement}
           onToggleLock={toggleLockElement}
           onDelete={deleteSelectedElements}
+          onSelectAll={selectAllElements}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
+          onAddSlide={addSlide}
+          onDuplicateSlide={() => duplicateSlide(project.activeSlideId)}
+          onToggleSafeMargin={() => setShowSafeMargin(prev => !prev)}
+          onAlign={alignSelectedElement}
         />
       )}
 
