@@ -130,11 +130,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           <button
             onClick={() => setIsLaserActive(!isLaserActive)}
             title="Laser Pointer (Tekan 'L')"
-            className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all ${
-              isLaserActive
+            className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all ${isLaserActive
                 ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20'
                 : 'bg-slate-800 border-slate-700 text-slate-400'
-            }`}
+              }`}
           >
             <CircleDot className="w-3.5 h-3.5" />
             <span>Laser {isLaserActive ? 'Aktif' : 'Pointer'}</span>
@@ -142,11 +141,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
           <button
             onClick={() => setShowNotes(!showNotes)}
-            className={`px-3 py-1 rounded-lg text-xs font-medium border ${
-              showNotes
+            className={`px-3 py-1 rounded-lg text-xs font-medium border ${showNotes
                 ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
                 : 'bg-slate-800 border-slate-700 text-slate-400'
-            }`}
+              }`}
           >
             {showNotes ? 'Sembunyikan Catatan' : 'Lihat Catatan'}
           </button>
@@ -173,9 +171,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         <div
           ref={slideAreaRef}
           onMouseMove={handleMouseMove}
-          className={`flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden ${
-            isLaserActive ? 'cursor-none' : 'cursor-default'
-          }`}
+          className={`flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden ${isLaserActive ? 'cursor-none' : 'cursor-default'
+            }`}
         >
           <div
             className="relative shadow-2xl rounded-sm overflow-hidden transition-all duration-150"

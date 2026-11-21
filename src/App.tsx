@@ -24,11 +24,20 @@ export default function App() {
     addElement,
     addElements,
     updateElement,
+    updateElementLive,
+    moveSelectedElementsLive,
+    commitHistory,
     updateSlideSettings,
     deleteSelectedElements,
+    deleteElementById,
+    toggleLockElement,
+    toggleHideElement,
     duplicateSelectedElements,
+    copySelectedElements,
+    pasteElements,
     nudgeSelectedElements,
     alignSelectedElement,
+    distributeSelectedElements,
     reorderSelectedElement,
     addSlide,
     duplicateSlide,
@@ -90,7 +99,20 @@ export default function App() {
         duplicateSelectedElements();
       }
 
-      // 5. Arrow Key Nudge
+      // 5. Copy: Ctrl+C / Cmd+C
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+        if (project.selectedElementIds.length > 0) {
+          copySelectedElements();
+        }
+      }
+
+      // 6. Paste: Ctrl+V / Cmd+V
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        pasteElements();
+      }
+
+      // 7. Arrow Key Nudge
       const step = e.shiftKey ? 10 : 1;
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -115,6 +137,8 @@ export default function App() {
     undo,
     redo,
     duplicateSelectedElements,
+    copySelectedElements,
+    pasteElements,
     nudgeSelectedElements,
   ]);
 
@@ -141,9 +165,27 @@ export default function App() {
 
       {/* Main Workspace Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Left Elements Palette (Includes Smart Blocks & Media) */}
+        {/* Left Elements Palette (Includes Smart Blocks, Media & Layers) */}
         <SidebarPalette
           mode={project.mode}
+          activeSlide={activeSlide}
+          selectedElementIds={project.selectedElementIds}
+          onSelectElement={(elementId, multi) => {
+            setProject(prev => ({
+              ...prev,
+              selectedElementIds: elementId
+                ? multi
+                  ? prev.selectedElementIds.includes(elementId)
+                    ? prev.selectedElementIds.filter(id => id !== elementId)
+                    : [...prev.selectedElementIds, elementId]
+                  : [elementId]
+                : [],
+            }));
+          }}
+          onToggleLock={toggleLockElement}
+          onToggleHide={toggleHideElement}
+          onDeleteElement={deleteElementById}
+          onReorderElement={reorderSelectedElement}
           onAddElement={addElement}
           onAddElements={addElements}
         />
@@ -159,6 +201,7 @@ export default function App() {
             snapToGrid={project.snapToGrid}
             gridSize={project.gridSize}
             selectedElementIds={project.selectedElementIds}
+            selectedElements={selectedElements}
             artboardRef={artboardRef}
             onPanChange={(panX, panY) => setProject(prev => ({ ...prev, panX, panY }))}
             onScaleChange={scale => setProject(prev => ({ ...prev, scale }))}
@@ -174,7 +217,13 @@ export default function App() {
                   : [],
               }));
             }}
+            onSelectMultipleElements={ids => {
+              setProject(prev => ({ ...prev, selectedElementIds: ids }));
+            }}
             onUpdateElement={updateElement}
+            onUpdateElementLive={updateElementLive}
+            onMoveSelectedLive={moveSelectedElementsLive}
+            onCommitHistory={commitHistory}
           />
 
           {/* Floating Canvas Controls Toolbar (Zoom, Grid, Quick Actions) */}
@@ -195,16 +244,20 @@ export default function App() {
           />
         </main>
 
-        {/* Right Property Inspector with Visual Icon Picker */}
+        {/* Right Property Inspector with Visual Icon Picker & Style Controls */}
         <PropertyInspector
           element={selectedElement}
           activeSlide={activeSlide}
+          selectedCount={project.selectedElementIds.length}
           onUpdateElement={updateElement}
           onUpdateSlide={updateSlideSettings}
           onDelete={deleteSelectedElements}
           onDuplicate={duplicateSelectedElements}
           onReorder={reorderSelectedElement}
           onAlignElement={alignSelectedElement}
+          onDistributeElements={distributeSelectedElements}
+          onToggleLock={toggleLockElement}
+          onToggleHide={toggleHideElement}
         />
 
         {/* Bi-Directional Code Drawer */}

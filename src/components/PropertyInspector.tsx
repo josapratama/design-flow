@@ -17,38 +17,52 @@ import {
   Monitor,
   StickyNote,
   Smile,
-  X,
+  RotateCw,
+  Lock,
+  Unlock,
+  Eye,
+  EyeOff,
+  ArrowLeftRight,
+  ArrowUpDown,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 
 interface PropertyInspectorProps {
   element: DesignElement | null;
   activeSlide: Slide;
+  selectedCount?: number;
   onUpdateElement: (elementId: string, updates: Partial<DesignElement>) => void;
   onUpdateSlide: (slideId: string, updates: Partial<Slide>) => void;
   onDelete: () => void;
   onDuplicate: () => void;
   onReorder: (direction: 'front' | 'back' | 'up' | 'down') => void;
   onAlignElement: (alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
+  onDistributeElements?: (direction: 'horizontal' | 'vertical') => void;
+  onToggleLock?: (elementId: string) => void;
+  onToggleHide?: (elementId: string) => void;
 }
 
 export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   element,
   activeSlide,
+  selectedCount = 0,
   onUpdateElement,
   onUpdateSlide,
   onDelete,
   onDuplicate,
   onReorder,
   onAlignElement,
+  onDistributeElements,
+  onToggleLock,
+  onToggleHide,
 }) => {
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [iconFilter, setIconFilter] = useState('');
 
   const popularIconNames = [
-    'Star', 'Heart', 'Shield', 'Check', 'User', 'Search', 'Settings', 'Home', 
-    'ArrowRight', 'Zap', 'Download', 'Compass', 'Laptop', 'Mail', 'Phone', 
-    'Calendar', 'Clock', 'Lock', 'Sparkles', 'Folder', 'FileText', 'BarChart3', 
+    'Star', 'Heart', 'Shield', 'Check', 'User', 'Search', 'Settings', 'Home',
+    'ArrowRight', 'Zap', 'Download', 'Compass', 'Laptop', 'Mail', 'Phone',
+    'Calendar', 'Clock', 'Lock', 'Sparkles', 'Folder', 'FileText', 'BarChart3',
     'Smartphone', 'CreditCard', 'Camera', 'Bell', 'Tag', 'Bookmark', 'Globe', 'HelpCircle'
   ];
 
@@ -194,12 +208,44 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
   return (
     <aside className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 select-none z-10">
-      {/* Header */}
+      {/* Header with Title and Quick Action Buttons */}
       <div className="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
-        <span className="text-xs font-bold text-slate-200 truncate capitalize">
-          {element.name || element.type}
-        </span>
+        <div className="flex items-center gap-2 truncate">
+          <span className="text-xs font-bold text-slate-200 truncate capitalize">
+            {element.name || element.type}
+          </span>
+          {selectedCount > 1 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">
+              +{selectedCount - 1} lainnya
+            </span>
+          )}
+        </div>
+
         <div className="flex items-center gap-1">
+          {/* Lock / Unlock */}
+          {onToggleLock && (
+            <button
+              onClick={() => onToggleLock(element.id)}
+              title={element.locked ? 'Buka Kunci' : 'Kunci Elemen'}
+              className={`p-1.5 rounded-lg transition-colors ${
+                element.locked ? 'bg-amber-500/20 text-amber-400' : 'hover:bg-slate-800 text-slate-400'
+              }`}
+            >
+              {element.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+            </button>
+          )}
+
+          {/* Hide / Show */}
+          {onToggleHide && (
+            <button
+              onClick={() => onToggleHide(element.id)}
+              title={element.hidden ? 'Tampilkan' : 'Sembunyikan'}
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
+            >
+              {element.hidden ? <EyeOff className="w-3.5 h-3.5 text-slate-500" /> : <Eye className="w-3.5 h-3.5 text-emerald-400" />}
+            </button>
+          )}
+
           <button
             onClick={onDuplicate}
             title="Duplikat Elemen (Ctrl+D)"
@@ -269,10 +315,35 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
           </div>
         </div>
 
-        {/* Posisi & Dimensi */}
+        {/* Distribusi Jarak (Smart Spacing) saat 3+ elemen terpilih */}
+        {selectedCount >= 3 && onDistributeElements && (
+          <div className="space-y-2">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Distribusi Spasi Merata
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => onDistributeElements('horizontal')}
+                className="p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-center gap-1.5 text-slate-300 hover:text-white"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Rata Horizontal</span>
+              </button>
+              <button
+                onClick={() => onDistributeElements('vertical')}
+                className="p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-center gap-1.5 text-slate-300 hover:text-white"
+              >
+                <ArrowUpDown className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Rata Vertikal</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Posisi, Dimensi & Rotasi */}
         <div className="space-y-2">
           <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            Ukuran & Posisi
+            Ukuran, Posisi & Rotasi
           </span>
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -310,6 +381,41 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 onChange={e => handleChange('height', Math.max(10, Number(e.target.value)))}
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
               />
+            </div>
+          </div>
+
+          {/* Kontrol Rotasi Derajat */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-slate-500 flex items-center gap-1">
+                <RotateCw className="w-3 h-3 text-indigo-400" />
+                <span>Rotasi Putar (Derajat)</span>
+              </label>
+              <span className="font-mono text-indigo-400 text-[11px]">
+                {element.rotation || 0}°
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="0"
+                max="360"
+                step="5"
+                value={element.rotation || 0}
+                onChange={e => handleChange('rotation', Number(e.target.value))}
+                className="flex-1 accent-indigo-500 cursor-pointer"
+              />
+              <div className="flex gap-1">
+                {[0, 90, 180, 270].map(deg => (
+                  <button
+                    key={deg}
+                    onClick={() => handleChange('rotation', deg)}
+                    className="px-1.5 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-[9px] text-slate-400 hover:text-white"
+                  >
+                    {deg}°
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -413,9 +519,12 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         {(element.content !== undefined ||
           ['heading', 'text', 'button', 'card'].includes(element.type)) && (
           <div className="space-y-2">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Konten Teks
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Konten Teks
+              </span>
+              <span className="text-[10px] text-slate-500">(Double-click di kanvas untuk edit cepat)</span>
+            </div>
             <textarea
               rows={3}
               value={element.content || ''}
@@ -462,9 +571,9 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         )}
 
         {/* Warna & Gaya Visual */}
-        <div className="space-y-2">
+        <div className="space-y-3">
           <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            Warna & Tampilan
+            Warna & Tampilan Visual
           </span>
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -498,27 +607,62 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Sudut (Radius)</label>
-              <input
-                type="number"
-                value={element.borderRadius || 0}
-                onChange={e => handleChange('borderRadius', Number(e.target.value))}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
-              />
+          {/* Opasitas Slider */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-slate-400">
+              <span>Opasitas (Transparansi)</span>
+              <span className="font-mono text-indigo-400">
+                {Math.round((element.opacity !== undefined ? element.opacity : 1) * 100)}%
+              </span>
             </div>
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Transparansi (Opacity)</label>
-              <input
-                type="number"
-                step="0.1"
-                min="0"
-                max="1"
-                value={element.opacity !== undefined ? element.opacity : 1}
-                onChange={e => handleChange('opacity', Number(e.target.value))}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
-              />
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={element.opacity !== undefined ? element.opacity : 1}
+              onChange={e => handleChange('opacity', Number(e.target.value))}
+              className="w-full accent-indigo-500 cursor-pointer"
+            />
+          </div>
+
+          {/* Sudut Lengkung (Border Radius) */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-slate-500 block">Sudut Lengkung (Border Radius)</label>
+            <div className="flex items-center gap-1">
+              {[0, 6, 12, 20, 9999].map(r => (
+                <button
+                  key={r}
+                  onClick={() => handleChange('borderRadius', r)}
+                  className={`flex-1 py-1 rounded text-[10px] font-mono border transition-colors ${
+                    (element.borderRadius || 0) === r
+                      ? 'bg-indigo-600 border-indigo-500 text-white'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {r === 9999 ? 'Pill' : `${r}px`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Efek Bayangan (Shadow) */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-slate-500 block">Efek Bayangan (Shadow)</label>
+            <div className="grid grid-cols-4 gap-1">
+              {['none', 'sm', 'md', 'lg', 'xl', '2xl'].map(s => (
+                <button
+                  key={s}
+                  onClick={() => handleChange('shadow', s)}
+                  className={`py-1 rounded text-[10px] uppercase font-semibold border transition-colors ${
+                    (element.shadow || 'none') === s
+                      ? 'bg-indigo-600 border-indigo-500 text-white'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
             </div>
           </div>
         </div>

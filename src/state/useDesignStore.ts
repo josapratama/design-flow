@@ -24,9 +24,12 @@ export function useDesignStore() {
   const pastRef = useRef<Slide[][]>([]);
   const futureRef = useRef<Slide[][]>([]);
 
+  // Internal Clipboard for Cross-Slide Copy & Paste
+  const clipboardRef = useRef<DesignElement[]>([]);
+
   const pushHistory = useCallback((currentSlides: Slide[]) => {
     pastRef.current.push(JSON.parse(JSON.stringify(currentSlides)));
-    if (pastRef.current.length > 30) pastRef.current.shift();
+    if (pastRef.current.length > 35) pastRef.current.shift();
     futureRef.current = [];
   }, []);
 
@@ -92,12 +95,52 @@ export function useDesignStore() {
     setProject(prev => ({ ...prev, selectedElementIds: elements.map(e => e.id) }));
   }, [updateActiveSlide]);
 
+  // Update element with history tracking
   const updateElement = useCallback((elementId: string, updates: Partial<DesignElement>) => {
     updateActiveSlide(slide => ({
       ...slide,
       elements: slide.elements.map(el => (el.id === elementId ? { ...el, ...updates } : el)),
     }));
   }, [updateActiveSlide]);
+
+  // Live update without pushing to history (used while dragging, rotating, resizing)
+  const updateElementLive = useCallback((elementId: string, updates: Partial<DesignElement>) => {
+    setProject(prev => {
+      const newSlides = prev.slides.map(s => {
+        if (s.id !== prev.activeSlideId) return s;
+        return {
+          ...s,
+          elements: s.elements.map(el => (el.id === elementId ? { ...el, ...updates } : el)),
+        };
+      });
+      return { ...prev, slides: newSlides };
+    });
+  }, []);
+
+  // Move multiple selected elements simultaneously during drag
+  const moveSelectedElementsLive = useCallback((deltaX: number, deltaY: number, basePositions: Map<string, { x: number; y: number }>) => {
+    setProject(prev => {
+      const newSlides = prev.slides.map(s => {
+        if (s.id !== prev.activeSlideId) return s;
+        return {
+          ...s,
+          elements: s.elements.map(el => {
+            const base = basePositions.get(el.id);
+            if (base) {
+              return { ...el, x: base.x + deltaX, y: base.y + deltaY };
+            }
+            return el;
+          }),
+        };
+      });
+      return { ...prev, slides: newSlides };
+    });
+  }, []);
+
+  // Explicit history snapshot commit when mouse interaction finishes
+  const commitHistory = useCallback(() => {
+    pushHistory(project.slides);
+  }, [project.slides, pushHistory]);
 
   const deleteSelectedElements = useCallback(() => {
     if (project.selectedElementIds.length === 0) return;
@@ -108,8 +151,33 @@ export function useDesignStore() {
     setProject(prev => ({ ...prev, selectedElementIds: [] }));
   }, [project.selectedElementIds, updateActiveSlide]);
 
+  const deleteElementById = useCallback((elementId: string) => {
+    updateActiveSlide(slide => ({
+      ...slide,
+      elements: slide.elements.filter(el => el.id !== elementId),
+    }));
+    setProject(prev => ({
+      ...prev,
+      selectedElementIds: prev.selectedElementIds.filter(id => id !== elementId),
+    }));
+  }, [updateActiveSlide]);
+
+  const toggleLockElement = useCallback((elementId: string) => {
+    updateActiveSlide(slide => ({
+      ...slide,
+      elements: slide.elements.map(el => (el.id === elementId ? { ...el, locked: !el.locked } : el)),
+    }));
+  }, [updateActiveSlide]);
+
+  const toggleHideElement = useCallback((elementId: string) => {
+    updateActiveSlide(slide => ({
+      ...slide,
+      elements: slide.elements.map(el => (el.id === elementId ? { ...el, hidden: !el.hidden } : el)),
+    }));
+  }, [updateActiveSlide]);
+
   const duplicateSelectedElements = useCallback(() => {
-    if (project.selectedElementIds.length === 0) return;
+    if (project.selectedElementIds.length === 0 || !activeSlide) return;
     const duplicated: DesignElement[] = [];
     const newSelectedIds: string[] = [];
 
@@ -135,6 +203,39 @@ export function useDesignStore() {
     }));
     setProject(prev => ({ ...prev, selectedElementIds: newSelectedIds }));
   }, [activeSlide, project.selectedElementIds, updateActiveSlide]);
+
+  // Copy elements to clipboard (supports cross-slide paste)
+  const copySelectedElements = useCallback(() => {
+    if (project.selectedElementIds.length === 0 || !activeSlide) return;
+    const targets = activeSlide.elements.filter(el => project.selectedElementIds.includes(el.id));
+    clipboardRef.current = JSON.parse(JSON.stringify(targets));
+  }, [activeSlide, project.selectedElementIds]);
+
+  // Paste elements from clipboard onto the active slide
+  const pasteElements = useCallback(() => {
+    if (clipboardRef.current.length === 0 || !activeSlide) return;
+    const newElements: DesignElement[] = [];
+    const newSelectedIds: string[] = [];
+
+    clipboardRef.current.forEach((el, idx) => {
+      const newId = `el_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const clone: DesignElement = {
+        ...JSON.parse(JSON.stringify(el)),
+        id: newId,
+        x: el.x + 25,
+        y: el.y + 25,
+        zIndex: activeSlide.elements.length + idx + 1,
+      };
+      newElements.push(clone);
+      newSelectedIds.push(newId);
+    });
+
+    // Offset clipboard items so repeated pastes cascade down
+    clipboardRef.current = clipboardRef.current.map(el => ({ ...el, x: el.x + 20, y: el.y + 20 }));
+
+    addElements(newElements);
+    setProject(prev => ({ ...prev, selectedElementIds: newSelectedIds }));
+  }, [activeSlide, addElements]);
 
   const nudgeSelectedElements = useCallback((deltaX: number, deltaY: number) => {
     if (project.selectedElementIds.length === 0) return;
@@ -183,6 +284,71 @@ export function useDesignStore() {
     },
     [activeSlide, project.selectedElementIds, updateElement]
   );
+
+  // Distribute spacing evenly horizontally or vertically (for 3+ elements)
+  const distributeSelectedElements = useCallback((direction: 'horizontal' | 'vertical') => {
+    if (project.selectedElementIds.length < 3 || !activeSlide) return;
+    const selected = activeSlide.elements
+      .filter(el => project.selectedElementIds.includes(el.id));
+
+    if (selected.length < 3) return;
+
+    if (direction === 'horizontal') {
+      selected.sort((a, b) => a.x - b.x);
+      const minX = selected[0].x;
+      const lastEl = selected[selected.length - 1];
+      const maxX = lastEl.x + lastEl.width;
+      const totalWidths = selected.reduce((sum, el) => sum + el.width, 0);
+      const totalSpacing = maxX - minX - totalWidths;
+      const gap = totalSpacing / (selected.length - 1);
+
+      let currentX = minX;
+      updateActiveSlide(slide => {
+        const posMap = new Map<string, number>();
+        selected.forEach(el => {
+          posMap.set(el.id, Math.round(currentX));
+          currentX += el.width + gap;
+        });
+
+        return {
+          ...slide,
+          elements: slide.elements.map(el => {
+            if (posMap.has(el.id)) {
+              return { ...el, x: posMap.get(el.id)! };
+            }
+            return el;
+          }),
+        };
+      });
+    } else {
+      selected.sort((a, b) => a.y - b.y);
+      const minY = selected[0].y;
+      const lastEl = selected[selected.length - 1];
+      const maxY = lastEl.y + lastEl.height;
+      const totalHeights = selected.reduce((sum, el) => sum + el.height, 0);
+      const totalSpacing = maxY - minY - totalHeights;
+      const gap = totalSpacing / (selected.length - 1);
+
+      let currentY = minY;
+      updateActiveSlide(slide => {
+        const posMap = new Map<string, number>();
+        selected.forEach(el => {
+          posMap.set(el.id, Math.round(currentY));
+          currentY += el.height + gap;
+        });
+
+        return {
+          ...slide,
+          elements: slide.elements.map(el => {
+            if (posMap.has(el.id)) {
+              return { ...el, y: posMap.get(el.id)! };
+            }
+            return el;
+          }),
+        };
+      });
+    }
+  }, [activeSlide, project.selectedElementIds, updateActiveSlide]);
 
   const reorderSelectedElement = useCallback((direction: 'front' | 'back' | 'up' | 'down') => {
     if (project.selectedElementIds.length === 0) return;
@@ -354,11 +520,20 @@ export function useDesignStore() {
     addElement,
     addElements,
     updateElement,
+    updateElementLive,
+    moveSelectedElementsLive,
+    commitHistory,
     updateSlideSettings,
     deleteSelectedElements,
+    deleteElementById,
+    toggleLockElement,
+    toggleHideElement,
     duplicateSelectedElements,
+    copySelectedElements,
+    pasteElements,
     nudgeSelectedElements,
     alignSelectedElement,
+    distributeSelectedElements,
     reorderSelectedElement,
     addSlide,
     duplicateSlide,

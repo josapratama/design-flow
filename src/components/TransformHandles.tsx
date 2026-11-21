@@ -6,7 +6,10 @@ interface TransformHandlesProps {
   scale: number;
   snapToGrid?: boolean;
   gridSize?: number;
-  onUpdate: (updates: Partial<DesignElement>) => void;
+  selectedElements: DesignElement[];
+  onUpdateLive: (updates: Partial<DesignElement>) => void;
+  onMoveSelectedLive: (deltaX: number, deltaY: number, basePositions: Map<string, { x: number; y: number }>) => void;
+  onCommitHistory: () => void;
 }
 
 export const TransformHandles: React.FC<TransformHandlesProps> = ({
@@ -14,16 +17,20 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
   scale,
   snapToGrid = true,
   gridSize = 20,
-  onUpdate,
+  selectedElements,
+  onUpdateLive,
+  onMoveSelectedLive,
+  onCommitHistory,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
 
   const applySnap = (val: number): number => {
     if (!snapToGrid) return Math.round(val);
     return Math.round(val / gridSize) * gridSize;
   };
 
-  // Resize handler
+  // 1. Resize handler
   const handleResizePointerDown = (
     e: React.PointerEvent,
     direction: 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
@@ -64,25 +71,31 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         }
       }
 
-      onUpdate({ width: newWidth, height: newHeight, x: newX, y: newY });
+      onUpdateLive({ width: newWidth, height: newHeight, x: newX, y: newY });
     };
 
     const handlePointerUp = () => {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
+      onCommitHistory();
     };
 
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
   };
 
-  // Drag element position
+  // 2. Drag element position (moves ALL selected elements together)
   const handleDragPointerDown = (e: React.PointerEvent) => {
+    if (isRotating) return;
     e.stopPropagation();
     const startX = e.clientX;
     const startY = e.clientY;
-    const initialX = element.x;
-    const initialY = element.y;
+
+    // Snapshot current positions of all selected elements
+    const basePositions = new Map<string, { x: number; y: number }>();
+    selectedElements.forEach(el => {
+      basePositions.set(el.id, { x: el.x, y: el.y });
+    });
 
     setIsDragging(true);
 
@@ -90,16 +103,56 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
       const deltaX = (moveEvent.clientX - startX) / scale;
       const deltaY = (moveEvent.clientY - startY) / scale;
 
-      onUpdate({
-        x: applySnap(initialX + deltaX),
-        y: applySnap(initialY + deltaY),
-      });
+      const snappedDeltaX = applySnap(deltaX);
+      const snappedDeltaY = applySnap(deltaY);
+
+      onMoveSelectedLive(snappedDeltaX, snappedDeltaY, basePositions);
     };
 
     const handlePointerUp = () => {
       setIsDragging(false);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
+      onCommitHistory();
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+  };
+
+  // 3. Rotation handle
+  const handleRotatePointerDown = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setIsRotating(true);
+
+    // Get the element's bounding box on the screen to find its center
+    const target = (e.currentTarget.parentElement as HTMLElement);
+    const rect = target.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const mouseX = moveEvent.clientX;
+      const mouseY = moveEvent.clientY;
+
+      const rad = Math.atan2(mouseY - centerY, mouseX - centerX);
+      let deg = Math.round((rad * 180) / Math.PI + 90); // 0 deg is pointing straight up
+      if (deg < 0) deg += 360;
+
+      // Snap to 15 degrees if Shift is held
+      if (moveEvent.shiftKey) {
+        deg = Math.round(deg / 15) * 15;
+      }
+
+      onUpdateLive({ rotation: deg % 360 });
+    };
+
+    const handlePointerUp = () => {
+      setIsRotating(false);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      onCommitHistory();
     };
 
     window.addEventListener('pointermove', handlePointerMove);
@@ -117,13 +170,27 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
 
   return (
     <div
-      className="absolute inset-0 pointer-events-auto border-2 border-indigo-500 rounded-[2px]"
+      className="transform-handles absolute inset-0 pointer-events-auto border-2 border-indigo-500 rounded-[2px]"
+      data-export-ignore="true"
       style={{
         outline: '1px solid rgba(99, 102, 241, 0.4)',
         cursor: isDragging ? 'grabbing' : 'grab',
       }}
       onPointerDown={handleDragPointerDown}
     >
+      {/* Rotation Stalk and Handle */}
+      <div
+        className="absolute left-1/2 -top-6 -translate-x-1/2 flex flex-col items-center pointer-events-auto"
+        data-export-ignore="true"
+      >
+        <div
+          className="w-3.5 h-3.5 bg-white border-2 border-indigo-600 rounded-full shadow-md cursor-crosshair hover:scale-125 transition-transform"
+          title="Putar Elemen (Tahan Shift untuk 15°)"
+          onPointerDown={handleRotatePointerDown}
+        />
+        <div className="w-[1.5px] h-2.5 bg-indigo-500 pointer-events-none" />
+      </div>
+
       {/* 8 Resize Handles */}
       <div
         className="absolute bg-white border-2 border-indigo-600 rounded-sm shadow-md"
@@ -166,11 +233,11 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         onPointerDown={e => handleResizePointerDown(e, 'w')}
       />
 
-      {/* Floating Coordinates Tag */}
+      {/* Floating Coordinates & Rotation Tag */}
       <div
         className="absolute -top-7 left-0 px-1.5 py-0.5 bg-indigo-600 text-[10px] font-mono text-white rounded shadow pointer-events-none whitespace-nowrap"
       >
-        {element.width} × {element.height} px
+        {element.width} × {element.height} px {element.rotation ? `(${element.rotation}°)` : ''}
       </div>
     </div>
   );

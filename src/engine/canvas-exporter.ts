@@ -2,6 +2,16 @@ import { toPng, toJpeg, toSvg } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { DesignProject } from '../types';
 
+const exportFilter = (node: HTMLElement) => {
+  if (node.classList && (node.classList.contains('transform-handles') || node.classList.contains('export-ignore'))) {
+    return false;
+  }
+  if (node.getAttribute && node.getAttribute('data-export-ignore') === 'true') {
+    return false;
+  }
+  return true;
+};
+
 /**
  * Exports the active HTML artboard node as PNG or JPEG image.
  */
@@ -15,6 +25,7 @@ export async function exportArtboardToImage(
   const options = {
     quality: 0.98,
     pixelRatio: 2, // 2x high resolution
+    filter: exportFilter,
   };
 
   if (format === 'png') {
@@ -54,7 +65,7 @@ export async function exportProjectToPDF(
     const el = artboardElementsMap.get(slide.id);
 
     if (el) {
-      const imgData = await toPng(el, { quality: 0.95, pixelRatio: 1.5 });
+      const imgData = await toPng(el, { quality: 0.95, pixelRatio: 1.5, filter: exportFilter });
       if (i > 0) {
         pdf.addPage([slide.width, slide.height], slide.width > slide.height ? 'landscape' : 'portrait');
       }
