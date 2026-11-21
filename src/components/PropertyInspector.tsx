@@ -1,5 +1,5 @@
 import React from 'react';
-import { DesignElement } from '../types';
+import { DesignElement, PRESET_SIZES, Slide } from '../types';
 import {
   Trash2,
   Copy,
@@ -10,39 +10,171 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  AlignStartVertical,
+  AlignCenterVertical,
+  AlignEndVertical,
+  AlignHorizontalDistributeCenter,
+  Layers,
+  Palette,
+  Monitor,
+  StickyNote,
 } from 'lucide-react';
 
 interface PropertyInspectorProps {
   element: DesignElement | null;
-  onUpdate: (elementId: string, updates: Partial<DesignElement>) => void;
+  activeSlide: Slide;
+  onUpdateElement: (elementId: string, updates: Partial<DesignElement>) => void;
+  onUpdateSlide: (slideId: string, updates: Partial<Slide>) => void;
   onDelete: () => void;
   onDuplicate: () => void;
   onReorder: (direction: 'front' | 'back' | 'up' | 'down') => void;
+  onAlignElement: (alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
 }
 
 export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   element,
-  onUpdate,
+  activeSlide,
+  onUpdateElement,
+  onUpdateSlide,
   onDelete,
   onDuplicate,
   onReorder,
+  onAlignElement,
 }) => {
+  // 1. IF NO ELEMENT IS SELECTED: SHOW CANVAS & SLIDE SETTINGS
   if (!element) {
+    const bgSwatches = [
+      { name: 'Dark Slate', color: '#090d16' },
+      { name: 'Navy Indigo', color: '#0f172a' },
+      { name: 'Cyberpunk', color: '#0e0b1f' },
+      { name: 'Deep Emerald', color: '#041d15' },
+      { name: 'Warm Crimson', color: '#1a0d15' },
+      { name: 'Pure Black', color: '#000000' },
+      { name: 'Minimal White', color: '#ffffff' },
+      { name: 'Soft Gray', color: '#f8fafc' },
+    ];
+
     return (
-      <aside className="w-72 h-full bg-slate-900 border-l border-slate-800 p-6 flex flex-col items-center justify-center text-center text-slate-500 select-none shrink-0">
-        <div className="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center mb-3 text-slate-400">
-          ⚙️
+      <aside className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 select-none z-10">
+        <div className="p-3 border-b border-slate-800 flex items-center gap-2 bg-slate-950/40">
+          <Monitor className="w-4 h-4 text-indigo-400" />
+          <span className="text-xs font-bold text-slate-100">Pengaturan Slide / Kanvas</span>
         </div>
-        <p className="text-xs font-medium text-slate-400">Tidak ada elemen yang dipilih</p>
-        <p className="text-[11px] text-slate-500 mt-1">
-          Klik elemen di kanvas atau pilih dari palette di sebelah kiri.
-        </p>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs text-slate-300">
+          {/* Judul Slide */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-slate-500 uppercase font-semibold">Nama / Judul Slide</label>
+            <input
+              type="text"
+              value={activeSlide.title}
+              onChange={e => onUpdateSlide(activeSlide.id, { title: e.target.value })}
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs font-medium"
+            />
+          </div>
+
+          {/* Preset Ukuran Artboard */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-slate-500 uppercase font-semibold">Ukuran Preset Artboard</label>
+            <select
+              value={activeSlide.presetName}
+              onChange={e => {
+                const preset = PRESET_SIZES.find(p => p.name === e.target.value);
+                if (preset) {
+                  onUpdateSlide(activeSlide.id, {
+                    presetName: preset.name,
+                    width: preset.width,
+                    height: preset.height,
+                  });
+                }
+              }}
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+            >
+              {PRESET_SIZES.map(p => (
+                <option key={p.name} value={p.name}>
+                  {p.name} ({p.width}×{p.height})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Dimensi Custom */}
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Lebar (W)</label>
+              <input
+                type="number"
+                value={activeSlide.width}
+                onChange={e => onUpdateSlide(activeSlide.id, { width: Math.max(100, Number(e.target.value)) })}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Tinggi (H)</label>
+              <input
+                type="number"
+                value={activeSlide.height}
+                onChange={e => onUpdateSlide(activeSlide.id, { height: Math.max(100, Number(e.target.value)) })}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Warna Latar Belakang */}
+          <div className="space-y-2 pt-2 border-t border-slate-800">
+            <span className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1.5">
+              <Palette className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Warna Latar (Background)</span>
+            </span>
+
+            <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
+              <input
+                type="color"
+                value={activeSlide.background.startsWith('#') ? activeSlide.background : '#090d16'}
+                onChange={e => onUpdateSlide(activeSlide.id, { background: e.target.value })}
+                className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent"
+              />
+              <span className="text-xs font-mono text-slate-300 flex-1 truncate">
+                {activeSlide.background}
+              </span>
+            </div>
+
+            {/* Quick Palette Swatches */}
+            <div className="grid grid-cols-4 gap-1.5 pt-1">
+              {bgSwatches.map(swatch => (
+                <button
+                  key={swatch.color}
+                  onClick={() => onUpdateSlide(activeSlide.id, { background: swatch.color })}
+                  title={swatch.name}
+                  className="h-7 rounded-md border border-slate-700 hover:scale-105 transition-transform"
+                  style={{ backgroundColor: swatch.color }}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Catatan Pembicara (Speaker Notes) */}
+          <div className="space-y-1.5 pt-2 border-t border-slate-800">
+            <span className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1.5">
+              <StickyNote className="w-3.5 h-3.5 text-amber-400" />
+              <span>Catatan Pembicara (Notes)</span>
+            </span>
+            <textarea
+              rows={4}
+              value={activeSlide.notes || ''}
+              onChange={e => onUpdateSlide(activeSlide.id, { notes: e.target.value })}
+              placeholder="Catatan teks yang akan muncul pada Mode Presentasi / Slideshow..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200 outline-none focus:border-indigo-500 text-xs leading-relaxed"
+            />
+          </div>
+        </div>
       </aside>
     );
   }
 
+  // 2. IF AN ELEMENT IS SELECTED: SHOW ELEMENT PROPERTIES
   const handleChange = (field: keyof DesignElement, val: any) => {
-    onUpdate(element.id, { [field]: val });
+    onUpdateElement(element.id, { [field]: val });
   };
 
   return (
@@ -55,14 +187,14 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         <div className="flex items-center gap-1">
           <button
             onClick={onDuplicate}
-            title="Duplikat Elemen"
+            title="Duplikat Elemen (Ctrl+D)"
             className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
           >
             <Copy className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={onDelete}
-            title="Hapus Elemen"
+            title="Hapus Elemen (Delete)"
             className="p-1.5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-lg transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -71,9 +203,60 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs text-slate-300">
+        {/* Bilah Perataan Cepat (Smart Alignment Tools) */}
+        <div className="space-y-2">
+          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            Perataan ke Kanvas (Align)
+          </span>
+          <div className="grid grid-cols-6 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+            <button
+              onClick={() => onAlignElement('left')}
+              title="Rata Kiri"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignLeft className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onAlignElement('center')}
+              title="Rata Tengah Horizontal"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignCenter className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onAlignElement('right')}
+              title="Rata Kanan"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onAlignElement('top')}
+              title="Rata Atas"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignStartVertical className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onAlignElement('middle')}
+              title="Rata Tengah Vertikal"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignCenterVertical className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onAlignElement('bottom')}
+              title="Rata Bawah"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignEndVertical className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
         {/* Posisi & Dimensi */}
         <div className="space-y-2">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
             Ukuran & Posisi
           </span>
           <div className="grid grid-cols-2 gap-2">
@@ -116,11 +299,27 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
           </div>
         </div>
 
+        {/* URL Gambar (Jika tipe image) */}
+        {element.type === 'image' && (
+          <div className="space-y-2">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Sumber Gambar
+            </span>
+            <input
+              type="text"
+              value={element.imageUrl || ''}
+              onChange={e => handleChange('imageUrl', e.target.value)}
+              placeholder="https://... atau data:image/..."
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 outline-none focus:border-indigo-500 text-xs font-mono truncate"
+            />
+          </div>
+        )}
+
         {/* Konten Teks */}
         {(element.content !== undefined ||
           ['heading', 'text', 'button', 'card'].includes(element.type)) && (
           <div className="space-y-2">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
               Konten Teks
             </span>
             <textarea
@@ -137,7 +336,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         {(element.fontSize !== undefined ||
           ['heading', 'text', 'button'].includes(element.type)) && (
           <div className="space-y-2">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
               Tipografi
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -165,42 +364,12 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 </select>
               </div>
             </div>
-
-            {/* Alignment */}
-            <div className="flex border border-slate-800 rounded-lg p-1 gap-1 bg-slate-950">
-              <button
-                onClick={() => handleChange('textAlign', 'left')}
-                className={`flex-1 py-1 rounded flex justify-center ${
-                  element.textAlign === 'left' || !element.textAlign
-                    ? 'bg-indigo-600 text-white'
-                    : 'text-slate-400'
-                }`}
-              >
-                <AlignLeft className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleChange('textAlign', 'center')}
-                className={`flex-1 py-1 rounded flex justify-center ${
-                  element.textAlign === 'center' ? 'bg-indigo-600 text-white' : 'text-slate-400'
-                }`}
-              >
-                <AlignCenter className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleChange('textAlign', 'right')}
-                className={`flex-1 py-1 rounded flex justify-center ${
-                  element.textAlign === 'right' ? 'bg-indigo-600 text-white' : 'text-slate-400'
-                }`}
-              >
-                <AlignRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
           </div>
         )}
 
         {/* Warna & Gaya Visual */}
         <div className="space-y-2">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
             Warna & Tampilan
           </span>
           <div className="grid grid-cols-2 gap-2">
@@ -262,7 +431,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
         {/* Susunan Layer */}
         <div className="space-y-2 pt-2 border-t border-slate-800">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
             Urutan Layer (Z-Index)
           </span>
           <div className="grid grid-cols-4 gap-1">

@@ -68,6 +68,14 @@ export function useDesignStore() {
     });
   }, [pushHistory]);
 
+  const updateSlideSettings = useCallback((slideId: string, updates: Partial<Slide>) => {
+    setProject(prev => {
+      pushHistory(prev.slides);
+      const newSlides = prev.slides.map(s => (s.id === slideId ? { ...s, ...updates } : s));
+      return { ...prev, slides: newSlides };
+    });
+  }, [pushHistory]);
+
   const addElement = useCallback((element: DesignElement) => {
     updateActiveSlide(slide => ({
       ...slide,
@@ -119,6 +127,54 @@ export function useDesignStore() {
     }));
     setProject(prev => ({ ...prev, selectedElementIds: newSelectedIds }));
   }, [activeSlide, project.selectedElementIds, updateActiveSlide]);
+
+  const nudgeSelectedElements = useCallback((deltaX: number, deltaY: number) => {
+    if (project.selectedElementIds.length === 0) return;
+    updateActiveSlide(slide => ({
+      ...slide,
+      elements: slide.elements.map(el =>
+        project.selectedElementIds.includes(el.id)
+          ? { ...el, x: el.x + deltaX, y: el.y + deltaY }
+          : el
+      ),
+    }));
+  }, [project.selectedElementIds, updateActiveSlide]);
+
+  const alignSelectedElement = useCallback(
+    (alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => {
+      if (project.selectedElementIds.length === 0 || !activeSlide) return;
+      const targetId = project.selectedElementIds[0];
+      const targetEl = activeSlide.elements.find(el => el.id === targetId);
+      if (!targetEl) return;
+
+      let newX = targetEl.x;
+      let newY = targetEl.y;
+
+      switch (alignment) {
+        case 'left':
+          newX = 0;
+          break;
+        case 'center':
+          newX = Math.round((activeSlide.width - targetEl.width) / 2);
+          break;
+        case 'right':
+          newX = activeSlide.width - targetEl.width;
+          break;
+        case 'top':
+          newY = 0;
+          break;
+        case 'middle':
+          newY = Math.round((activeSlide.height - targetEl.height) / 2);
+          break;
+        case 'bottom':
+          newY = activeSlide.height - targetEl.height;
+          break;
+      }
+
+      updateElement(targetId, { x: newX, y: newY });
+    },
+    [activeSlide, project.selectedElementIds, updateElement]
+  );
 
   const reorderSelectedElement = useCallback((direction: 'front' | 'back' | 'up' | 'down') => {
     if (project.selectedElementIds.length === 0) return;
@@ -240,8 +296,11 @@ export function useDesignStore() {
     canRedo: futureRef.current.length > 0,
     addElement,
     updateElement,
+    updateSlideSettings,
     deleteSelectedElements,
     duplicateSelectedElements,
+    nudgeSelectedElements,
+    alignSelectedElement,
     reorderSelectedElement,
     addSlide,
     duplicateSlide,

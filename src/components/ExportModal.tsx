@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { DesignProject, Slide } from '../types';
 import { exportToPowerPoint } from '../engine/pptx-exporter';
-import { exportArtboardToImage, exportProjectToPDF } from '../engine/canvas-exporter';
+import { exportArtboardToImage } from '../engine/canvas-exporter';
 import { exportToReactTailwind } from '../engine/tailwind-exporter';
 import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { toPng } from 'html-to-image';
+import jsPDF from 'jspdf';
+import { ElementRenderer } from './ElementRenderer';
 
 interface ExportModalProps {
   project: DesignProject;
@@ -22,11 +25,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [activeTab, setActiveTab] = useState<'pptx' | 'image' | 'pdf' | 'code'>('pptx');
   const [isExporting, setIsExporting] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const [exportProgress, setExportProgress] = useState<string>('');
 
   const tailwindCode = exportToReactTailwind(activeSlide);
 
   const handleExportPPTX = async () => {
     setIsExporting(true);
+    setExportProgress('Menyusun struktur slide dan shape...');
     try {
       await exportToPowerPoint(project);
       confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
@@ -34,12 +39,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       alert('Gagal mengekspor ke PowerPoint: ' + err.message);
     } finally {
       setIsExporting(false);
+      setExportProgress('');
     }
   };
 
   const handleExportImage = async (format: 'png' | 'jpeg' | 'svg') => {
     if (!artboardRef.current) return;
     setIsExporting(true);
+    setExportProgress(`Mengambil tangkapan kanvas (${format.toUpperCase()})...`);
     try {
       await exportArtboardToImage(artboardRef.current, format, activeSlide.title.toLowerCase().replace(/\s+/g, '_'));
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
@@ -47,21 +54,44 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       alert('Gagal mengekspor gambar: ' + err.message);
     } finally {
       setIsExporting(false);
+      setExportProgress('');
     }
   };
 
+  // Multi-Slide PDF Exporter (renders every slide offscreen)
   const handleExportPDF = async () => {
-    if (!artboardRef.current) return;
     setIsExporting(true);
     try {
-      const map = new Map<string, HTMLElement>();
-      map.set(activeSlide.id, artboardRef.current);
-      await exportProjectToPDF(project, map);
+      const firstSlide = project.slides[0];
+      const orientation = firstSlide.width > firstSlide.height ? 'landscape' : 'portrait';
+
+      const pdf = new jsPDF({
+        orientation,
+        unit: 'px',
+        format: [firstSlide.width, firstSlide.height],
+      });
+
+      for (let i = 0; i < project.slides.length; i++) {
+        setExportProgress(`Merender Slide ${i + 1} dari ${project.slides.length} ke PDF...`);
+        const targetElement = document.getElementById(`export-slide-offscreen-${i}`);
+        if (targetElement) {
+          const imgData = await toPng(targetElement, { quality: 0.95, pixelRatio: 1.5 });
+          if (i > 0) {
+            const slide = project.slides[i];
+            pdf.addPage([slide.width, slide.height], slide.width > slide.height ? 'landscape' : 'portrait');
+          }
+          pdf.addImage(imgData, 'PNG', 0, 0, project.slides[i].width, project.slides[i].height);
+        }
+      }
+
+      const fileName = `${project.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.pdf`;
+      pdf.save(fileName);
       confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
     } catch (err: any) {
-      alert('Gagal mengekspor PDF: ' + err.message);
+      alert('Gagal mengekspor PDF multi-halaman: ' + err.message);
     } finally {
       setIsExporting(false);
+      setExportProgress('');
     }
   };
 
@@ -128,7 +158,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             }`}
           >
             <FileText className="w-4 h-4" />
-            <span>Dokumen PDF</span>
+            <span>Dokumen PDF ({project.slides.length} Halaman)</span>
           </button>
 
           <button
@@ -153,7 +183,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <Sparkles className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
                 <div className="text-xs text-slate-300 leading-relaxed">
                   <strong className="text-white block mb-0.5">Format Asli PowerPoint Microsoft (.pptx)</strong>
-                  Semua slide ({project.slides.length} slide) diekspor sebagai bentuk shape, teks, dan kotak asli yang dapat diedit kembali di MS PowerPoint, Google Slides, maupun Keynote.
+                  Semua slide ({project.slides.length} slide) diekspor sebagai bentuk shape, teks, gambar, dan kotak asli yang dapat diedit kembali di MS PowerPoint, Google Slides, maupun Keynote.
                 </div>
               </div>
 
@@ -169,7 +199,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-[0.98]"
               >
                 {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                <span>{isExporting ? 'Sedang Menyusun Berkas PPTX...' : 'Unduh PowerPoint (.pptx)'}</span>
+                <span>{isExporting ? (exportProgress || 'Menyusun Berkas PPTX...') : 'Unduh PowerPoint (.pptx)'}</span>
               </button>
             </div>
           )}
@@ -215,8 +245,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* TAB 3: PDF */}
           {activeTab === 'pdf' && (
             <div className="space-y-4">
-              <p className="text-xs text-slate-400">
-                Cetak seluruh slide menjadi dokumen PDF terpadu yang siap dibagikan untuk naskah skripsi atau presentasi offline.
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Cetak seluruh slide (total <strong>{project.slides.length} slide / halaman</strong>) menjadi dokumen PDF terpadu yang siap dibagikan untuk naskah skripsi atau presentasi offline.
               </p>
 
               <button
@@ -225,7 +255,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-[0.98]"
               >
                 {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                <span>{isExporting ? 'Menyusun Dokumen PDF...' : 'Unduh Dokumen PDF'}</span>
+                <span>{isExporting ? (exportProgress || 'Menyusun Dokumen PDF...') : `Unduh Dokumen PDF (${project.slides.length} Halaman)`}</span>
               </button>
             </div>
           )}
@@ -252,6 +282,41 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Hidden Offscreen Containers for PDF Generation of all slides */}
+      <div className="fixed -left-[9999px] -top-[9999px] pointer-events-none opacity-0">
+        {project.slides.map((s, idx) => (
+          <div
+            key={s.id}
+            id={`export-slide-offscreen-${idx}`}
+            style={{
+              width: `${s.width}px`,
+              height: `${s.height}px`,
+              backgroundColor: s.background || '#0f172a',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            {s.elements.map(el => (
+              <div
+                key={el.id}
+                style={{
+                  position: 'absolute',
+                  left: `${el.x}px`,
+                  top: `${el.y}px`,
+                  width: `${el.width}px`,
+                  height: `${el.height}px`,
+                  zIndex: el.zIndex,
+                  transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                  opacity: el.opacity !== undefined ? el.opacity : 1,
+                }}
+              >
+                <ElementRenderer element={el} isSelected={false} />
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
     </div>
   );

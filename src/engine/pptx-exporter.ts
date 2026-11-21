@@ -42,6 +42,33 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
       const h = el.height * scaleY;
 
       switch (el.type) {
+        case 'image': {
+          if (el.imageUrl) {
+            try {
+              if (el.imageUrl.startsWith('data:image')) {
+                slide.addImage({
+                  data: el.imageUrl,
+                  x: posX,
+                  y: posY,
+                  w: w,
+                  h: h,
+                });
+              } else {
+                slide.addImage({
+                  path: el.imageUrl,
+                  x: posX,
+                  y: posY,
+                  w: w,
+                  h: h,
+                });
+              }
+            } catch (err) {
+              console.warn('Gagal menambahkan gambar ke slide pptx:', err);
+            }
+          }
+          break;
+        }
+
         case 'heading':
         case 'text':
         case 'quote': {

@@ -28,6 +28,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
     subTitle,
     iconName,
     placeholder,
+    imageUrl,
+    name,
   } = element;
 
   // Shadow class mapping
@@ -55,6 +57,23 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
   const IconComponent = iconName && (Icons as any)[iconName] ? (Icons as any)[iconName] : null;
 
   switch (type) {
+    case 'image':
+      return (
+        <div
+          className={`w-full h-full overflow-hidden select-none ${shadowClass}`}
+          style={{
+            borderRadius: `${borderRadius !== undefined ? borderRadius : 12}px`,
+            border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : 'none',
+          }}
+        >
+          <img
+            src={imageUrl || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80'}
+            alt={name || 'Foto Media'}
+            className="w-full h-full object-cover pointer-events-none"
+          />
+        </div>
+      );
+
     case 'heading':
     case 'text':
     case 'quote':

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
-import { Play, Pause, ChevronLeft, ChevronRight, X, Maximize2, Minimize2 } from 'lucide-react';
+import { Play, Pause, ChevronLeft, ChevronRight, X, Maximize2, Minimize2, CircleDot } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface PresenterModalProps {
@@ -20,6 +20,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [isTimerRunning, setIsTimerRunning] = useState(true);
   const [showNotes, setShowNotes] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isLaserActive, setIsLaserActive] = useState(false);
+  const [laserPos, setLaserPos] = useState({ x: -100, y: -100 });
+
+  const slideAreaRef = useRef<HTMLDivElement>(null);
 
   // Timer interval
   useEffect(() => {
@@ -41,6 +45,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         goToPrev();
       } else if (e.key === 'Escape') {
         onClose();
+      } else if (e.key.toLowerCase() === 'l') {
+        setIsLaserActive(prev => !prev);
       }
     };
 
@@ -52,7 +58,6 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     if (currentIndex < slides.length - 1) {
       setCurrentIndex(i => i + 1);
       if (currentIndex + 1 === slides.length - 1) {
-        // Trigger celebratory confetti on last slide
         confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
       }
     }
@@ -80,8 +85,17 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     }
   };
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isLaserActive && slideAreaRef.current) {
+      const rect = slideAreaRef.current.getBoundingClientRect();
+      setLaserPos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+  };
+
   const currentSlide = slides[currentIndex];
-  // Calculate responsive scaling to fit viewport
   const viewportWidth = window.innerWidth * (showNotes ? 0.72 : 0.95);
   const viewportHeight = window.innerHeight * 0.85;
   const scale = Math.min(viewportWidth / currentSlide.width, viewportHeight / currentSlide.height);
@@ -111,6 +125,20 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             </button>
             <span className="font-semibold text-slate-200">{formatTimer(secondsElapsed)}</span>
           </div>
+
+          {/* Laser Pointer Toggle */}
+          <button
+            onClick={() => setIsLaserActive(!isLaserActive)}
+            title="Laser Pointer (Tekan 'L')"
+            className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+              isLaserActive
+                ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20'
+                : 'bg-slate-800 border-slate-700 text-slate-400'
+            }`}
+          >
+            <CircleDot className="w-3.5 h-3.5" />
+            <span>Laser {isLaserActive ? 'Aktif' : 'Pointer'}</span>
+          </button>
 
           <button
             onClick={() => setShowNotes(!showNotes)}
@@ -142,7 +170,13 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       {/* Main Slide Display + Notes Area */}
       <div className="flex-1 flex overflow-hidden">
         {/* Slide Canvas Area */}
-        <div className="flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden">
+        <div
+          ref={slideAreaRef}
+          onMouseMove={handleMouseMove}
+          className={`flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden ${
+            isLaserActive ? 'cursor-none' : 'cursor-default'
+          }`}
+        >
           <div
             className="relative shadow-2xl rounded-sm overflow-hidden transition-all duration-150"
             style={{
@@ -171,6 +205,18 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               </div>
             ))}
           </div>
+
+          {/* Laser Pointer Glow Dot */}
+          {isLaserActive && (
+            <div
+              className="absolute pointer-events-none w-5 h-5 rounded-full bg-rose-500 shadow-lg -translate-x-1/2 -translate-y-1/2 z-50 transition-transform duration-75"
+              style={{
+                left: `${laserPos.x}px`,
+                top: `${laserPos.y}px`,
+                boxShadow: '0 0 16px 6px rgba(244, 63, 94, 0.9), 0 0 4px #ffffff',
+              }}
+            />
+          )}
 
           {/* Floating Navigation Controls */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 px-3 py-1.5 rounded-full shadow-2xl backdrop-blur-md">

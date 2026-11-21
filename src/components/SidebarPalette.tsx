@@ -10,8 +10,8 @@ import {
   LayoutTemplate,
   BarChart3,
   Smartphone,
-  Layers,
-  Sparkles,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface SidebarPaletteProps {
@@ -20,7 +20,7 @@ interface SidebarPaletteProps {
 }
 
 export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddElement }) => {
-  const [activeTab, setActiveTab] = useState<'elements' | 'ui' | 'shapes'>('elements');
+  const [activeTab, setActiveTab] = useState<'elements' | 'ui' | 'shapes' | 'media'>('elements');
 
   const createBaseElement = (
     type: ElementType,
@@ -40,20 +40,59 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
     ...overrides,
   });
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const dataUrl = ev.target?.result as string;
+      if (dataUrl) {
+        onAddElement(
+          createBaseElement('image', file.name.replace(/\.[^/.]+$/, ''), 420, 280, {
+            imageUrl: dataUrl,
+            borderRadius: 16,
+          })
+        );
+      }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const sampleStockPhotos = [
+    {
+      title: 'Kampus & Universitas',
+      url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Teknologi & Server AI',
+      url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Arsitektur Minimalis',
+      url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Foto Profil Tim / User',
+      url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80',
+    },
+  ];
+
   return (
     <aside className="w-64 h-full bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 select-none z-10">
       {/* Tab Navigation */}
       <div className="flex border-b border-slate-800 p-2 gap-1 bg-slate-950/40">
         <button
-          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
+          className={`flex-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold transition-all ${
             activeTab === 'elements' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
           onClick={() => setActiveTab('elements')}
         >
-          Tipografi
+          Teks
         </button>
         <button
-          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
+          className={`flex-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold transition-all ${
             activeTab === 'ui' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
           onClick={() => setActiveTab('ui')}
@@ -61,12 +100,20 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
           UI Kit
         </button>
         <button
-          className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all ${
+          className={`flex-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold transition-all ${
             activeTab === 'shapes' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
           }`}
           onClick={() => setActiveTab('shapes')}
         >
           Bentuk
+        </button>
+        <button
+          className={`flex-1 py-1.5 px-1.5 rounded-lg text-[11px] font-semibold transition-all ${
+            activeTab === 'media' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+          }`}
+          onClick={() => setActiveTab('media')}
+        >
+          Media
         </button>
       </div>
 
@@ -74,8 +121,8 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
         {/* TAB 1: TYPOGRAPHY */}
         {activeTab === 'elements' && (
           <div className="space-y-2">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-              Teks & Judul
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Tipografi & Judul
             </span>
 
             <button
@@ -149,7 +196,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
         {/* TAB 2: UI KIT (COMPONENTS) */}
         {activeTab === 'ui' && (
           <div className="space-y-2">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
               Komponen UI Interaktif
             </span>
 
@@ -266,7 +313,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
         {/* TAB 3: SHAPES & CONTAINERS */}
         {activeTab === 'shapes' && (
           <div className="space-y-2">
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
               Bentuk Vektor & Wadah
             </span>
 
@@ -330,6 +377,63 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({ mode, onAddEleme
                 <div className="text-[10px] text-slate-400">Garis horizontal divider</div>
               </div>
             </button>
+          </div>
+        )}
+
+        {/* TAB 4: MEDIA & IMAGES */}
+        {activeTab === 'media' && (
+          <div className="space-y-4">
+            {/* File Upload Button */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Unggah Berkas Lokal
+              </span>
+              <label className="w-full p-3 border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-xl flex flex-col items-center justify-center gap-1.5 cursor-pointer hover:bg-indigo-500/5 transition-all text-center">
+                <Upload className="w-5 h-5 text-indigo-400" />
+                <span className="text-xs font-medium text-slate-200">Pilih Foto / Logo</span>
+                <span className="text-[10px] text-slate-500">PNG, JPG, SVG, WebP</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Stock Photos Presets */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Foto Contoh Siap Pakai
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {sampleStockPhotos.map((photo, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() =>
+                      onAddElement(
+                        createBaseElement('image', photo.title, 360, 240, {
+                          imageUrl: photo.url,
+                          borderRadius: 14,
+                        })
+                      )
+                    }
+                    className="group relative h-20 rounded-xl overflow-hidden border border-slate-700 hover:border-indigo-500 transition-all text-left"
+                  >
+                    <img
+                      src={photo.url}
+                      alt={photo.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent p-1.5 flex items-end">
+                      <span className="text-[10px] font-medium text-slate-200 line-clamp-1 leading-tight">
+                        {photo.title}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
