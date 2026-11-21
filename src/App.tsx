@@ -13,6 +13,7 @@ import { Toolbar } from './components/Toolbar';
 import { QuickCommandPalette } from './components/QuickCommandPalette';
 import { ContextMenu } from './components/ContextMenu';
 import { ShortcutsModal } from './components/ShortcutsModal';
+import { FindReplaceModal } from './components/FindReplaceModal';
 import { DesignElement } from './types';
 import { preloadCoreFonts } from './utils/fontLoader';
 
@@ -55,6 +56,9 @@ export default function App() {
     loadTemplate,
     saveProjectToFile,
     loadProjectData,
+    lastSaved,
+    replaceTextInElements,
+    resetProjectToDefault,
   } = useDesignStore();
 
   const [isCodeDrawerOpen, setIsCodeDrawerOpen] = useState(false);
@@ -63,6 +67,7 @@ export default function App() {
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false);
   const [showSafeMargin, setShowSafeMargin] = useState(false);
 
   // Floating Context Menu State
@@ -190,6 +195,13 @@ export default function App() {
         return;
       }
 
+      // 0.8 Find & Replace Dialog: Ctrl+H / Cmd+H
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        setIsFindReplaceOpen(true);
+        return;
+      }
+
       // 1. Delete / Backspace
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (project.selectedElementIds.length > 0) {
@@ -302,8 +314,11 @@ export default function App() {
         onOpenPresenter={() => setIsPresenterOpen(true)}
         onOpenExport={() => setIsExportOpen(true)}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
+        onOpenFindReplace={() => setIsFindReplaceOpen(true)}
+        onResetProject={resetProjectToDefault}
         onSaveProject={saveProjectToFile}
         onLoadProject={loadProjectData}
+        lastSaved={lastSaved}
       />
 
       {/* Main Workspace Workspace */}
@@ -347,6 +362,7 @@ export default function App() {
             onUpdateElementLive={updateElementLive}
             onMoveSelectedLive={moveSelectedElementsLive}
             onCommitHistory={commitHistory}
+            onDuplicateSelected={duplicateSelectedElements}
             onContextMenuElement={(e, el) => {
               setContextMenu({ x: e.clientX, y: e.clientY, element: el });
             }}
@@ -494,6 +510,15 @@ export default function App() {
       <ShortcutsModal
         isOpen={isShortcutsOpen}
         onClose={() => setIsShortcutsOpen(false)}
+      />
+
+      {/* Global Find and Replace Modal */}
+      <FindReplaceModal
+        isOpen={isFindReplaceOpen}
+        slides={project.slides}
+        activeSlideId={project.activeSlideId}
+        onClose={() => setIsFindReplaceOpen(false)}
+        onReplaceAll={replaceTextInElements}
       />
     </div>
   );

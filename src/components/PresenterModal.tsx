@@ -14,6 +14,8 @@ import {
   VolumeX,
   FileEdit,
   RotateCcw,
+  Pen,
+  Eraser,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../utils/audioEffects';
@@ -38,6 +40,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [showNotes, setShowNotes] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLaserActive, setIsLaserActive] = useState(false);
+  const [isPenActive, setIsPenActive] = useState(false);
+  const [penColor, setPenColor] = useState('#f43f5e');
   const [isSoundMuted, setIsSoundMuted] = useState(!soundEffects.isSoundEnabled());
   const [laserPos, setLaserPos] = useState({ x: -100, y: -100 });
   const [isAutoPlay, setIsAutoPlay] = useState(false);
@@ -45,6 +49,60 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [transitionEffect, setTransitionEffect] = useState<'fade' | 'slide' | 'zoom'>('fade');
 
   const slideAreaRef = useRef<HTMLDivElement>(null);
+  const penCanvasRef = useRef<HTMLCanvasElement>(null);
+  const isDrawingRef = useRef(false);
+  const lastPenPosRef = useRef<{ x: number; y: number } | null>(null);
+
+  const clearPenCanvas = () => {
+    const canvas = penCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const getCanvasCoords = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const canvas = penCanvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: ((e.clientX - rect.left) / rect.width) * canvas.width,
+      y: ((e.clientY - rect.top) / rect.height) * canvas.height,
+    };
+  };
+
+  const handlePenPointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isPenActive) return;
+    isDrawingRef.current = true;
+    const coords = getCanvasCoords(e);
+    lastPenPosRef.current = coords;
+  };
+
+  const handlePenPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isPenActive || !isDrawingRef.current || !lastPenPosRef.current) return;
+    const canvas = penCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const coords = getCanvasCoords(e);
+
+    ctx.strokeStyle = penColor;
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.beginPath();
+    ctx.moveTo(lastPenPosRef.current.x, lastPenPosRef.current.y);
+    ctx.lineTo(coords.x, coords.y);
+    ctx.stroke();
+
+    lastPenPosRef.current = coords;
+  };
+
+  const handlePenPointerUp = () => {
+    isDrawingRef.current = false;
+    lastPenPosRef.current = null;
+  };
 
   // Auto-play interval
   useEffect(() => {
@@ -83,7 +141,17 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       } else if (e.key === 'Escape') {
         onClose();
       } else if (e.key.toLowerCase() === 'l') {
-        setIsLaserActive(prev => !prev);
+        setIsLaserActive(prev => {
+          if (!prev) setIsPenActive(false);
+          return !prev;
+        });
+      } else if (e.key.toLowerCase() === 'p') {
+        setIsPenActive(prev => {
+          if (!prev) setIsLaserActive(false);
+          return !prev;
+        });
+      } else if (e.key.toLowerCase() === 'c') {
+        clearPenCanvas();
       } else if (e.key.toLowerCase() === 'n') {
         setShowNotes(prev => !prev);
       } else if (e.key.toLowerCase() === 'f') {
@@ -105,6 +173,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
   const goToNext = () => {
     if (currentIndex < slides.length - 1) {
+      clearPenCanvas();
       setCurrentIndex(i => i + 1);
       soundEffects.playSlideTransition();
       if (currentIndex + 1 === slides.length - 1) {
@@ -115,6 +184,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
   const goToPrev = () => {
     if (currentIndex > 0) {
+      clearPenCanvas();
       setCurrentIndex(i => i - 1);
       soundEffects.playSlideTransition();
     }
@@ -261,7 +331,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
           {/* Laser Pointer Toggle */}
           <button
-            onClick={() => setIsLaserActive(!isLaserActive)}
+            onClick={() => {
+              setIsLaserActive(!isLaserActive);
+              if (!isLaserActive) setIsPenActive(false);
+            }}
             title="Laser Pointer (Tekan 'L')"
             className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all ${isLaserActive
                 ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20'
@@ -271,6 +344,54 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             <CircleDot className="w-3.5 h-3.5" />
             <span>Laser {isLaserActive ? 'Aktif' : 'Pointer'}</span>
           </button>
+
+          {/* Live Pen / Doodle Annotation Toggle */}
+          <div className="flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-lg p-0.5">
+            <button
+              onClick={() => {
+                setIsPenActive(!isPenActive);
+                if (!isPenActive) setIsLaserActive(false);
+              }}
+              title="Anotasi Pena Coretan (Tekan 'P')"
+              className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                isPenActive
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Pen className="w-3.5 h-3.5" />
+              <span>Pena {isPenActive ? 'Aktif' : ''}</span>
+            </button>
+            {isPenActive && (
+              <>
+                <div className="flex items-center gap-1 px-1">
+                  {[
+                    { color: '#f43f5e', name: 'Merah' },
+                    { color: '#38bdf8', name: 'Cyan' },
+                    { color: '#facc15', name: 'Kuning' },
+                    { color: '#10b981', name: 'Hijau' },
+                  ].map(c => (
+                    <button
+                      key={c.color}
+                      onClick={() => setPenColor(c.color)}
+                      title={`Warna ${c.name}`}
+                      className={`w-3.5 h-3.5 rounded-full border transition-transform ${
+                        penColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-70 hover:opacity-100'
+                      }`}
+                      style={{ backgroundColor: c.color }}
+                    />
+                  ))}
+                </div>
+                <button
+                  onClick={clearPenCanvas}
+                  title="Hapus Semua Coretan (Tekan 'C')"
+                  className="p-1 hover:bg-slate-700 text-slate-400 hover:text-rose-400 rounded transition-colors"
+                >
+                  <Eraser className="w-3.5 h-3.5" />
+                </button>
+              </>
+            )}
+          </div>
 
           {/* Transition Effect Selector */}
           <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700 rounded-lg px-2 py-1 text-xs">
@@ -362,6 +483,20 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 <ElementRenderer element={el} isSelected={false} />
               </div>
             ))}
+
+            {/* Live Doodle / Pen Annotation Canvas */}
+            <canvas
+              ref={penCanvasRef}
+              width={currentSlide.width}
+              height={currentSlide.height}
+              className={`absolute inset-0 z-30 transition-opacity ${
+                isPenActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
+              }`}
+              onPointerDown={handlePenPointerDown}
+              onPointerMove={handlePenPointerMove}
+              onPointerUp={handlePenPointerUp}
+              onPointerLeave={handlePenPointerUp}
+            />
           </div>
 
           {/* Glowing Virtual Laser Pointer with Pulse Ring */}
@@ -408,6 +543,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               <span><kbd className="text-indigo-300">Spasi / →</kbd> Maju</span>
               <span>•</span>
               <span><kbd className="text-indigo-300">L</kbd> Laser</span>
+              <span>•</span>
+              <span><kbd className="text-indigo-300">P</kbd> Pena</span>
+              <span>•</span>
+              <span><kbd className="text-indigo-300">C</kbd> Hapus</span>
               <span>•</span>
               <span><kbd className="text-indigo-300">N</kbd> Notes</span>
               <span>•</span>

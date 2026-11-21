@@ -33,6 +33,7 @@ export type ElementType =
   | 'circle'
   | 'triangle'
   | 'star'
+  | 'hexagon'
   | 'arrow'
   | 'line'
   | 'card'
@@ -112,6 +113,7 @@ export interface Slide {
   title: string;
   notes?: string;
   background: string;
+  wallpaper?: string;
   transition?: 'fade' | 'slide' | 'zoom' | 'none';
   elements: DesignElement[];
   width: number;

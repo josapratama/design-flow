@@ -15,6 +15,7 @@ interface ArtboardRendererProps {
   onUpdateElementLive: (elementId: string, updates: Partial<DesignElement>) => void;
   onMoveSelectedLive: (deltaX: number, deltaY: number, basePositions: Map<string, { x: number; y: number }>) => void;
   onCommitHistory: () => void;
+  onDuplicateSelected?: () => void;
   onContextMenuElement?: (e: React.MouseEvent, element: DesignElement) => void;
 }
 
@@ -32,6 +33,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
       onUpdateElementLive,
       onMoveSelectedLive,
       onCommitHistory,
+      onDuplicateSelected,
       onContextMenuElement,
     },
     ref
@@ -180,6 +182,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                     onUpdateLive={updates => onUpdateElementLive(element.id, updates)}
                     onMoveSelectedLive={onMoveSelectedLive}
                     onCommitHistory={onCommitHistory}
+                    onDuplicateSelected={onDuplicateSelected}
                     onGuideLinesChange={setGuideLines}
                   />
                 )}

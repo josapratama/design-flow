@@ -54,7 +54,7 @@ export function parseDesignDSL(dsl: string, currentMode: DesignMode = 'slide'): 
 
     // Element declaration inside artboard
     const elementMatch = line.match(
-      /^(heading|text|quote|rect|circle|triangle|star|arrow|line|card|badge-shape|button|input|navbar|bottom-nav|avatar|metric-card|toggle|table|chart|icon|image)\s+([a-zA-Z0-9_-]+)\s*\{/
+      /^(heading|text|quote|rect|circle|triangle|star|hexagon|arrow|line|card|badge-shape|button|input|navbar|bottom-nav|avatar|metric-card|toggle|table|chart|icon|image)\s+([a-zA-Z0-9_-]+)\s*\{/
     );
     if (elementMatch && currentSlide) {
       const type = elementMatch[1] as ElementType;
@@ -133,9 +133,23 @@ function parseSlideProperty(line: string, slide: Slide) {
     slide.notes = unescapeString(notesMatch[1]);
     return;
   }
+
+  const wallpaperMatch = line.match(/wallpaper:\s*"([^"]+)"/);
+  if (wallpaperMatch) {
+    slide.wallpaper = unescapeString(wallpaperMatch[1]);
+    return;
+  }
 }
 
 function parseElementProperty(line: string, el: Partial<DesignElement>) {
+  // Chart Data JSON array parsing
+  const chartDataMatch = line.match(/chartData:\s*(\[.+\])/);
+  if (chartDataMatch) {
+    try {
+      el.chartData = JSON.parse(chartDataMatch[1]);
+    } catch {}
+    return;
+  }
   const posMatch = line.match(/position:\s*\[(-?\d+),\s*(-?\d+)\]/);
   if (posMatch) {
     el.x = parseInt(posMatch[1], 10);

@@ -1,11 +1,23 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { DesignElement, DesignMode, DesignProject, PRESET_SIZES, Slide } from '../types';
 import { TEMPLATES } from '../templates/template-library';
 
-export function useDesignStore() {
-  const initialTemplate = TEMPLATES[0]; // Academic Thesis template as default
+const AUTOSAVE_STORAGE_KEY = 'designflow_project_state_v1';
 
-  const [project, setProject] = useState<DesignProject>({
+function getInitialProject(): DesignProject {
+  const initialTemplate = TEMPLATES[0]; // Academic Thesis template as default
+  try {
+    const saved = localStorage.getItem(AUTOSAVE_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && Array.isArray(parsed.slides) && parsed.slides.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to parse autosaved project from localStorage', err);
+  }
+  return {
     id: 'proj_1',
     title: 'Naskah Presentasi Sidang Skripsi',
     mode: 'slide',
@@ -19,7 +31,26 @@ export function useDesignStore() {
     snapToGrid: true,
     gridSize: 20,
     showRulers: true,
-  });
+  };
+}
+
+export function useDesignStore() {
+  const [project, setProject] = useState<DesignProject>(getInitialProject);
+  const [lastSaved, setLastSaved] = useState<Date | null>(() => new Date());
+
+  // Debounced Auto-Save to localStorage
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      try {
+        localStorage.setItem(AUTOSAVE_STORAGE_KEY, JSON.stringify(project));
+        setLastSaved(new Date());
+      } catch (e) {
+        console.warn('LocalStorage autosave failed:', e);
+      }
+    }, 600);
+
+    return () => clearTimeout(handler);
+  }, [project]);
 
   // History Stack for Undo/Redo
   const pastRef = useRef<Slide[][]>([]);
@@ -599,9 +630,80 @@ export function useDesignStore() {
     }));
   }, [project.slides, pushHistory]);
 
+  // Global Find and Replace across elements
+  const replaceTextInElements = useCallback(
+    (findText: string, replaceText: string, scope: 'active' | 'all' = 'active', matchCase: boolean = false): number => {
+      if (!findText) return 0;
+      pushHistory(project.slides);
+
+      let replaceCount = 0;
+      setProject(prev => {
+        const newSlides = prev.slides.map(slide => {
+          if (scope === 'active' && slide.id !== prev.activeSlideId) return slide;
+
+          const newElements = slide.elements.map(el => {
+            let updated = { ...el };
+            let changed = false;
+
+            const replaceInField = (val?: string): string | undefined => {
+              if (!val) return val;
+              const flags = matchCase ? 'g' : 'gi';
+              const escapedFind = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+              const regex = new RegExp(escapedFind, flags);
+              const matches = val.match(regex);
+              if (matches && matches.length > 0) {
+                replaceCount += matches.length;
+                changed = true;
+                return val.replace(regex, replaceText);
+              }
+              return val;
+            };
+
+            if (updated.content) updated.content = replaceInField(updated.content);
+            if (updated.subTitle) updated.subTitle = replaceInField(updated.subTitle);
+            if (updated.badgeText) updated.badgeText = replaceInField(updated.badgeText);
+            if (updated.placeholder) updated.placeholder = replaceInField(updated.placeholder);
+
+            return changed ? updated : el;
+          });
+
+          return { ...slide, elements: newElements };
+        });
+
+        return { ...prev, slides: newSlides };
+      });
+
+      return replaceCount;
+    },
+    [project.slides, pushHistory]
+  );
+
+  // Reset to clean initial default project
+  const resetProjectToDefault = useCallback(() => {
+    const initialTemplate = TEMPLATES[0];
+    localStorage.removeItem(AUTOSAVE_STORAGE_KEY);
+    pushHistory(project.slides);
+    setProject({
+      id: `proj_${Date.now()}`,
+      title: 'Naskah Presentasi Sidang Skripsi',
+      mode: 'slide',
+      slides: JSON.parse(JSON.stringify(initialTemplate.slides)),
+      activeSlideId: initialTemplate.slides[0].id,
+      selectedElementIds: [],
+      scale: 0.55,
+      panX: 40,
+      panY: 30,
+      showGrid: true,
+      snapToGrid: true,
+      gridSize: 20,
+      showRulers: true,
+    });
+  }, [project.slides, pushHistory]);
+
   return {
     project,
     setProject,
+    lastSaved,
     activeSlide,
     selectedElements,
     undo,
@@ -637,5 +739,7 @@ export function useDesignStore() {
     loadTemplate,
     saveProjectToFile,
     loadProjectData,
+    replaceTextInElements,
+    resetProjectToDefault,
   };
 }

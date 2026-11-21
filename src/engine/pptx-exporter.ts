@@ -14,8 +14,14 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
   for (const slideData of project.slides) {
     const slide = pptx.addSlide();
 
-    // Background color
-    if (slideData.background) {
+    // Background color or wallpaper
+    if (slideData.wallpaper) {
+      try {
+        slide.background = { path: slideData.wallpaper };
+      } catch {
+        slide.background = { color: '0F172A' };
+      }
+    } else if (slideData.background) {
       if (slideData.background.startsWith('#')) {
         slide.background = { color: slideData.background.replace('#', '') };
       } else {
@@ -157,6 +163,18 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
           break;
         }
 
+        case 'hexagon': {
+          slide.addShape(pptx.ShapeType.hexagon, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '8B5CF6' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
+          });
+          break;
+        }
+
         case 'arrow': {
           slide.addShape(pptx.ShapeType.rightArrow, {
             x: posX,
@@ -166,6 +184,54 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
             fill: el.fill ? { color: cleanHex(el.fill) } : { color: '3B82F6' },
             line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
           });
+          break;
+        }
+
+        case 'chart': {
+          const rawData = el.chartData && el.chartData.length > 0 ? el.chartData : [
+            { label: 'Q1', value: 35 },
+            { label: 'Q2', value: 65 },
+            { label: 'Q3', value: 45 },
+            { label: 'Q4', value: 90 },
+          ];
+          const pptxChartType =
+            el.chartType === 'line'
+              ? pptx.ChartType.line
+              : el.chartType === 'donut'
+              ? pptx.ChartType.doughnut
+              : pptx.ChartType.bar;
+
+          const chartData = [
+            {
+              name: el.content || 'Data',
+              labels: rawData.map(d => d.label),
+              values: rawData.map(d => d.value),
+            },
+          ];
+
+          try {
+            slide.addChart(pptxChartType, chartData, {
+              x: posX,
+              y: posY,
+              w: w,
+              h: h,
+              showTitle: true,
+              title: el.content || 'Grafik Analisis',
+              titleFontSize: 12,
+              titleColor: 'FFFFFF',
+              chartColors: ['6366F1', '38BDF8', '10B981', 'F43F5E'],
+            });
+          } catch (chartErr) {
+            console.warn('Fallback ke shape container:', chartErr);
+            slide.addShape(pptx.ShapeType.roundRect, {
+              x: posX,
+              y: posY,
+              w: w,
+              h: h,
+              fill: { color: '0F172A' },
+              line: { color: '334155', width: 1 },
+            });
+          }
           break;
         }
 

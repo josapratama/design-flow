@@ -13,6 +13,9 @@ import {
   Save,
   FolderOpen,
   HelpCircle,
+  CheckCircle2,
+  RotateCcw,
+  Replace,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -21,6 +24,7 @@ interface NavbarProps {
   canUndo: boolean;
   canRedo: boolean;
   isCodeOpen: boolean;
+  lastSaved?: Date | null;
   onTitleChange: (newTitle: string) => void;
   onModeChange: (newMode: DesignMode) => void;
   onUndo: () => void;
@@ -30,6 +34,8 @@ interface NavbarProps {
   onOpenPresenter: () => void;
   onOpenExport: () => void;
   onOpenShortcuts?: () => void;
+  onOpenFindReplace?: () => void;
+  onResetProject?: () => void;
   onSaveProject: () => void;
   onLoadProject: (project: DesignProject) => void;
 }
@@ -40,6 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   canUndo,
   canRedo,
   isCodeOpen,
+  lastSaved,
   onTitleChange,
   onModeChange,
   onUndo,
@@ -49,6 +56,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenPresenter,
   onOpenExport,
   onOpenShortcuts,
+  onOpenFindReplace,
+  onResetProject,
   onSaveProject,
   onLoadProject,
 }) => {
@@ -126,6 +135,31 @@ export const Navbar: React.FC<NavbarProps> = ({
             <Save className="w-3.5 h-3.5" />
             <span className="hidden md:inline">Simpan</span>
           </button>
+
+          {onResetProject && (
+            <button
+              onClick={() => {
+                if (window.confirm('Reset proyek dan kembali ke template awal? Perubahan yang belum disimpan ke file akan hilang.')) {
+                  onResetProject();
+                }
+              }}
+              title="Reset Proyek ke Template Awal"
+              className="p-1.5 hover:bg-slate-800 text-slate-500 hover:text-rose-400 rounded-lg transition-colors flex items-center gap-1 text-[11px]"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Auto-Save Status */}
+          {lastSaved && (
+            <div
+              title={`Tersimpan otomatis di browser (${lastSaved.toLocaleTimeString()})`}
+              className="hidden xl:flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900/90 border border-slate-800 text-[10px] text-emerald-400 font-medium"
+            >
+              <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+              <span className="text-slate-400 font-mono text-[9px]">Otomatis</span>
+            </div>
+          )}
         </div>
 
         {/* Undo / Redo */}
@@ -233,6 +267,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           <Download className="w-3.5 h-3.5" />
           <span>Ekspor</span>
         </button>
+
+        {onOpenFindReplace && (
+          <button
+            onClick={onOpenFindReplace}
+            title="Cari & Ganti Teks (Ctrl+H)"
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors border border-slate-700/60 ml-0.5"
+          >
+            <Replace className="w-4 h-4 text-slate-300" />
+          </button>
+        )}
 
         {onOpenShortcuts && (
           <button

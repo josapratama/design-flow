@@ -14,6 +14,7 @@ interface TransformHandlesProps {
   onUpdateLive: (updates: Partial<DesignElement>) => void;
   onMoveSelectedLive: (deltaX: number, deltaY: number, basePositions: Map<string, { x: number; y: number }>) => void;
   onCommitHistory: () => void;
+  onDuplicateSelected?: () => void;
   onGuideLinesChange?: (guides: { x?: number; y?: number; isElementSnap?: boolean } | null) => void;
 }
 
@@ -29,6 +30,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
   onUpdateLive,
   onMoveSelectedLive,
   onCommitHistory,
+  onDuplicateSelected,
   onGuideLinesChange,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -118,6 +120,12 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
   const handleDragPointerDown = (e: React.PointerEvent) => {
     if (isRotating) return;
     e.stopPropagation();
+
+    // Alt + Drag quick duplication (Figma / Illustrator style)
+    if (e.altKey && onDuplicateSelected) {
+      onDuplicateSelected();
+    }
+
     const startX = e.clientX;
     const startY = e.clientY;
 

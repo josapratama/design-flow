@@ -23,6 +23,7 @@ interface CanvasViewportProps {
   onUpdateElementLive: (elementId: string, updates: Partial<DesignElement>) => void;
   onMoveSelectedLive: (deltaX: number, deltaY: number, basePositions: Map<string, { x: number; y: number }>) => void;
   onCommitHistory: () => void;
+  onDuplicateSelected?: () => void;
   onContextMenuElement?: (e: React.MouseEvent, element: DesignElement) => void;
   onContextMenuCanvas?: (e: React.MouseEvent) => void;
 }
@@ -48,6 +49,7 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
   onUpdateElementLive,
   onMoveSelectedLive,
   onCommitHistory,
+  onDuplicateSelected,
   onContextMenuElement,
   onContextMenuCanvas,
 }) => {
@@ -245,6 +247,7 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
           onUpdateElementLive={onUpdateElementLive}
           onMoveSelectedLive={onMoveSelectedLive}
           onCommitHistory={onCommitHistory}
+          onDuplicateSelected={onDuplicateSelected}
           onContextMenuElement={onContextMenuElement}
         />
 

@@ -15,6 +15,9 @@ export function generateDesignDSL(project: DesignProject): string {
     lines.push(`  size: [${slide.width}, ${slide.height}]`);
     lines.push(`  preset: "${slide.presetName}"`);
     lines.push(`  background: "${slide.background}"`);
+    if (slide.wallpaper) {
+      lines.push(`  wallpaper: "${escapeString(slide.wallpaper)}"`);
+    }
     if (slide.notes && slide.notes.trim()) {
       lines.push(`  notes: "${escapeString(slide.notes)}"`);
     }
@@ -33,6 +36,9 @@ export function generateDesignDSL(project: DesignProject): string {
       if (el.flipY) lines.push(`    flipY: true`);
       if (el.groupId) lines.push(`    groupId: "${escapeString(el.groupId)}"`);
       if (el.chartType) lines.push(`    chartType: "${el.chartType}"`);
+      if (el.chartData && el.chartData.length > 0) {
+        lines.push(`    chartData: ${JSON.stringify(el.chartData)}`);
+      }
 
       // Content & Typography
       if (el.content !== undefined) lines.push(`    content: "${escapeString(el.content)}"`);

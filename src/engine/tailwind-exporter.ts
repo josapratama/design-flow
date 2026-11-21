@@ -20,6 +20,7 @@ export default function ${sanitizeComponentName(slide.title)}Screen() {
         width: '${slide.width}px',
         height: '${slide.height}px',
         background: '${slide.background || '#0f172a'}',
+        ${slide.wallpaper ? `backgroundImage: 'url(${slide.wallpaper})', backgroundSize: 'cover', backgroundPosition: 'center',` : ''}
       }}
     >
 ${jsxElements}
@@ -180,6 +181,17 @@ function renderElementJSX(el: DesignElement): string {
         <polygon points="50,2 62,38 100,38 69,60 81,96 50,74 19,96 31,60 0,38 38,38" fill="${el.fill || '#f59e0b'}" stroke="${el.stroke || 'none'}" strokeWidth="${el.strokeWidth || 0}" />
       </svg>`;
 
+    case 'hexagon':
+      return `      {/* Hexagon Shape: ${el.name} */}
+      <svg 
+        className="absolute"
+        ${toStyleAttr()}
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <polygon points="50,2 95,25 95,75 50,98 5,75 5,25" fill="${el.fill || '#8b5cf6'}" stroke="${el.stroke || 'none'}" strokeWidth="${el.strokeWidth || 0}" />
+      </svg>`;
+
     case 'arrow':
       return `      {/* Arrow Shape: ${el.name} */}
       <svg 
@@ -191,25 +203,52 @@ function renderElementJSX(el: DesignElement): string {
         <polygon points="0,35 60,35 60,10 100,50 60,90 60,65 0,65" fill="${el.fill || '#3b82f6'}" stroke="${el.stroke || 'none'}" strokeWidth="${el.strokeWidth || 0}" />
       </svg>`;
 
-    case 'chart':
+    case 'chart': {
+      const chartData = el.chartData && el.chartData.length > 0 ? el.chartData : [
+        { label: 'Q1', value: 35 },
+        { label: 'Q2', value: 65 },
+        { label: 'Q3', value: 45 },
+        { label: 'Q4', value: 90 },
+      ];
+      const maxVal = Math.max(...chartData.map(d => d.value), 1);
+      const chartType = el.chartType || 'bar';
+
+      let innerChart = '';
+      if (chartType === 'bar') {
+        const bars = chartData.map(d => {
+          const hPercent = Math.round((d.value / maxVal) * 80);
+          return `          <div className="flex-1 flex flex-col items-center h-full justify-end">
+            <span className="text-[10px] font-mono font-bold text-slate-300 mb-1">${d.value}</span>
+            <div className="w-full rounded-t-md bg-gradient-to-t from-indigo-600 to-cyan-400" style={{ height: '${hPercent}%', minHeight: '4px' }} />
+            <span className="text-[10px] font-medium text-slate-400 mt-1 truncate">${escapeJSX(d.label)}</span>
+          </div>`;
+        }).join('\n');
+        innerChart = `        <div className="flex-1 flex items-end justify-around gap-2 pt-2">
+${bars}
+        </div>`;
+      } else {
+        innerChart = `        <div className="flex-1 flex items-center justify-center p-2 text-xs text-indigo-400 font-mono">
+          [${chartType.toUpperCase()} CHART: ${chartData.map(d => `${escapeJSX(d.label)}: ${d.value}`).join(', ')}]
+        </div>`;
+      }
+
       return `      {/* Chart: ${el.name} */}
       <div 
         className="absolute p-4 rounded-2xl bg-slate-900 border border-slate-800 ${getShadowClass(el.shadow)} flex flex-col justify-between"
         ${toStyleAttr({ backgroundColor: '#0f172a', borderRadius: `${el.borderRadius || 16}px` })}
       >
         <div className="flex items-center justify-between mb-2">
-          <div className="text-xs font-bold text-slate-100">${escapeJSX(el.content || 'Analisis Kinerja')}</div>
+          <div>
+            <div className="text-xs font-bold text-slate-100">${escapeJSX(el.content || 'Analisis Kinerja')}</div>
+            <div className="text-[10px] text-slate-400">${escapeJSX(el.subTitle || 'Metrik evaluasi')}</div>
+          </div>
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono font-semibold uppercase">
-            ${el.chartType || 'bar'}
+            ${chartType}
           </span>
         </div>
-        <div className="flex-1 flex items-end justify-around gap-2 pt-2">
-          {/* Chart Bars / Metrics */}
-          <div className="flex-1 h-3/4 rounded-t bg-indigo-500" />
-          <div className="flex-1 h-full rounded-t bg-indigo-400" />
-          <div className="flex-1 h-1/2 rounded-t bg-indigo-600" />
-        </div>
+${innerChart}
       </div>`;
+    }
 
     case 'line':
       return `      {/* Divider Line: ${el.name} */}
