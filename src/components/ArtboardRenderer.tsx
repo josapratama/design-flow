@@ -15,6 +15,7 @@ interface ArtboardRendererProps {
   onUpdateElementLive: (elementId: string, updates: Partial<DesignElement>) => void;
   onMoveSelectedLive: (deltaX: number, deltaY: number, basePositions: Map<string, { x: number; y: number }>) => void;
   onCommitHistory: () => void;
+  onContextMenuElement?: (e: React.MouseEvent, element: DesignElement) => void;
 }
 
 export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps>(
@@ -31,10 +32,12 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
       onUpdateElementLive,
       onMoveSelectedLive,
       onCommitHistory,
+      onContextMenuElement,
     },
     ref
   ) => {
     const [editingElementId, setEditingElementId] = useState<string | null>(null);
+    const [guideLines, setGuideLines] = useState<{ x?: number; y?: number } | null>(null);
 
     return (
       <div
@@ -54,6 +57,22 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
           }
         }}
       >
+        {/* Smart Magnetic Guide Lines (Center X and Center Y) */}
+        {guideLines?.x !== undefined && (
+          <div
+            className="absolute top-0 bottom-0 pointer-events-none z-40 border-l-2 border-dashed border-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+            data-export-ignore="true"
+            style={{ left: `${guideLines.x}px` }}
+          />
+        )}
+        {guideLines?.y !== undefined && (
+          <div
+            className="absolute left-0 right-0 pointer-events-none z-40 border-t-2 border-dashed border-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+            data-export-ignore="true"
+            style={{ top: `${guideLines.y}px` }}
+          />
+        )}
+
         {/* Render elements sorted by zIndex */}
         {slide.elements
           .slice()
@@ -80,6 +99,14 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                 onClick={e => {
                   e.stopPropagation();
                   onSelectElement(element.id, e.shiftKey || e.metaKey || e.ctrlKey);
+                }}
+                onContextMenu={e => {
+                  if (onContextMenuElement) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onSelectElement(element.id, false);
+                    onContextMenuElement(e, element);
+                  }
                 }}
                 onDoubleClick={e => {
                   e.stopPropagation();
@@ -134,10 +161,13 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                     scale={scale}
                     snapToGrid={snapToGrid}
                     gridSize={gridSize}
+                    artboardWidth={slide.width}
+                    artboardHeight={slide.height}
                     selectedElements={selectedElements}
                     onUpdateLive={updates => onUpdateElementLive(element.id, updates)}
                     onMoveSelectedLive={onMoveSelectedLive}
                     onCommitHistory={onCommitHistory}
+                    onGuideLinesChange={setGuideLines}
                   />
                 )}
               </div>

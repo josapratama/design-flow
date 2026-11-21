@@ -10,6 +10,9 @@ import { PresenterModal } from './components/PresenterModal';
 import { ExportModal } from './components/ExportModal';
 import { TemplatesModal } from './components/TemplatesModal';
 import { Toolbar } from './components/Toolbar';
+import { QuickCommandPalette } from './components/QuickCommandPalette';
+import { ContextMenu } from './components/ContextMenu';
+import { DesignElement } from './types';
 
 export default function App() {
   const {
@@ -52,6 +55,14 @@ export default function App() {
   const [isPresenterOpen, setIsPresenterOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+
+  // Floating Context Menu State
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    element: DesignElement | null;
+  } | null>(null);
 
   const artboardRef = useRef<HTMLDivElement>(null);
 
@@ -67,6 +78,13 @@ export default function App() {
           target.tagName === 'TEXTAREA' ||
           target.isContentEditable)
       ) {
+        return;
+      }
+
+      // 0. Quick Command Bar: Ctrl+K / Cmd+K
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
         return;
       }
 
@@ -224,6 +242,12 @@ export default function App() {
             onUpdateElementLive={updateElementLive}
             onMoveSelectedLive={moveSelectedElementsLive}
             onCommitHistory={commitHistory}
+            onContextMenuElement={(e, el) => {
+              setContextMenu({ x: e.clientX, y: e.clientY, element: el });
+            }}
+            onContextMenuCanvas={e => {
+              setContextMenu({ x: e.clientX, y: e.clientY, element: null });
+            }}
           />
 
           {/* Floating Canvas Controls Toolbar (Zoom, Grid, Quick Actions) */}
@@ -271,7 +295,7 @@ export default function App() {
         />
       </div>
 
-      {/* Bottom Slide Strip for Presentation Mode with Reordering */}
+      {/* Bottom Slide Strip for Presentation Mode with Mini Visual Thumbnails */}
       {project.mode === 'slide' && (
         <SlideStrip
           slides={project.slides}
@@ -283,6 +307,32 @@ export default function App() {
           onDuplicateSlide={duplicateSlide}
           onDeleteSlide={deleteSlide}
           onReorderSlide={reorderSlide}
+        />
+      )}
+
+      {/* Quick Command Palette (Ctrl+K) */}
+      <QuickCommandPalette
+        isOpen={isCommandPaletteOpen}
+        slideWidth={activeSlide.width}
+        slideHeight={activeSlide.height}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onAddElement={addElement}
+        onAddElements={addElements}
+      />
+
+      {/* Floating Right-Click Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          element={contextMenu.element}
+          onClose={() => setContextMenu(null)}
+          onCopy={copySelectedElements}
+          onPaste={pasteElements}
+          onDuplicate={duplicateSelectedElements}
+          onReorder={reorderSelectedElement}
+          onToggleLock={toggleLockElement}
+          onDelete={deleteSelectedElements}
         />
       )}
 

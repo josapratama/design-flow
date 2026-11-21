@@ -21,6 +21,8 @@ interface CanvasViewportProps {
   onUpdateElementLive: (elementId: string, updates: Partial<DesignElement>) => void;
   onMoveSelectedLive: (deltaX: number, deltaY: number, basePositions: Map<string, { x: number; y: number }>) => void;
   onCommitHistory: () => void;
+  onContextMenuElement?: (e: React.MouseEvent, element: DesignElement) => void;
+  onContextMenuCanvas?: (e: React.MouseEvent) => void;
 }
 
 export const CanvasViewport: React.FC<CanvasViewportProps> = ({
@@ -42,6 +44,8 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
   onUpdateElementLive,
   onMoveSelectedLive,
   onCommitHistory,
+  onContextMenuElement,
+  onContextMenuCanvas,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
@@ -164,6 +168,12 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
           onSelectElement('', false);
         }
       }}
+      onContextMenu={e => {
+        if (e.target === containerRef.current || e.target === artboardRef.current) {
+          e.preventDefault();
+          onContextMenuCanvas?.(e);
+        }
+      }}
     >
       {/* Background Dot Grid */}
       {showGrid && (
@@ -199,6 +209,7 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
           onUpdateElementLive={onUpdateElementLive}
           onMoveSelectedLive={onMoveSelectedLive}
           onCommitHistory={onCommitHistory}
+          onContextMenuElement={onContextMenuElement}
         />
 
         {/* Marquee Selection Rectangle Overlay */}

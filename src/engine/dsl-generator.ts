@@ -27,6 +27,8 @@ export function generateDesignDSL(project: DesignProject): string {
       if (el.zIndex !== undefined) lines.push(`    zIndex: ${el.zIndex}`);
       if (el.rotation) lines.push(`    rotation: ${el.rotation}`);
       if (el.opacity !== undefined && el.opacity < 1) lines.push(`    opacity: ${el.opacity}`);
+      if (el.locked) lines.push(`    locked: true`);
+      if (el.hidden) lines.push(`    hidden: true`);
 
       // Content & Typography
       if (el.content !== undefined) lines.push(`    content: "${escapeString(el.content)}"`);
@@ -43,7 +45,8 @@ export function generateDesignDSL(project: DesignProject): string {
       if (el.borderRadius) lines.push(`    borderRadius: ${el.borderRadius}`);
       if (el.shadow && el.shadow !== 'none') lines.push(`    shadow: "${el.shadow}"`);
 
-      // UI components
+      // Media & UI components
+      if (el.imageUrl) lines.push(`    imageUrl: "${escapeString(el.imageUrl)}"`);
       if (el.variant) lines.push(`    variant: "${el.variant}"`);
       if (el.placeholder) lines.push(`    placeholder: "${escapeString(el.placeholder)}"`);
       if (el.iconName) lines.push(`    icon: "${el.iconName}"`);

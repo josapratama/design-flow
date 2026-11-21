@@ -6,10 +6,13 @@ interface TransformHandlesProps {
   scale: number;
   snapToGrid?: boolean;
   gridSize?: number;
+  artboardWidth?: number;
+  artboardHeight?: number;
   selectedElements: DesignElement[];
   onUpdateLive: (updates: Partial<DesignElement>) => void;
   onMoveSelectedLive: (deltaX: number, deltaY: number, basePositions: Map<string, { x: number; y: number }>) => void;
   onCommitHistory: () => void;
+  onGuideLinesChange?: (guides: { x?: number; y?: number } | null) => void;
 }
 
 export const TransformHandles: React.FC<TransformHandlesProps> = ({
@@ -17,10 +20,13 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
   scale,
   snapToGrid = true,
   gridSize = 20,
+  artboardWidth,
+  artboardHeight,
   selectedElements,
   onUpdateLive,
   onMoveSelectedLive,
   onCommitHistory,
+  onGuideLinesChange,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
@@ -84,7 +90,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
     window.addEventListener('pointerup', handlePointerUp);
   };
 
-  // 2. Drag element position (moves ALL selected elements together)
+  // 2. Drag element position (moves ALL selected elements together + Magnetic Center Guides)
   const handleDragPointerDown = (e: React.PointerEvent) => {
     if (isRotating) return;
     e.stopPropagation();
@@ -103,14 +109,38 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
       const deltaX = (moveEvent.clientX - startX) / scale;
       const deltaY = (moveEvent.clientY - startY) / scale;
 
-      const snappedDeltaX = applySnap(deltaX);
-      const snappedDeltaY = applySnap(deltaY);
+      let finalDeltaX = applySnap(deltaX);
+      let finalDeltaY = applySnap(deltaY);
 
-      onMoveSelectedLive(snappedDeltaX, snappedDeltaY, basePositions);
+      const guides: { x?: number; y?: number } = {};
+
+      // Magnetic Snapping to Artboard Center X
+      if (artboardWidth) {
+        const potentialCenterX = element.x + finalDeltaX + element.width / 2;
+        const artboardMidX = Math.round(artboardWidth / 2);
+        if (Math.abs(potentialCenterX - artboardMidX) <= 12) {
+          finalDeltaX = Math.round(artboardMidX - element.width / 2 - element.x);
+          guides.x = artboardMidX;
+        }
+      }
+
+      // Magnetic Snapping to Artboard Center Y
+      if (artboardHeight) {
+        const potentialCenterY = element.y + finalDeltaY + element.height / 2;
+        const artboardMidY = Math.round(artboardHeight / 2);
+        if (Math.abs(potentialCenterY - artboardMidY) <= 12) {
+          finalDeltaY = Math.round(artboardMidY - element.height / 2 - element.y);
+          guides.y = artboardMidY;
+        }
+      }
+
+      onGuideLinesChange?.(Object.keys(guides).length > 0 ? guides : null);
+      onMoveSelectedLive(finalDeltaX, finalDeltaY, basePositions);
     };
 
     const handlePointerUp = () => {
       setIsDragging(false);
+      onGuideLinesChange?.(null);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
       onCommitHistory();
@@ -126,8 +156,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
     e.preventDefault();
     setIsRotating(true);
 
-    // Get the element's bounding box on the screen to find its center
-    const target = (e.currentTarget.parentElement as HTMLElement);
+    const target = e.currentTarget.parentElement as HTMLElement;
     const rect = target.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
@@ -137,7 +166,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
       const mouseY = moveEvent.clientY;
 
       const rad = Math.atan2(mouseY - centerY, mouseX - centerX);
-      let deg = Math.round((rad * 180) / Math.PI + 90); // 0 deg is pointing straight up
+      let deg = Math.round((rad * 180) / Math.PI + 90);
       if (deg < 0) deg += 360;
 
       // Snap to 15 degrees if Shift is held

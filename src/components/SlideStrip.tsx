@@ -22,43 +22,80 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
   onReorderSlide,
 }) => {
   return (
-    <div className="h-28 bg-slate-900 border-t border-slate-800 px-4 py-2 flex items-center gap-3 overflow-x-auto select-none shrink-0 z-10">
+    <div className="h-32 bg-slate-900 border-t border-slate-800 px-4 py-2 flex items-center gap-3 overflow-x-auto select-none shrink-0 z-10">
       {slides.map((slide, index) => {
         const isActive = slide.id === activeSlideId;
+        const scaleFactor = 130 / (slide.width || 1920);
 
         return (
           <div
             key={slide.id}
             onClick={() => onSelectSlide(slide.id)}
-            className={`group relative h-22 w-36 rounded-lg border-2 transition-all cursor-pointer flex flex-col justify-between p-2 shrink-0 overflow-hidden ${
+            className={`group relative h-26 w-38 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between p-2 shrink-0 overflow-hidden ${
               isActive
-                ? 'border-indigo-500 bg-slate-800 shadow-lg shadow-indigo-500/20'
+                ? 'border-indigo-500 bg-slate-800/90 shadow-xl shadow-indigo-500/20 ring-1 ring-indigo-400/50'
                 : 'border-slate-800 bg-slate-950/80 hover:border-slate-700'
             }`}
-            style={{ backgroundColor: slide.background || '#0f172a' }}
           >
             {/* Header: Slide Number & Title */}
             <div className="flex items-center justify-between pointer-events-none z-10">
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900/90 text-slate-200">
                 {index + 1}
               </span>
-              <span className="text-[10px] font-semibold text-slate-300 truncate max-w-[85px]">
+              <span className="text-[10px] font-semibold text-slate-300 truncate max-w-[90px]">
                 {slide.title}
               </span>
             </div>
 
-            {/* Micro Element Indicator Dots */}
-            <div className="flex items-center gap-1 opacity-50 z-10 pointer-events-none">
-              {slide.elements.slice(0, 5).map(el => (
-                <div
-                  key={el.id}
-                  className="w-1.5 h-1.5 rounded-full bg-slate-400"
-                />
-              ))}
+            {/* Scaled Mini Visual Canvas Thumbnail */}
+            <div
+              className="relative w-full h-14 rounded-md overflow-hidden border border-slate-700/60 my-0.5 pointer-events-none shrink-0"
+              style={{ backgroundColor: slide.background || '#0f172a' }}
+            >
+              <div
+                className="absolute origin-top-left pointer-events-none"
+                style={{
+                  width: `${slide.width}px`,
+                  height: `${slide.height}px`,
+                  transform: `scale(${scaleFactor})`,
+                }}
+              >
+                {slide.elements.map(el => (
+                  <div
+                    key={el.id}
+                    className="absolute"
+                    style={{
+                      left: `${el.x}px`,
+                      top: `${el.y}px`,
+                      width: `${el.width}px`,
+                      height: `${el.height}px`,
+                      backgroundColor:
+                        el.fill ||
+                        (el.type === 'heading'
+                          ? '#ffffff'
+                          : el.type === 'text'
+                          ? '#94a3b8'
+                          : el.type === 'button'
+                          ? '#6366f1'
+                          : el.type === 'image'
+                          ? '#8b5cf6'
+                          : '#334155'),
+                      borderRadius: `${el.borderRadius || 2}px`,
+                      opacity: el.opacity !== undefined ? el.opacity : 0.8,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Micro Element Count */}
+            <div className="flex items-center justify-between text-[9px] text-slate-500 font-mono z-10 pointer-events-none">
+              <span>{slide.presetName || '16:9'}</span>
+              <span>{slide.elements.length} el</span>
             </div>
 
             {/* Hover Action Buttons */}
-            <div className="absolute inset-0 bg-slate-950/85 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity z-20">
+            <div className="absolute inset-0 bg-slate-950/90 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity z-20">
               {/* Move Left */}
               {index > 0 && (
                 <button
@@ -106,7 +143,7 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
                     e.stopPropagation();
                     onReorderSlide(slide.id, 'right');
                   }}
-                  title="Geser Slide ke Kanan"
+                  title="Geser Slide ke Kiri"
                   className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -120,10 +157,11 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
       {/* Add New Slide Button */}
       <button
         onClick={onAddSlide}
-        className="h-22 w-28 rounded-lg border-2 border-dashed border-slate-800 hover:border-indigo-500/50 hover:bg-indigo-500/5 text-slate-500 hover:text-indigo-400 flex flex-col items-center justify-center gap-1 shrink-0 transition-all cursor-pointer"
+        title="Tambah Slide Baru"
+        className="h-26 w-24 rounded-xl border-2 border-dashed border-slate-700 hover:border-indigo-500 hover:bg-slate-800/40 text-slate-400 hover:text-indigo-400 flex flex-col items-center justify-center gap-1.5 transition-all shrink-0"
       >
         <Plus className="w-5 h-5" />
-        <span className="text-[11px] font-medium">+ Slide</span>
+        <span className="text-[10px] font-bold">Slide Baru</span>
       </button>
     </div>
   );

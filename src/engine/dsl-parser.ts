@@ -150,9 +150,27 @@ function parseElementProperty(line: string, el: Partial<DesignElement>) {
     return;
   }
 
+  // Icon alias mapping
+  const iconMatch = line.match(/icon:\s*"([^"]+)"/);
+  if (iconMatch) {
+    el.iconName = unescapeString(iconMatch[1]);
+    return;
+  }
+
+  // Boolean flags
+  if (line.startsWith('locked:')) {
+    el.locked = line.includes('true');
+    return;
+  }
+  if (line.startsWith('hidden:')) {
+    el.hidden = line.includes('true');
+    return;
+  }
+
   const strProps: (keyof DesignElement)[] = [
     'content', 'color', 'fill', 'stroke', 'variant', 'placeholder', 
-    'iconName', 'subTitle', 'badgeText', 'shadow', 'strokeDash', 'fontWeight', 'textAlign'
+    'iconName', 'subTitle', 'badgeText', 'shadow', 'strokeDash', 
+    'fontWeight', 'textAlign', 'imageUrl'
   ];
 
   for (const prop of strProps) {
