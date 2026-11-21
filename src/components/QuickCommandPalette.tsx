@@ -178,6 +178,25 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
           })
         ),
     },
+    {
+      id: 'chart',
+      title: 'Grafik Analisis (Chart)',
+      subtitle: 'Visualisasi data batang, garis, atau donat interaktif',
+      category: 'UI Kit',
+      icon: <BarChart3 className="w-4 h-4 text-indigo-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('chart', 'Grafik Analisis', 360, 220, {
+            content: 'Kinerja Kuartalan',
+            subTitle: 'Metrik evaluasi Q1-Q4',
+            chartType: 'bar',
+            fill: '#6366f1',
+            color: '#38bdf8',
+            borderRadius: 16,
+            shadow: 'lg',
+          })
+        ),
+    },
     // Bentuk
     {
       id: 'rect',

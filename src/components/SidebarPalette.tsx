@@ -554,6 +554,26 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                 <Sparkles className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
                 <span className="text-slate-200 font-medium">Ikon Vektor</span>
               </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('chart', 'Grafik Analisis', 360, 220, {
+                      content: 'Pertumbuhan Kinerja',
+                      subTitle: 'Evaluasi metrik kuartal Q1-Q4',
+                      chartType: 'bar',
+                      fill: '#6366f1',
+                      color: '#38bdf8',
+                      borderRadius: 16,
+                      shadow: 'lg',
+                    })
+                  )
+                }
+                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+              >
+                <BarChart3 className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-200 font-medium">Grafik / Chart</span>
+              </button>
             </div>
           </div>
         )}

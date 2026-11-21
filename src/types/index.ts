@@ -50,6 +50,7 @@ export type ElementType =
   | 'metric-card'
   | 'toggle'
   | 'table'
+  | 'chart'
   // Media & Icons
   | 'icon'
   | 'image';
@@ -95,6 +96,12 @@ export interface DesignElement {
   subTitle?: string;
   badgeText?: string;
   groupId?: string;
+  flipX?: boolean;
+  flipY?: boolean;
+
+  // Chart specifics
+  chartType?: 'bar' | 'line' | 'donut';
+  chartData?: { label: string; value: number }[];
   
   // Custom user meta
   meta?: Record<string, any>;
@@ -105,6 +112,7 @@ export interface Slide {
   title: string;
   notes?: string;
   background: string;
+  transition?: 'fade' | 'slide' | 'zoom' | 'none';
   elements: DesignElement[];
   width: number;
   height: number;

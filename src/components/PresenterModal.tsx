@@ -24,6 +24,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [laserPos, setLaserPos] = useState({ x: -100, y: -100 });
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState(5);
+  const [transitionEffect, setTransitionEffect] = useState<'fade' | 'slide' | 'zoom'>('fade');
 
   const slideAreaRef = useRef<HTMLDivElement>(null);
 
@@ -175,6 +176,20 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             <span>Laser {isLaserActive ? 'Aktif' : 'Pointer'}</span>
           </button>
 
+          {/* Transition Effect Selector */}
+          <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700 rounded-lg px-2 py-1 text-xs">
+            <span className="text-[10px] text-slate-400 font-semibold">Efek:</span>
+            <select
+              value={transitionEffect}
+              onChange={e => setTransitionEffect(e.target.value as any)}
+              className="bg-transparent text-[11px] text-slate-200 outline-none cursor-pointer font-medium"
+            >
+              <option value="fade" className="bg-slate-900">Fade (Halus)</option>
+              <option value="slide" className="bg-slate-900">Slide (Geser)</option>
+              <option value="zoom" className="bg-slate-900">Zoom (Memperbesar)</option>
+            </select>
+          </div>
+
           <button
             onClick={() => setShowNotes(!showNotes)}
             className={`px-3 py-1 rounded-lg text-xs font-medium border ${showNotes
@@ -211,7 +226,14 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             }`}
         >
           <div
-            className="relative shadow-2xl rounded-sm overflow-hidden transition-all duration-150"
+            key={currentIndex}
+            className={`relative shadow-2xl rounded-sm overflow-hidden ${
+              transitionEffect === 'slide'
+                ? 'animate-in slide-in-from-right-10 duration-300'
+                : transitionEffect === 'zoom'
+                ? 'animate-in zoom-in-95 duration-200'
+                : 'animate-in fade-in duration-200'
+            }`}
             style={{
               width: `${currentSlide.width}px`,
               height: `${currentSlide.height}px`,
@@ -230,7 +252,11 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                   width: `${el.width}px`,
                   height: `${el.height}px`,
                   zIndex: el.zIndex,
-                  transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                  transform: [
+                    el.rotation ? `rotate(${el.rotation}deg)` : '',
+                    el.flipX ? 'scaleX(-1)' : '',
+                    el.flipY ? 'scaleY(-1)' : '',
+                  ].filter(Boolean).join(' ') || undefined,
                   opacity: el.opacity !== undefined ? el.opacity : 1,
                 }}
               >

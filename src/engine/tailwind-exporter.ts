@@ -38,7 +38,12 @@ function renderElementJSX(el: DesignElement): string {
     zIndex: el.zIndex,
   };
 
-  if (el.rotation) baseStyle.transform = `rotate(${el.rotation}deg)`;
+  const transforms = [
+    el.rotation ? `rotate(${el.rotation}deg)` : '',
+    el.flipX ? 'scaleX(-1)' : '',
+    el.flipY ? 'scaleY(-1)' : '',
+  ].filter(Boolean);
+  if (transforms.length > 0) baseStyle.transform = transforms.join(' ');
   if (el.opacity !== undefined && el.opacity < 1) baseStyle.opacity = el.opacity;
 
   const toStyleAttr = (extras: Record<string, string | number | undefined> = {}) => {
@@ -185,6 +190,26 @@ function renderElementJSX(el: DesignElement): string {
       >
         <polygon points="0,35 60,35 60,10 100,50 60,90 60,65 0,65" fill="${el.fill || '#3b82f6'}" stroke="${el.stroke || 'none'}" strokeWidth="${el.strokeWidth || 0}" />
       </svg>`;
+
+    case 'chart':
+      return `      {/* Chart: ${el.name} */}
+      <div 
+        className="absolute p-4 rounded-2xl bg-slate-900 border border-slate-800 ${getShadowClass(el.shadow)} flex flex-col justify-between"
+        ${toStyleAttr({ backgroundColor: '#0f172a', borderRadius: `${el.borderRadius || 16}px` })}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs font-bold text-slate-100">${escapeJSX(el.content || 'Analisis Kinerja')}</div>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono font-semibold uppercase">
+            ${el.chartType || 'bar'}
+          </span>
+        </div>
+        <div className="flex-1 flex items-end justify-around gap-2 pt-2">
+          {/* Chart Bars / Metrics */}
+          <div className="flex-1 h-3/4 rounded-t bg-indigo-500" />
+          <div className="flex-1 h-full rounded-t bg-indigo-400" />
+          <div className="flex-1 h-1/2 rounded-t bg-indigo-600" />
+        </div>
+      </div>`;
 
     case 'line':
       return `      {/* Divider Line: ${el.name} */}

@@ -193,6 +193,141 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
       );
     }
 
+    case 'chart': {
+      const chartMode = element.chartType || 'bar';
+      const data = element.chartData || [
+        { label: 'Q1', value: 45 },
+        { label: 'Q2', value: 78 },
+        { label: 'Q3', value: 55 },
+        { label: 'Q4', value: 92 },
+      ];
+      const maxValue = Math.max(...data.map(d => d.value), 10);
+      const primaryColor = fill || '#6366f1';
+      const accentColor = color || '#38bdf8';
+
+      return (
+        <div
+          className={`w-full h-full p-4 rounded-2xl flex flex-col justify-between border select-none ${shadowClass}`}
+          style={{
+            backgroundColor: '#0f172a',
+            borderColor: stroke || 'rgba(255,255,255,0.08)',
+            borderRadius: `${borderRadius !== undefined ? borderRadius : 16}px`,
+          }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <div className="text-xs font-bold text-slate-100">{content || 'Analisis Kinerja'}</div>
+              <div className="text-[10px] text-slate-400">{subTitle || 'Metrik evaluasi performa'}</div>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono font-semibold uppercase">
+              {chartMode}
+            </span>
+          </div>
+
+          {/* SVG Chart Area */}
+          <div className="flex-1 w-full relative min-h-0">
+            {chartMode === 'bar' && (
+              <div className="w-full h-full flex items-end justify-around gap-2 pt-4 pb-5">
+                {data.map((item, idx) => {
+                  const heightPercent = Math.round((item.value / maxValue) * 78);
+                  return (
+                    <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group">
+                      <span className="text-[10px] font-mono font-bold text-slate-300 mb-1">
+                        {item.value}
+                      </span>
+                      <div
+                        className="w-full rounded-t-md transition-all duration-300 hover:brightness-125"
+                        style={{
+                          height: `${heightPercent}%`,
+                          background: `linear-gradient(to top, ${primaryColor}, ${accentColor})`,
+                          minHeight: '4px',
+                        }}
+                      />
+                      <span className="text-[10px] font-medium text-slate-400 mt-1 truncate">
+                        {item.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {chartMode === 'line' && (
+              <svg className="w-full h-full overflow-visible" viewBox="0 0 300 120" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id={`grad_${element.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={primaryColor} stopOpacity="0.4" />
+                    <stop offset="100%" stopColor={primaryColor} stopOpacity="0.0" />
+                  </linearGradient>
+                </defs>
+                <line x1="0" y1="30" x2="300" y2="30" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+                <line x1="0" y1="70" x2="300" y2="70" stroke="rgba(255,255,255,0.06)" strokeDasharray="3 3" />
+                <line x1="0" y1="110" x2="300" y2="110" stroke="rgba(255,255,255,0.1)" />
+                {(() => {
+                  const points = data.map((d, i) => {
+                    const x = (i / (data.length - 1 || 1)) * 280 + 10;
+                    const y = 110 - (d.value / maxValue) * 85;
+                    return { x, y, label: d.label, val: d.value };
+                  });
+                  const polylinePoints = points.map(p => `${p.x},${p.y}`).join(' ');
+                  const areaPoints = `${points[0]?.x || 0},110 ` + polylinePoints + ` ${points[points.length - 1]?.x || 300},110`;
+                  return (
+                    <>
+                      <polygon points={areaPoints} fill={`url(#grad_${element.id})`} />
+                      <polyline points={polylinePoints} fill="none" stroke={primaryColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                      {points.map((p, idx) => (
+                        <g key={idx}>
+                          <circle cx={p.x} cy={p.y} r="4" fill="#ffffff" stroke={primaryColor} strokeWidth="2" />
+                          <text x={p.x} y={p.y - 7} fill="#94a3b8" fontSize="9" textAnchor="middle" fontFamily="monospace">
+                            {p.val}
+                          </text>
+                        </g>
+                      ))}
+                    </>
+                  );
+                })()}
+              </svg>
+            )}
+
+            {chartMode === 'donut' && (
+              <div className="w-full h-full flex items-center justify-center gap-6">
+                <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-slate-800"
+                    strokeWidth="4"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    strokeWidth="4.2"
+                    strokeDasharray="72, 100"
+                    strokeLinecap="round"
+                    stroke={primaryColor}
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className="space-y-1.5 text-xs">
+                  {data.slice(0, 3).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full"
+                        style={{ backgroundColor: idx === 0 ? primaryColor : idx === 1 ? accentColor : '#94a3b8' }}
+                      />
+                      <span className="text-slate-300 font-medium text-[11px]">{item.label}</span>
+                      <span className="text-slate-400 font-mono text-[10px] ml-auto">{item.value}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     case 'image':
       return (
         <div

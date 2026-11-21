@@ -203,6 +203,32 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 ))}
               </div>
             </div>
+
+            {/* Tema Palet Warna Slide (1-Klik) */}
+            <div className="space-y-1.5 pt-2 border-t border-slate-800">
+              <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                Tema Palet Harmonis (1-Klik)
+              </span>
+              <div className="grid grid-cols-2 gap-1.5">
+                {[
+                  { name: 'Midnight', bg: 'linear-gradient(135deg, #090d16 0%, #1e1b4b 100%)', dot: '#6366f1' },
+                  { name: 'Cyberpunk', bg: 'linear-gradient(135deg, #0e0b1f 0%, #3b0764 100%)', dot: '#d946ef' },
+                  { name: 'Deep Emerald', bg: 'linear-gradient(135deg, #021a12 0%, #064e3b 100%)', dot: '#10b981' },
+                  { name: 'Sunset Warm', bg: 'linear-gradient(135deg, #180512 0%, #4c0519 100%)', dot: '#f43f5e' },
+                ].map(theme => (
+                  <button
+                    key={theme.name}
+                    onClick={() => onUpdateSlide(activeSlide.id, { background: theme.bg })}
+                    className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-indigo-500 flex items-center gap-2 group transition-all text-left"
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: theme.dot }} />
+                    <span className="text-[10px] font-medium text-slate-300 group-hover:text-white truncate">
+                      {theme.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Catatan Pembicara (Speaker Notes) */}
@@ -444,7 +470,72 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Flip Cermin Horisontal & Vertikal */}
+          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+            <span className="text-[10px] text-slate-500">Cermin (Flip)</span>
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => handleChange('flipX', !element.flipX)}
+                title="Cermin Horisontal"
+                className={`px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 font-medium transition-colors ${
+                  element.flipX
+                    ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                }`}
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                <span>Horisontal</span>
+              </button>
+              <button
+                onClick={() => handleChange('flipY', !element.flipY)}
+                title="Cermin Vertikal"
+                className={`px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 font-medium transition-colors ${
+                  element.flipY
+                    ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                }`}
+              >
+                <ArrowUpDown className="w-3.5 h-3.5" />
+                <span>Vertikal</span>
+              </button>
+            </div>
+          </div>
         </div>
+
+        {/* Pengaturan Elemen Chart */}
+        {element.type === 'chart' && (
+          <div className="space-y-3 p-3 bg-slate-950 border border-slate-800 rounded-xl">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+              Pengaturan Grafik / Chart
+            </span>
+            <div className="grid grid-cols-3 gap-1 bg-slate-900 p-1 rounded-lg border border-slate-800">
+              {(['bar', 'line', 'donut'] as const).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => handleChange('chartType', mode)}
+                  className={`py-1 text-xs font-semibold rounded capitalize transition-colors ${
+                    (element.chartType || 'bar') === mode
+                      ? 'bg-indigo-600 text-white shadow'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {mode === 'bar' ? 'Batang' : mode === 'line' ? 'Garis' : 'Donat'}
+                </button>
+              ))}
+            </div>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Sub-Judul / Label</label>
+              <input
+                type="text"
+                value={element.subTitle || ''}
+                onChange={e => handleChange('subTitle', e.target.value)}
+                placeholder="Contoh: Metrik Pertumbuhan Q1-Q4"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Visual Icon Picker */}
         {['button', 'input', 'metric-card', 'navbar', 'icon', 'badge-shape'].includes(element.type) && (

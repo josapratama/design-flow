@@ -92,7 +92,11 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                   width: `${element.width}px`,
                   height: `${element.height}px`,
                   zIndex: element.zIndex,
-                  transform: element.rotation ? `rotate(${element.rotation}deg)` : undefined,
+                  transform: [
+                    element.rotation ? `rotate(${element.rotation}deg)` : '',
+                    element.flipX ? 'scaleX(-1)' : '',
+                    element.flipY ? 'scaleY(-1)' : '',
+                  ].filter(Boolean).join(' ') || undefined,
                   opacity: element.opacity !== undefined ? element.opacity : 1,
                   pointerEvents: element.locked ? 'none' : 'auto',
                 }}

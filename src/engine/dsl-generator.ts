@@ -29,7 +29,10 @@ export function generateDesignDSL(project: DesignProject): string {
       if (el.opacity !== undefined && el.opacity < 1) lines.push(`    opacity: ${el.opacity}`);
       if (el.locked) lines.push(`    locked: true`);
       if (el.hidden) lines.push(`    hidden: true`);
+      if (el.flipX) lines.push(`    flipX: true`);
+      if (el.flipY) lines.push(`    flipY: true`);
       if (el.groupId) lines.push(`    groupId: "${escapeString(el.groupId)}"`);
+      if (el.chartType) lines.push(`    chartType: "${el.chartType}"`);
 
       // Content & Typography
       if (el.content !== undefined) lines.push(`    content: "${escapeString(el.content)}"`);
