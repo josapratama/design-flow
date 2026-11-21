@@ -4,6 +4,7 @@ import {
   ZoomOut,
   Maximize,
   Grid,
+  Ruler,
   Trash2,
   Copy,
 } from 'lucide-react';
@@ -11,12 +12,14 @@ import {
 interface ToolbarProps {
   scale: number;
   showGrid: boolean;
+  showRulers?: boolean;
   hasSelectedElements: boolean;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetZoom: () => void;
   onSetScale?: (scale: number) => void;
   onToggleGrid: () => void;
+  onToggleRulers?: () => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
 }
@@ -24,12 +27,14 @@ interface ToolbarProps {
 export const Toolbar: React.FC<ToolbarProps> = ({
   scale,
   showGrid,
+  showRulers = true,
   hasSelectedElements,
   onZoomIn,
   onZoomOut,
   onResetZoom,
   onSetScale,
   onToggleGrid,
+  onToggleRulers,
   onDeleteSelected,
   onDuplicateSelected,
 }) => {
@@ -100,13 +105,26 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       {/* Grid toggle */}
       <button
         onClick={onToggleGrid}
-        title="Tampilkan / Sembunyikan Grid"
+        title="Tampilkan / Sembunyikan Titik Grid"
         className={`p-1.5 rounded-xl transition-colors ${
           showGrid ? 'bg-indigo-600/20 text-indigo-400' : 'hover:bg-slate-800 text-slate-400'
         }`}
       >
         <Grid className="w-4 h-4" />
       </button>
+
+      {/* Rulers toggle */}
+      {onToggleRulers && (
+        <button
+          onClick={onToggleRulers}
+          title="Tampilkan / Sembunyikan Penggaris Piksel (Shift+R)"
+          className={`p-1.5 rounded-xl transition-colors ${
+            showRulers ? 'bg-indigo-600/20 text-indigo-400' : 'hover:bg-slate-800 text-slate-400'
+          }`}
+        >
+          <Ruler className="w-4 h-4" />
+        </button>
+      )}
 
       {/* Contextual actions for selected element */}
       {hasSelectedElements && (

@@ -154,6 +154,13 @@ export default function App() {
         return;
       }
 
+      // 0.4 Toggle Rulers: Shift+R
+      if (e.shiftKey && e.key.toLowerCase() === 'r' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        setProject(prev => ({ ...prev, showRulers: prev.showRulers === false ? true : false }));
+        return;
+      }
+
       // 1. Delete / Backspace
       if (e.key === 'Delete' || e.key === 'Backspace') {
         if (project.selectedElementIds.length > 0) {
@@ -287,6 +294,7 @@ export default function App() {
             panX={project.panX}
             panY={project.panY}
             showGrid={project.showGrid}
+            showRulers={project.showRulers !== false}
             snapToGrid={project.snapToGrid}
             gridSize={project.gridSize}
             selectedElementIds={project.selectedElementIds}
@@ -314,6 +322,7 @@ export default function App() {
           <Toolbar
             scale={project.scale}
             showGrid={project.showGrid}
+            showRulers={project.showRulers !== false}
             hasSelectedElements={project.selectedElementIds.length > 0}
             onZoomIn={() =>
               setProject(prev => ({ ...prev, scale: Math.min(3.0, Number((prev.scale + 0.1).toFixed(2))) }))
@@ -324,6 +333,9 @@ export default function App() {
             onResetZoom={handleZoomToFit}
             onSetScale={scale => setProject(prev => ({ ...prev, scale }))}
             onToggleGrid={() => setProject(prev => ({ ...prev, showGrid: !prev.showGrid }))}
+            onToggleRulers={() =>
+              setProject(prev => ({ ...prev, showRulers: prev.showRulers === false ? true : false }))
+            }
             onDeleteSelected={deleteSelectedElements}
             onDuplicateSelected={duplicateSelectedElements}
           />

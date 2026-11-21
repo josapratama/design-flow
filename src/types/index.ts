@@ -132,4 +132,5 @@ export interface DesignProject {
   showGrid: boolean;
   snapToGrid: boolean;
   gridSize: number;
+  showRulers?: boolean;
 }

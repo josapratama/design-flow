@@ -8,6 +8,7 @@ interface CanvasViewportProps {
   panX: number;
   panY: number;
   showGrid: boolean;
+  showRulers?: boolean;
   snapToGrid?: boolean;
   gridSize?: number;
   selectedElementIds: string[];
@@ -31,6 +32,7 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
   panX,
   panY,
   showGrid,
+  showRulers = true,
   snapToGrid = true,
   gridSize = 20,
   selectedElementIds,
@@ -209,11 +211,11 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
       {/* Background Dot Grid */}
       {showGrid && (
         <div
-          className="absolute inset-0 pointer-events-none opacity-20"
+          className="absolute inset-0 pointer-events-none opacity-25"
           style={{
-            backgroundImage: `radial - gradient(circle, #64748b 1px, transparent 1px)`,
-            backgroundSize: `${ 24 * scale }px ${ 24 * scale } px`,
-            backgroundPosition: `${ panX }px ${ panY } px`,
+            backgroundImage: `radial-gradient(circle, #64748b 1.2px, transparent 1.2px)`,
+            backgroundSize: `${24 * scale}px ${24 * scale}px`,
+            backgroundPosition: `${panX}px ${panY}px`,
           }}
         />
       )}
@@ -222,9 +224,9 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
       <div
         className="absolute transition-transform duration-75 origin-top-left"
         style={{
-          transform: `translate(${ panX }px, ${ panY }px) scale(${ scale })`,
-          width: `${ slide.width } px`,
-          height: `${ slide.height } px`,
+          transform: `translate(${panX}px, ${panY}px) scale(${scale})`,
+          width: `${slide.width}px`,
+          height: `${slide.height}px`,
         }}
       >
         <ArtboardRenderer
@@ -249,14 +251,91 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
             className="absolute border border-indigo-400 bg-indigo-500/20 pointer-events-none z-50 rounded-sm"
             data-export-ignore="true"
             style={{
-              left: `${ Math.min(marquee.startX, marquee.currentX) } px`,
-              top: `${ Math.min(marquee.startY, marquee.currentY) } px`,
-              width: `${ Math.abs(marquee.currentX - marquee.startX) } px`,
-              height: `${ Math.abs(marquee.currentY - marquee.startY) } px`,
+              left: `${Math.min(marquee.startX, marquee.currentX)}px`,
+              top: `${Math.min(marquee.startY, marquee.currentY)}px`,
+              width: `${Math.abs(marquee.currentX - marquee.startX)}px`,
+              height: `${Math.abs(marquee.currentY - marquee.startY)}px`,
             }}
           />
         )}
       </div>
+
+      {/* Interactive Pixel Rulers (Top & Left) */}
+      {showRulers && (() => {
+        const tickStep = scale < 0.35 ? 200 : scale < 0.85 ? 100 : 50;
+        const hTicks: { val: number; x: number }[] = [];
+        for (let val = 0; val <= slide.width; val += tickStep) {
+          hTicks.push({ val, x: panX + val * scale });
+        }
+        const vTicks: { val: number; y: number }[] = [];
+        for (let val = 0; val <= slide.height; val += tickStep) {
+          vTicks.push({ val, y: panY + val * scale });
+        }
+
+        return (
+          <>
+            {/* Top-Left Corner Block */}
+            <div
+              className="absolute top-0 left-0 w-5 h-5 bg-slate-950 border-r border-b border-slate-800 z-30 flex items-center justify-center text-[8px] font-mono font-bold text-slate-500 pointer-events-none select-none"
+              data-export-ignore="true"
+            >
+              px
+            </div>
+
+            {/* Top Horizontal Ruler */}
+            <div
+              className="absolute top-0 left-5 right-0 h-5 bg-slate-950/90 backdrop-blur-sm border-b border-slate-800/80 z-20 pointer-events-none overflow-hidden select-none"
+              data-export-ignore="true"
+            >
+              <svg className="w-full h-full">
+                {/* Active Artboard Span Indicator */}
+                <line
+                  x1={panX}
+                  y1={19}
+                  x2={panX + slide.width * scale}
+                  y2={19}
+                  stroke="#6366f1"
+                  strokeWidth={2}
+                />
+                {hTicks.map(({ val, x }) => (
+                  <g key={val} transform={`translate(${x}, 0)`}>
+                    <line x1={0} y1={12} x2={0} y2={20} stroke="rgba(255,255,255,0.2)" strokeWidth={1} />
+                    <text x={2} y={10} fill="#64748b" fontSize={8} fontFamily="monospace">
+                      {val}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            </div>
+
+            {/* Left Vertical Ruler */}
+            <div
+              className="absolute top-5 left-0 bottom-0 w-5 bg-slate-950/90 backdrop-blur-sm border-r border-slate-800/80 z-20 pointer-events-none overflow-hidden select-none"
+              data-export-ignore="true"
+            >
+              <svg className="w-full h-full">
+                {/* Active Artboard Span Indicator */}
+                <line
+                  x1={19}
+                  y1={panY}
+                  x2={19}
+                  y2={panY + slide.height * scale}
+                  stroke="#6366f1"
+                  strokeWidth={2}
+                />
+                {vTicks.map(({ val, y }) => (
+                  <g key={val} transform={`translate(0, ${y})`}>
+                    <line x1={12} y1={0} x2={20} y2={0} stroke="rgba(255,255,255,0.2)" strokeWidth={1} />
+                    <text x={2} y={-2} fill="#64748b" fontSize={7} fontFamily="monospace" transform="rotate(-90 2,-2)">
+                      {val}
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 };

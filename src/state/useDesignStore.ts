@@ -18,6 +18,7 @@ export function useDesignStore() {
     showGrid: true,
     snapToGrid: true,
     gridSize: 20,
+    showRulers: true,
   });
 
   // History Stack for Undo/Redo
