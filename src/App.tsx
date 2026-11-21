@@ -14,6 +14,7 @@ import { QuickCommandPalette } from './components/QuickCommandPalette';
 import { ContextMenu } from './components/ContextMenu';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { DesignElement } from './types';
+import { preloadCoreFonts } from './utils/fontLoader';
 
 export default function App() {
   const {
@@ -71,6 +72,10 @@ export default function App() {
   } | null>(null);
 
   const artboardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    preloadCoreFonts();
+  }, []);
 
   const selectedElement = selectedElements.length > 0 ? selectedElements[0] : null;
 
@@ -427,6 +432,7 @@ export default function App() {
         <PresenterModal
           slides={project.slides}
           initialSlideIndex={project.slides.findIndex(s => s.id === project.activeSlideId)}
+          onUpdateSlideNotes={(slideId, notes) => updateSlideSettings(slideId, { notes })}
           onClose={() => setIsPresenterOpen(false)}
         />
       )}

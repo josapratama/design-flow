@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { DesignElement } from '../types';
+import { soundEffects } from '../utils/audioEffects';
 
 interface TransformHandlesProps {
   element: DesignElement;
@@ -9,10 +10,11 @@ interface TransformHandlesProps {
   artboardWidth?: number;
   artboardHeight?: number;
   selectedElements: DesignElement[];
+  allElements?: DesignElement[];
   onUpdateLive: (updates: Partial<DesignElement>) => void;
   onMoveSelectedLive: (deltaX: number, deltaY: number, basePositions: Map<string, { x: number; y: number }>) => void;
   onCommitHistory: () => void;
-  onGuideLinesChange?: (guides: { x?: number; y?: number } | null) => void;
+  onGuideLinesChange?: (guides: { x?: number; y?: number; isElementSnap?: boolean } | null) => void;
 }
 
 export const TransformHandles: React.FC<TransformHandlesProps> = ({
@@ -23,6 +25,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
   artboardWidth,
   artboardHeight,
   selectedElements,
+  allElements = [],
   onUpdateLive,
   onMoveSelectedLive,
   onCommitHistory,
@@ -30,6 +33,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
+  const hasPlayedSnap = useRef(false);
 
   const applySnap = (val: number): number => {
     if (!snapToGrid) return Math.round(val);
@@ -129,9 +133,15 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
       let finalDeltaX = applySnap(deltaX);
       let finalDeltaY = applySnap(deltaY);
 
-      const guides: { x?: number; y?: number } = {};
+      const guides: { x?: number; y?: number; isElementSnap?: boolean } = {};
+      const snapThreshold = 7;
 
-      // Magnetic Snapping to Artboard Center X
+      // Filter sibling elements not being moved
+      const selectedIdSet = new Set(selectedElements.map(s => s.id));
+      const siblings = allElements.filter(s => !selectedIdSet.has(s.id) && !s.hidden);
+
+      // 1. Magnetic Snapping on X Axis
+      // 1a. Artboard Center X
       if (artboardWidth) {
         const potentialCenterX = element.x + finalDeltaX + element.width / 2;
         const artboardMidX = Math.round(artboardWidth / 2);
@@ -141,7 +151,48 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         }
       }
 
-      // Magnetic Snapping to Artboard Center Y
+      // 1b. Sibling Elements X alignment (Left, Center, Right)
+      if (guides.x === undefined) {
+        const curLeft = element.x + finalDeltaX;
+        const curRight = curLeft + element.width;
+        const curMidX = curLeft + element.width / 2;
+
+        for (const sib of siblings) {
+          const sibLeft = sib.x;
+          const sibRight = sib.x + sib.width;
+          const sibMidX = sib.x + sib.width / 2;
+
+          if (Math.abs(curLeft - sibLeft) <= snapThreshold) {
+            finalDeltaX = sibLeft - element.x;
+            guides.x = sibLeft;
+            guides.isElementSnap = true;
+            break;
+          } else if (Math.abs(curRight - sibRight) <= snapThreshold) {
+            finalDeltaX = sibRight - element.width - element.x;
+            guides.x = sibRight;
+            guides.isElementSnap = true;
+            break;
+          } else if (Math.abs(curMidX - sibMidX) <= snapThreshold) {
+            finalDeltaX = Math.round(sibMidX - element.width / 2 - element.x);
+            guides.x = sibMidX;
+            guides.isElementSnap = true;
+            break;
+          } else if (Math.abs(curLeft - sibRight) <= snapThreshold) {
+            finalDeltaX = sibRight - element.x;
+            guides.x = sibRight;
+            guides.isElementSnap = true;
+            break;
+          } else if (Math.abs(curRight - sibLeft) <= snapThreshold) {
+            finalDeltaX = sibLeft - element.width - element.x;
+            guides.x = sibLeft;
+            guides.isElementSnap = true;
+            break;
+          }
+        }
+      }
+
+      // 2. Magnetic Snapping on Y Axis
+      // 2a. Artboard Center Y
       if (artboardHeight) {
         const potentialCenterY = element.y + finalDeltaY + element.height / 2;
         const artboardMidY = Math.round(artboardHeight / 2);
@@ -151,12 +202,62 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         }
       }
 
-      onGuideLinesChange?.(Object.keys(guides).length > 0 ? guides : null);
+      // 2b. Sibling Elements Y alignment (Top, Center, Bottom)
+      if (guides.y === undefined) {
+        const curTop = element.y + finalDeltaY;
+        const curBottom = curTop + element.height;
+        const curMidY = curTop + element.height / 2;
+
+        for (const sib of siblings) {
+          const sibTop = sib.y;
+          const sibBottom = sib.y + sib.height;
+          const sibMidY = sib.y + sib.height / 2;
+
+          if (Math.abs(curTop - sibTop) <= snapThreshold) {
+            finalDeltaY = sibTop - element.y;
+            guides.y = sibTop;
+            guides.isElementSnap = true;
+            break;
+          } else if (Math.abs(curBottom - sibBottom) <= snapThreshold) {
+            finalDeltaY = sibBottom - element.height - element.y;
+            guides.y = sibBottom;
+            guides.isElementSnap = true;
+            break;
+          } else if (Math.abs(curMidY - sibMidY) <= snapThreshold) {
+            finalDeltaY = Math.round(sibMidY - element.height / 2 - element.y);
+            guides.y = sibMidY;
+            guides.isElementSnap = true;
+            break;
+          } else if (Math.abs(curTop - sibBottom) <= snapThreshold) {
+            finalDeltaY = sibBottom - element.y;
+            guides.y = sibBottom;
+            guides.isElementSnap = true;
+            break;
+          } else if (Math.abs(curBottom - sibTop) <= snapThreshold) {
+            finalDeltaY = sibTop - element.height - element.y;
+            guides.y = sibTop;
+            guides.isElementSnap = true;
+            break;
+          }
+        }
+      }
+
+      // Play subtle snap sound when entering snap state
+      const isSnapped = guides.x !== undefined || guides.y !== undefined;
+      if (isSnapped && !hasPlayedSnap.current) {
+        soundEffects.playSnapSound();
+        hasPlayedSnap.current = true;
+      } else if (!isSnapped) {
+        hasPlayedSnap.current = false;
+      }
+
+      onGuideLinesChange?.(isSnapped ? guides : null);
       onMoveSelectedLive(finalDeltaX, finalDeltaY, basePositions);
     };
 
     const handlePointerUp = () => {
       setIsDragging(false);
+      hasPlayedSnap.current = false;
       onGuideLinesChange?.(null);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);

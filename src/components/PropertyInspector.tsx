@@ -27,6 +27,7 @@ import {
   Pipette,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import { POPULAR_FONTS } from '../utils/fontLoader';
 
 interface PropertyInspectorProps {
   element: DesignElement | null;
@@ -699,16 +700,49 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     <option value="extrabold">Ekstra</option>
                   </select>
                 </div>
-                <div>
-                  <label className="text-[10px] text-slate-500 block mb-1">Font Family</label>
+                <div className="col-span-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] text-slate-500">Google & Web Font Family</label>
+                    <span className="text-[9px] text-indigo-400 font-medium">Live CDN</span>
+                  </div>
                   <select
                     value={element.fontFamily || 'sans'}
                     onChange={e => handleChange('fontFamily', e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-1.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs font-medium cursor-pointer"
                   >
-                    <option value="sans">Sans (Inter)</option>
-                    <option value="serif">Serif (Elegan)</option>
-                    <option value="mono">Monospace</option>
+                    <optgroup label="Sistem Dasar">
+                      <option value="sans">Sans (Inter / Default)</option>
+                      <option value="serif">Serif (Klasik)</option>
+                      <option value="mono">Monospace (Kode)</option>
+                    </optgroup>
+                    <optgroup label="Google Fonts — Sans Serif">
+                      {POPULAR_FONTS.filter(f => f.category === 'Sans Serif').map(f => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Google Fonts — Serif">
+                      {POPULAR_FONTS.filter(f => f.category === 'Serif').map(f => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Google Fonts — Monospace">
+                      {POPULAR_FONTS.filter(f => f.category === 'Monospace').map(f => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Google Fonts — Display & Headline">
+                      {POPULAR_FONTS.filter(f => f.category === 'Display').map(f => (
+                        <option key={f.id} value={f.id}>
+                          {f.name}
+                        </option>
+                      ))}
+                    </optgroup>
                   </select>
                 </div>
               </div>

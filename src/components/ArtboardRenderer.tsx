@@ -37,7 +37,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
     ref
   ) => {
     const [editingElementId, setEditingElementId] = useState<string | null>(null);
-    const [guideLines, setGuideLines] = useState<{ x?: number; y?: number } | null>(null);
+    const [guideLines, setGuideLines] = useState<{ x?: number; y?: number; isElementSnap?: boolean } | null>(null);
 
     return (
       <div
@@ -57,17 +57,25 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
           }
         }}
       >
-        {/* Smart Magnetic Guide Lines (Center X and Center Y) */}
+        {/* Smart Magnetic Guide Lines (Center X and Center Y or Sibling Element Alignment) */}
         {guideLines?.x !== undefined && (
           <div
-            className="absolute top-0 bottom-0 pointer-events-none z-40 border-l-2 border-dashed border-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+            className={`absolute top-0 bottom-0 pointer-events-none z-40 border-l-2 border-dashed ${
+              guideLines.isElementSnap
+                ? 'border-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]'
+                : 'border-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]'
+            }`}
             data-export-ignore="true"
             style={{ left: `${guideLines.x}px` }}
           />
         )}
         {guideLines?.y !== undefined && (
           <div
-            className="absolute left-0 right-0 pointer-events-none z-40 border-t-2 border-dashed border-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]"
+            className={`absolute left-0 right-0 pointer-events-none z-40 border-t-2 border-dashed ${
+              guideLines.isElementSnap
+                ? 'border-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)]'
+                : 'border-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]'
+            }`}
             data-export-ignore="true"
             style={{ top: `${guideLines.y}px` }}
           />
@@ -168,6 +176,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                     artboardWidth={slide.width}
                     artboardHeight={slide.height}
                     selectedElements={selectedElements}
+                    allElements={slide.elements}
                     onUpdateLive={updates => onUpdateElementLive(element.id, updates)}
                     onMoveSelectedLive={onMoveSelectedLive}
                     onCommitHistory={onCommitHistory}

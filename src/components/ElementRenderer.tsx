@@ -1,6 +1,7 @@
 import React from 'react';
 import { DesignElement } from '../types';
 import * as Icons from 'lucide-react';
+import { getFontFamilyStyle } from '../utils/fontLoader';
 
 interface ElementRendererProps {
   element: DesignElement;
@@ -31,6 +32,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
     imageUrl,
     name,
   } = element;
+
+  const resolvedFontFamily = getFontFamilyStyle(element.fontFamily);
 
   // Shadow class mapping
   const shadowClass =
@@ -350,8 +353,9 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
     case 'quote':
       return (
         <div
-          className={`w-full h-full flex flex-col justify-center select-none overflow-hidden ${fontClass} ${shadowClass}`}
+          className={`w-full h-full flex flex-col justify-center select-none overflow-hidden ${shadowClass}`}
           style={{
+            fontFamily: resolvedFontFamily,
             color: color || '#ffffff',
             fontSize: `${fontSize || 24}px`,
             fontWeight: fontWeight === 'extrabold' ? 800 : fontWeight === 'bold' ? 700 : fontWeight === 'semibold' ? 600 : 400,
@@ -367,8 +371,9 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
     case 'button':
       return (
         <div
-          className={`w-full h-full flex items-center justify-center font-medium transition-all select-none cursor-pointer ${fontClass} ${shadowClass}`}
+          className={`w-full h-full flex items-center justify-center font-medium transition-all select-none cursor-pointer ${shadowClass}`}
           style={{
+            fontFamily: resolvedFontFamily,
             backgroundColor: fill || '#6366f1',
             border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : 'none',
             borderRadius: `${borderRadius !== undefined ? borderRadius : 12}px`,

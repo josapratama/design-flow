@@ -1,18 +1,33 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
-import { Play, Pause, ChevronLeft, ChevronRight, X, Maximize2, Minimize2, CircleDot } from 'lucide-react';
+import {
+  Play,
+  Pause,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Maximize2,
+  Minimize2,
+  CircleDot,
+  Volume2,
+  VolumeX,
+  FileEdit,
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { soundEffects } from '../utils/audioEffects';
 
 interface PresenterModalProps {
   slides: Slide[];
   initialSlideIndex?: number;
+  onUpdateSlideNotes?: (slideId: string, notes: string) => void;
   onClose: () => void;
 }
 
 export const PresenterModal: React.FC<PresenterModalProps> = ({
   slides,
   initialSlideIndex = 0,
+  onUpdateSlideNotes,
   onClose,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialSlideIndex);
@@ -21,6 +36,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [showNotes, setShowNotes] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLaserActive, setIsLaserActive] = useState(false);
+  const [isSoundMuted, setIsSoundMuted] = useState(!soundEffects.isSoundEnabled());
   const [laserPos, setLaserPos] = useState({ x: -100, y: -100 });
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState(5);
@@ -33,11 +49,11 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     let timer: any;
     if (isAutoPlay) {
       timer = setInterval(() => {
-        setCurrentIndex(prev => (prev + 1) % slides.length);
+        goToNext();
       }, autoPlayInterval * 1000);
     }
     return () => clearInterval(timer);
-  }, [isAutoPlay, autoPlayInterval, slides.length]);
+  }, [isAutoPlay, autoPlayInterval, slides.length, currentIndex]);
 
   // Timer interval
   useEffect(() => {
@@ -53,6 +69,11 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if user is typing in notes textarea
+      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) {
+        return;
+      }
+
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         goToNext();
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
@@ -61,6 +82,12 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         onClose();
       } else if (e.key.toLowerCase() === 'l') {
         setIsLaserActive(prev => !prev);
+      } else if (e.key.toLowerCase() === 'n') {
+        setShowNotes(prev => !prev);
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFullscreen();
+      } else if (e.key.toLowerCase() === 'm') {
+        toggleSound();
       }
     };
 
@@ -68,9 +95,16 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentIndex, slides.length]);
 
+  const toggleSound = () => {
+    const nextState = !isSoundMuted;
+    setIsSoundMuted(nextState);
+    soundEffects.setSoundEnabled(!nextState);
+  };
+
   const goToNext = () => {
     if (currentIndex < slides.length - 1) {
       setCurrentIndex(i => i + 1);
+      soundEffects.playSlideTransition();
       if (currentIndex + 1 === slides.length - 1) {
         confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
       }
@@ -80,6 +114,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const goToPrev = () => {
     if (currentIndex > 0) {
       setCurrentIndex(i => i - 1);
+      soundEffects.playSlideTransition();
     }
   };
 
@@ -163,6 +198,19 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             </select>
           </div>
 
+          {/* Sound FX Toggle */}
+          <button
+            onClick={toggleSound}
+            title={`Efek Suara Transisi: ${isSoundMuted ? 'Mati (Tekan M)' : 'Aktif (Tekan M)'}`}
+            className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center transition-all ${
+              !isSoundMuted
+                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            {!isSoundMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+
           {/* Laser Pointer Toggle */}
           <button
             onClick={() => setIsLaserActive(!isLaserActive)}
@@ -192,6 +240,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
           <button
             onClick={() => setShowNotes(!showNotes)}
+            title="Tampilkan / Sembunyikan Catatan (Tekan 'N')"
             className={`px-3 py-1 rounded-lg text-xs font-medium border ${showNotes
                 ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
                 : 'bg-slate-800 border-slate-700 text-slate-400'
@@ -202,6 +251,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
           <button
             onClick={toggleFullscreen}
+            title="Layar Penuh (Tekan 'F')"
             className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg"
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -209,6 +259,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
           <button
             onClick={onClose}
+            title="Keluar Presentasi (Esc)"
             className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg ml-2"
           >
             <X className="w-4 h-4" />
@@ -265,57 +316,86 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             ))}
           </div>
 
-          {/* Laser Pointer Glow Dot */}
+          {/* Glowing Virtual Laser Pointer with Pulse Ring */}
           {isLaserActive && (
             <div
-              className="absolute pointer-events-none w-5 h-5 rounded-full bg-rose-500 shadow-lg -translate-x-1/2 -translate-y-1/2 z-50 transition-transform duration-75"
+              className="absolute pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2"
               style={{
                 left: `${laserPos.x}px`,
                 top: `${laserPos.y}px`,
-                boxShadow: '0 0 16px 6px rgba(244, 63, 94, 0.9), 0 0 4px #ffffff',
               }}
-            />
+            >
+              <div className="relative flex items-center justify-center">
+                <span className="absolute w-8 h-8 rounded-full bg-rose-500/30 animate-ping" />
+                <span className="w-4 h-4 rounded-full bg-rose-500 shadow-[0_0_18px_6px_rgba(244,63,94,0.9),0_0_6px_#fff]" />
+              </div>
+            </div>
           )}
 
-          {/* Floating Navigation Controls */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 px-3 py-1.5 rounded-full shadow-2xl backdrop-blur-md">
-            <button
-              onClick={goToPrev}
-              disabled={currentIndex === 0}
-              className="p-2 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent rounded-full text-slate-300"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="text-xs font-mono font-medium text-slate-300 px-2">
-              {currentIndex + 1} / {slides.length}
-            </span>
-            <button
-              onClick={goToNext}
-              disabled={currentIndex === slides.length - 1}
-              className="p-2 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent rounded-full text-slate-300"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
+          {/* Floating Navigation Controls & Keyboard Hints */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-40">
+            <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 px-3 py-1.5 rounded-full shadow-2xl backdrop-blur-md">
+              <button
+                onClick={goToPrev}
+                disabled={currentIndex === 0}
+                title="Slide Sebelumnya (Panah Kiri)"
+                className="p-2 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent rounded-full text-slate-300"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <span className="text-xs font-mono font-medium text-slate-300 px-2">
+                {currentIndex + 1} / {slides.length}
+              </span>
+              <button
+                onClick={goToNext}
+                disabled={currentIndex === slides.length - 1}
+                title="Slide Selanjutnya (Spasi / Panah Kanan)"
+                className="p-2 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent rounded-full text-slate-300"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            {/* Quick Keyboard Cheatsheet */}
+            <div className="px-3 py-0.5 rounded-full bg-slate-950/70 border border-slate-800/60 text-[10px] font-mono text-slate-400 flex items-center gap-2 select-none shadow-sm">
+              <span><kbd className="text-indigo-300">Spasi / →</kbd> Maju</span>
+              <span>•</span>
+              <span><kbd className="text-indigo-300">L</kbd> Laser</span>
+              <span>•</span>
+              <span><kbd className="text-indigo-300">N</kbd> Notes</span>
+              <span>•</span>
+              <span><kbd className="text-indigo-300">M</kbd> Mute</span>
+              <span>•</span>
+              <span><kbd className="text-indigo-300">F</kbd> Layar Penuh</span>
+            </div>
           </div>
         </div>
 
-        {/* Presenter Speaker Notes Sidebar */}
+        {/* Presenter Speaker Notes Sidebar (Live Editable) */}
         {showNotes && (
-          <aside className="w-80 border-l border-slate-800 bg-slate-900 p-5 flex flex-col justify-between shrink-0">
+          <aside className="w-84 border-l border-slate-800 bg-slate-900 p-5 flex flex-col justify-between shrink-0">
             <div className="space-y-4">
-              <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block mb-1">
-                  Catatan Pembicara (Speaker Notes)
-                </span>
-                <h4 className="text-sm font-semibold text-slate-200">{currentSlide.title}</h4>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block mb-1">
+                    Catatan Pembicara (Speaker Notes)
+                  </span>
+                  <h4 className="text-sm font-semibold text-slate-200">{currentSlide.title}</h4>
+                </div>
+                <FileEdit className="w-4 h-4 text-slate-500" />
               </div>
 
-              <div className="p-4 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-300 leading-relaxed min-h-[140px] whitespace-pre-wrap font-sans">
-                {currentSlide.notes || (
-                  <span className="text-slate-500 italic">
-                    Belum ada catatan pembicara untuk slide ini. Anda dapat menambahkannya dari panel kode atau properti.
-                  </span>
-                )}
+              {/* Live Editable Textarea */}
+              <div className="space-y-1">
+                <label className="text-[10px] text-slate-500 flex items-center justify-between">
+                  <span>Dapat diedit langsung saat presentasi:</span>
+                  <span className="text-emerald-400 font-mono text-[9px]">Tersimpan Otomatis</span>
+                </label>
+                <textarea
+                  value={currentSlide.notes || ''}
+                  onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
+                  placeholder="Ketik poin penting, panduan berbicara, atau naskah presentasi untuk slide ini..."
+                  className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl p-3 text-xs text-slate-200 outline-none leading-relaxed min-h-[170px] resize-none font-sans"
+                />
               </div>
             </div>
 
@@ -323,10 +403,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             {currentIndex < slides.length - 1 && (
               <div className="pt-4 border-t border-slate-800 space-y-1.5">
                 <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                  Slide Selanjutnya
+                  Slide Selanjutnya ({currentIndex + 2}/{slides.length})
                 </span>
                 <div className="p-3 bg-slate-950/60 border border-slate-800 rounded-xl text-xs font-medium text-slate-300 truncate">
-                  {currentIndex + 2}. {slides[currentIndex + 1].title}
+                  {slides[currentIndex + 1].title}
                 </div>
               </div>
             )}
