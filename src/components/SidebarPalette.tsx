@@ -56,6 +56,93 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'elements' | 'ui' | 'shapes' | 'media' | 'blocks' | 'layers'>('elements');
   const [layerSearch, setLayerSearch] = useState('');
+  const [aiTopic, setAiTopic] = useState('');
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+
+  const handleGenerateFromTopic = () => {
+    if (!aiTopic.trim()) return;
+    setIsAiGenerating(true);
+    const topic = aiTopic.trim();
+
+    const elements: DesignElement[] = [
+      createBaseElement('text', 'Topik Tag', 240, 32, {
+        x: 120,
+        y: 120,
+        content: 'IKHTISAR RISET & STRATEGI',
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: '#818cf8',
+      }),
+      createBaseElement('heading', 'Judul Slide', 1200, 70, {
+        x: 120,
+        y: 160,
+        content: topic,
+        fontSize: 44,
+        fontWeight: 'extrabold',
+        color: '#ffffff',
+      }),
+      createBaseElement('text', 'Deskripsi Topik', 900, 50, {
+        x: 120,
+        y: 235,
+        content: `Analisis mendalam dan tinjauan komprehensif mengenai implementasi ${topic.toLowerCase()} untuk keunggulan operasional.`,
+        fontSize: 18,
+        color: '#94a3b8',
+      }),
+      createBaseElement('card', 'Pilar 1', 380, 220, {
+        x: 120,
+        y: 320,
+        content: 'Fokus Utama 01\n\nOptimasi arsitektur sistem dan peningkatan efisiensi alur kerja data secara terukur.',
+        fill: '#1e293b',
+        stroke: '#4f46e5',
+        strokeWidth: 1.5,
+        borderRadius: 16,
+        shadow: 'lg',
+      }),
+      createBaseElement('card', 'Pilar 2', 380, 220, {
+        x: 530,
+        y: 320,
+        content: 'Fokus Utama 02\n\nIntegrasi model kecerdasan buatan dengan parameter adaptif dan keandalan tinggi.',
+        fill: '#1e293b',
+        stroke: '#06b6d4',
+        strokeWidth: 1.5,
+        borderRadius: 16,
+        shadow: 'lg',
+      }),
+      createBaseElement('card', 'Pilar 3', 380, 220, {
+        x: 940,
+        y: 320,
+        content: 'Fokus Utama 03\n\nValidasi empiris hasil evaluasi komparatif terhadap metrik standar industri.',
+        fill: '#1e293b',
+        stroke: '#10b981',
+        strokeWidth: 1.5,
+        borderRadius: 16,
+        shadow: 'lg',
+      }),
+      createBaseElement('metric-card', 'Metrik Utama', 240, 100, {
+        x: 120,
+        y: 570,
+        content: '99.2%',
+        subTitle: 'Reliability Index',
+        fill: '#0f172a',
+        color: '#38bdf8',
+        borderRadius: 12,
+      }),
+      createBaseElement('button', 'Tombol Aksi', 220, 50, {
+        x: 390,
+        y: 595,
+        content: 'Pelajari Selengkapnya →',
+        fill: '#4f46e5',
+        color: '#ffffff',
+        borderRadius: 12,
+        shadow: 'md',
+      }),
+    ];
+
+    onAddElements(elements);
+    confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    setIsAiGenerating(false);
+    setAiTopic('');
+  };
 
   const createBaseElement = (
     type: ElementType,
@@ -503,16 +590,44 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
 
         {/* TAB 5: SMART LAYOUT BLOCKS */}
         {activeTab === 'blocks' && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-center gap-1.5 text-amber-400">
               <Sparkles className="w-4 h-4" />
-              <span className="text-xs font-bold text-slate-100">Blok Tata Letak AI</span>
+              <span className="text-xs font-bold text-slate-100">AI Slide Drafter</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              Sisipkan struktur layout siap pakai sekali klik.
-            </p>
 
-            <div className="space-y-2.5 pt-1">
+            {/* Smart Topic Generator Box */}
+            <div className="p-3 rounded-xl bg-indigo-950/40 border border-indigo-800/60 space-y-2">
+              <span className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider block">
+                Susun Slide Berdasarkan Topik
+              </span>
+              <input
+                type="text"
+                placeholder="Misal: Seminar Proposal Sistem AI..."
+                value={aiTopic}
+                onChange={e => setAiTopic(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleGenerateFromTopic();
+                }}
+                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 outline-none focus:border-indigo-400 placeholder:text-slate-500"
+              />
+              <button
+                onClick={handleGenerateFromTopic}
+                disabled={!aiTopic.trim() || isAiGenerating}
+                className="w-full py-1.5 px-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Susun Slide Cerdas ✨</span>
+              </button>
+            </div>
+
+            <div className="pt-1 border-t border-slate-800">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                Blok Layout Siap Pakai
+              </span>
+            </div>
+
+            <div className="space-y-2.5">
               {SMART_BLOCKS.map(block => (
                 <button
                   key={block.id}

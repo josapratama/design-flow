@@ -49,6 +49,33 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
+  const [isSpaceDown, setIsSpaceDown] = useState(false);
+
+  // Spacebar Hand Tool Listener
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
+      if (e.code === 'Space' && !e.repeat) {
+        setIsSpaceDown(true);
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        setIsSpaceDown(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
 
   // Marquee Selection Box State
   const [marquee, setMarquee] = useState<{
@@ -73,10 +100,10 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
   // Pointer Down on background (Panning via Middle Click, Spacebar, or Marquee via Left Click)
   const handlePointerDown = (e: React.PointerEvent) => {
     const isBackground = e.target === containerRef.current || e.target === artboardRef.current;
-    if (!isBackground) return;
+    if (!isBackground && !isSpaceDown) return;
 
-    // Middle-click (1) or Alt/Space key -> Pan canvas
-    if (e.button === 1 || e.altKey) {
+    // Hand tool (Spacebar held) or Middle-click (1) or Alt key -> Pan canvas
+    if (isSpaceDown || e.button === 1 || e.altKey) {
       e.preventDefault();
       setIsPanning(true);
 
@@ -159,7 +186,11 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     <div
       ref={containerRef}
       className={`relative w-full h-full overflow-hidden select-none bg-slate-950 ${
-        isPanning ? 'cursor-grabbing' : 'cursor-default'
+        isPanning
+          ? 'cursor-grabbing'
+          : isSpaceDown
+          ? 'cursor-grab'
+          : 'cursor-default'
       }`}
       onWheel={handleWheel}
       onPointerDown={handlePointerDown}

@@ -68,6 +68,20 @@ export default function App() {
 
   const selectedElement = selectedElements.length > 0 ? selectedElements[0] : null;
 
+  // Zoom To Fit calculation
+  const handleZoomToFit = React.useCallback(() => {
+    const mainEl = document.querySelector('main');
+    if (!mainEl || !activeSlide) return;
+    const padding = 120;
+    const availW = mainEl.clientWidth - padding;
+    const availH = mainEl.clientHeight - padding;
+    const fitScale = Math.min(availW / activeSlide.width, availH / activeSlide.height, 1.2);
+    const roundedScale = Math.max(0.15, Number(fitScale.toFixed(2)));
+    const panX = Math.round((mainEl.clientWidth - activeSlide.width * roundedScale) / 2);
+    const panY = Math.round((mainEl.clientHeight - activeSlide.height * roundedScale) / 2);
+    setProject(prev => ({ ...prev, scale: roundedScale, panX, panY }));
+  }, [activeSlide, setProject]);
+
   // Global Keyboard Shortcuts (Figma / Canva style)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -85,6 +99,13 @@ export default function App() {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandPaletteOpen(prev => !prev);
+        return;
+      }
+
+      // 0.1 Zoom to Fit: Ctrl+0 / Cmd+0
+      if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        handleZoomToFit();
         return;
       }
 
@@ -261,7 +282,7 @@ export default function App() {
             onZoomOut={() =>
               setProject(prev => ({ ...prev, scale: Math.max(0.15, Number((prev.scale - 0.1).toFixed(2))) }))
             }
-            onResetZoom={() => setProject(prev => ({ ...prev, scale: 0.6, panX: 40, panY: 30 }))}
+            onResetZoom={handleZoomToFit}
             onToggleGrid={() => setProject(prev => ({ ...prev, showGrid: !prev.showGrid }))}
             onDeleteSelected={deleteSelectedElements}
             onDuplicateSelected={duplicateSelectedElements}

@@ -79,6 +79,15 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       { name: 'Soft Gray', color: '#f8fafc' },
     ];
 
+    const gradientSwatches = [
+      { name: 'Midnight Violet', bg: 'linear-gradient(135deg, #090d16 0%, #1e1b4b 100%)' },
+      { name: 'Deep Ocean', bg: 'linear-gradient(135deg, #020617 0%, #0c4a6e 100%)' },
+      { name: 'Cyberpunk Glow', bg: 'linear-gradient(135deg, #0e0b1f 0%, #3b0764 100%)' },
+      { name: 'Sunset Crimson', bg: 'linear-gradient(135deg, #180512 0%, #4c0519 100%)' },
+      { name: 'Aurora Emerald', bg: 'linear-gradient(135deg, #021a12 0%, #064e3b 100%)' },
+      { name: 'Slate Modern', bg: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)' },
+    ];
+
     return (
       <aside className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 select-none z-10">
         <div className="p-3 border-b border-slate-800 flex items-center gap-2 bg-slate-950/40">
@@ -175,6 +184,24 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   style={{ backgroundColor: swatch.color }}
                 />
               ))}
+            </div>
+
+            {/* Modern Linear Gradients */}
+            <div className="space-y-1 pt-1.5">
+              <span className="text-[10px] text-slate-500 font-semibold">Gradasi Modern</span>
+              <div className="grid grid-cols-3 gap-1.5">
+                {gradientSwatches.map(grad => (
+                  <button
+                    key={grad.name}
+                    onClick={() => onUpdateSlide(activeSlide.id, { background: grad.bg })}
+                    title={grad.name}
+                    className="h-7 rounded-md border border-slate-700 hover:scale-105 transition-transform text-[8px] font-medium text-white/90 flex items-center justify-center shadow-sm"
+                    style={{ background: grad.bg }}
+                  >
+                    {grad.name.split(' ')[0]}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
