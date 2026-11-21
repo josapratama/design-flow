@@ -15,6 +15,7 @@ interface ToolbarProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetZoom: () => void;
+  onSetScale?: (scale: number) => void;
   onToggleGrid: () => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
@@ -27,10 +28,14 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onZoomIn,
   onZoomOut,
   onResetZoom,
+  onSetScale,
   onToggleGrid,
   onDeleteSelected,
   onDuplicateSelected,
 }) => {
+  const [showZoomMenu, setShowZoomMenu] = React.useState(false);
+  const zoomLevels = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+
   return (
     <div className="absolute bottom-6 left-6 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800/80 p-1.5 rounded-2xl shadow-2xl backdrop-blur-md select-none z-20">
       {/* Zoom Controls */}
@@ -42,13 +47,36 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <ZoomOut className="w-4 h-4" />
       </button>
 
-      <span
-        onClick={onResetZoom}
-        title="Klik untuk reset zoom 100%"
-        className="text-xs font-mono font-semibold text-slate-300 px-2 py-0.5 hover:bg-slate-800 rounded cursor-pointer"
-      >
-        {Math.round(scale * 100)}%
-      </span>
+      <div className="relative">
+        <button
+          onClick={() => setShowZoomMenu(!showZoomMenu)}
+          title="Pilih level zoom"
+          className="text-xs font-mono font-semibold text-slate-300 px-2 py-0.5 hover:bg-slate-800 rounded transition-colors"
+        >
+          {Math.round(scale * 100)}%
+        </button>
+
+        {showZoomMenu && (
+          <div className="absolute bottom-full mb-2 left-0 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-1 z-30 flex flex-col gap-0.5 min-w-[70px] animate-in fade-in zoom-in-95 duration-100">
+            {zoomLevels.map(lvl => (
+              <button
+                key={lvl}
+                onClick={() => {
+                  onSetScale?.(lvl);
+                  setShowZoomMenu(false);
+                }}
+                className={`px-2 py-1 text-left rounded text-xs font-mono transition-colors ${
+                  Math.round(scale * 100) === Math.round(lvl * 100)
+                    ? 'bg-indigo-600 text-white font-bold'
+                    : 'text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                {Math.round(lvl * 100)}%
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       <button
         onClick={onZoomIn}

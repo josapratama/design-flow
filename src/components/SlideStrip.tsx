@@ -49,7 +49,7 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
             {/* Scaled Mini Visual Canvas Thumbnail */}
             <div
               className="relative w-full h-14 rounded-md overflow-hidden border border-slate-700/60 my-0.5 pointer-events-none shrink-0"
-              style={{ backgroundColor: slide.background || '#0f172a' }}
+              style={{ background: slide.background || '#0f172a' }}
             >
               <div
                 className="absolute origin-top-left pointer-events-none"

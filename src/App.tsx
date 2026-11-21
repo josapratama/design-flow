@@ -322,6 +322,7 @@ export default function App() {
               setProject(prev => ({ ...prev, scale: Math.max(0.15, Number((prev.scale - 0.1).toFixed(2))) }))
             }
             onResetZoom={handleZoomToFit}
+            onSetScale={scale => setProject(prev => ({ ...prev, scale }))}
             onToggleGrid={() => setProject(prev => ({ ...prev, showGrid: !prev.showGrid }))}
             onDeleteSelected={deleteSelectedElements}
             onDuplicateSelected={duplicateSelectedElements}

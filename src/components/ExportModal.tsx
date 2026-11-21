@@ -336,7 +336,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   width: `${el.width}px`,
                   height: `${el.height}px`,
                   zIndex: el.zIndex,
-                  transform: el.rotation ? `rotate(${el.rotation}deg)` : undefined,
+                  transform: [
+                    el.rotation ? `rotate(${el.rotation}deg)` : '',
+                    el.flipX ? 'scaleX(-1)' : '',
+                    el.flipY ? 'scaleY(-1)' : '',
+                  ].filter(Boolean).join(' ') || undefined,
                   opacity: el.opacity !== undefined ? el.opacity : 1,
                 }}
               >
