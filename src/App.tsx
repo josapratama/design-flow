@@ -63,6 +63,7 @@ export default function App() {
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [showSafeMargin, setShowSafeMargin] = useState(false);
 
   // Floating Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -229,6 +230,12 @@ export default function App() {
         ungroupSelectedElements();
       }
 
+      // 6.3 Safe Margins Toggle: Shift+M
+      if (e.shiftKey && e.key.toLowerCase() === 'm' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        setShowSafeMargin(prev => !prev);
+      }
+
       // 7. Arrow Key Nudge
       const step = e.shiftKey ? 10 : 1;
       if (e.key === 'ArrowLeft') {
@@ -310,6 +317,7 @@ export default function App() {
             panY={project.panY}
             showGrid={project.showGrid}
             showRulers={project.showRulers !== false}
+            showSafeMargin={showSafeMargin}
             snapToGrid={project.snapToGrid}
             gridSize={project.gridSize}
             selectedElementIds={project.selectedElementIds}
@@ -338,6 +346,7 @@ export default function App() {
             scale={project.scale}
             showGrid={project.showGrid}
             showRulers={project.showRulers !== false}
+            showSafeMargin={showSafeMargin}
             hasSelectedElements={project.selectedElementIds.length > 0}
             canUndo={canUndo}
             canRedo={canRedo}
@@ -355,6 +364,7 @@ export default function App() {
             onToggleRulers={() =>
               setProject(prev => ({ ...prev, showRulers: prev.showRulers === false ? true : false }))
             }
+            onToggleSafeMargin={() => setShowSafeMargin(prev => !prev)}
             onDeleteSelected={deleteSelectedElements}
             onDuplicateSelected={duplicateSelectedElements}
           />

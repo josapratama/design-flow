@@ -9,6 +9,7 @@ interface CanvasViewportProps {
   panY: number;
   showGrid: boolean;
   showRulers?: boolean;
+  showSafeMargin?: boolean;
   snapToGrid?: boolean;
   gridSize?: number;
   selectedElementIds: string[];
@@ -33,6 +34,7 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
   panY,
   showGrid,
   showRulers = true,
+  showSafeMargin = false,
   snapToGrid = true,
   gridSize = 20,
   selectedElementIds,
@@ -52,6 +54,7 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [isSpaceDown, setIsSpaceDown] = useState(false);
+  const [userGuides, setUserGuides] = useState<{ id: string; type: 'x' | 'y'; pos: number }[]>([]);
 
   // Spacebar Hand Tool Listener
   React.useEffect(() => {
@@ -245,6 +248,51 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
           onContextMenuElement={onContextMenuElement}
         />
 
+        {/* User Custom Guidelines (Figma Style) */}
+        {userGuides.map(g => (
+          <div
+            key={g.id}
+            onDoubleClick={e => {
+              e.stopPropagation();
+              setUserGuides(prev => prev.filter(item => item.id !== g.id));
+            }}
+            title={`${g.type.toUpperCase()}: ${g.pos}px (Klik 2x untuk hapus)`}
+            className={`absolute pointer-events-auto z-40 group cursor-pointer ${
+              g.type === 'x'
+                ? 'top-0 bottom-0 border-l border-dashed border-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.8)]'
+                : 'left-0 right-0 border-t border-dashed border-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.8)]'
+            }`}
+            data-export-ignore="true"
+            style={g.type === 'x' ? { left: `${g.pos}px` } : { top: `${g.pos}px` }}
+          >
+            <div
+              className={`absolute px-1.5 py-0.5 rounded bg-sky-500 text-slate-950 font-mono text-[9px] font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity select-none ${
+                g.type === 'x' ? 'top-2 -translate-x-1/2' : 'left-2 -translate-y-1/2'
+              }`}
+            >
+              {g.type.toUpperCase()}: {g.pos}px ✕
+            </div>
+          </div>
+        ))}
+
+        {/* Safe Margin (8% inset) */}
+        {showSafeMargin && (
+          <div
+            className="absolute pointer-events-none border border-dashed border-emerald-500/60 rounded z-30 select-none shadow-[inset_0_0_20px_rgba(16,185,129,0.05)]"
+            data-export-ignore="true"
+            style={{
+              left: `${slide.width * 0.08}px`,
+              top: `${slide.height * 0.08}px`,
+              width: `${slide.width * 0.84}px`,
+              height: `${slide.height * 0.84}px`,
+            }}
+          >
+            <span className="absolute top-2 right-2 text-[10px] font-mono text-emerald-400 font-semibold bg-slate-950/85 px-2 py-0.5 rounded border border-emerald-500/30">
+              Safe Margin (84%)
+            </span>
+          </div>
+        )}
+
         {/* Marquee Selection Rectangle Overlay */}
         {marquee && (
           <div
@@ -284,10 +332,19 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
 
             {/* Top Horizontal Ruler */}
             <div
-              className="absolute top-0 left-5 right-0 h-5 bg-slate-950/90 backdrop-blur-sm border-b border-slate-800/80 z-20 pointer-events-none overflow-hidden select-none"
+              onClick={e => {
+                const rect = containerRef.current?.getBoundingClientRect();
+                if (!rect) return;
+                const clickArtboardX = Math.round((e.clientX - rect.left - panX) / scale);
+                if (clickArtboardX >= 0 && clickArtboardX <= slide.width) {
+                  setUserGuides(prev => [...prev, { id: `guide_${Date.now()}`, type: 'x', pos: clickArtboardX }]);
+                }
+              }}
+              title="Klik penggaris untuk menambah Garis Pandu Vertikal"
+              className="absolute top-0 left-5 right-0 h-5 bg-slate-950/90 backdrop-blur-sm border-b border-slate-800/80 z-20 pointer-events-auto cursor-crosshair overflow-hidden select-none hover:bg-slate-900/90 transition-colors"
               data-export-ignore="true"
             >
-              <svg className="w-full h-full">
+              <svg className="w-full h-full pointer-events-none">
                 {/* Active Artboard Span Indicator */}
                 <line
                   x1={panX}
@@ -310,10 +367,19 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
 
             {/* Left Vertical Ruler */}
             <div
-              className="absolute top-5 left-0 bottom-0 w-5 bg-slate-950/90 backdrop-blur-sm border-r border-slate-800/80 z-20 pointer-events-none overflow-hidden select-none"
+              onClick={e => {
+                const rect = containerRef.current?.getBoundingClientRect();
+                if (!rect) return;
+                const clickArtboardY = Math.round((e.clientY - rect.top - panY) / scale);
+                if (clickArtboardY >= 0 && clickArtboardY <= slide.height) {
+                  setUserGuides(prev => [...prev, { id: `guide_${Date.now()}`, type: 'y', pos: clickArtboardY }]);
+                }
+              }}
+              title="Klik penggaris untuk menambah Garis Pandu Horisontal"
+              className="absolute top-5 left-0 bottom-0 w-5 bg-slate-950/90 backdrop-blur-sm border-r border-slate-800/80 z-20 pointer-events-auto cursor-crosshair overflow-hidden select-none hover:bg-slate-900/90 transition-colors"
               data-export-ignore="true"
             >
-              <svg className="w-full h-full">
+              <svg className="w-full h-full pointer-events-none">
                 {/* Active Artboard Span Indicator */}
                 <line
                   x1={19}

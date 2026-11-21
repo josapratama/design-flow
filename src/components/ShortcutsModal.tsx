@@ -27,6 +27,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Ctrl', 'Wheel'], description: 'Perbesar / Perkecil Kanvas (Zoom)' },
         { keys: ['Ctrl', '0'], description: 'Sesuaikan Kanvas ke Layar (Fit Screen)' },
         { keys: ['Shift', 'R'], description: 'Nyalakan / Matikan Penggaris Piksel (Rulers)' },
+        { keys: ['Shift', 'M'], description: 'Nyalakan / Matikan Batas Area Aman (Safe Margin)' },
         { keys: ['Ctrl', 'K'], description: 'Buka Spotlight Command Palette Cepat' },
       ],
     },

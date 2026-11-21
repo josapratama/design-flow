@@ -758,7 +758,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                 Tipografi
               </span>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[10px] text-slate-500 block mb-1">Ukuran Font</label>
                   <input
@@ -781,6 +781,30 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     <option value="bold">Tebal</option>
                     <option value="extrabold">Ekstra</option>
                   </select>
+                </div>
+
+                {/* Quick Font Size Hierarchy Pills */}
+                <div className="col-span-2 space-y-1 pt-0.5">
+                  <div className="flex items-center justify-between text-[10px] text-slate-500">
+                    <span>Hierarki Cepat</span>
+                    <span className="font-mono text-indigo-400 font-semibold">{element.fontSize || 16}px</span>
+                  </div>
+                  <div className="grid grid-cols-6 gap-1">
+                    {[14, 18, 24, 36, 48, 64].map(sz => (
+                      <button
+                        key={sz}
+                        type="button"
+                        onClick={() => handleChange('fontSize', sz)}
+                        className={`py-1 rounded text-center text-[10px] font-mono border transition-all ${
+                          (element.fontSize || 16) === sz
+                            ? 'bg-indigo-600 border-indigo-500 text-white font-bold shadow'
+                            : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                        }`}
+                      >
+                        {sz}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div className="col-span-3">
                   <div className="flex items-center justify-between mb-1">

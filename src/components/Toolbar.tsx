@@ -9,12 +9,14 @@ import {
   Copy,
   RotateCcw,
   RotateCw,
+  Shield,
 } from 'lucide-react';
 
 interface ToolbarProps {
   scale: number;
   showGrid: boolean;
   showRulers?: boolean;
+  showSafeMargin?: boolean;
   hasSelectedElements: boolean;
   canUndo?: boolean;
   canRedo?: boolean;
@@ -26,6 +28,7 @@ interface ToolbarProps {
   onSetScale?: (scale: number) => void;
   onToggleGrid: () => void;
   onToggleRulers?: () => void;
+  onToggleSafeMargin?: () => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
 }
@@ -34,6 +37,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   scale,
   showGrid,
   showRulers = true,
+  showSafeMargin = false,
   hasSelectedElements,
   canUndo = false,
   canRedo = false,
@@ -45,6 +49,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onSetScale,
   onToggleGrid,
   onToggleRulers,
+  onToggleSafeMargin,
   onDeleteSelected,
   onDuplicateSelected,
 }) => {
@@ -133,6 +138,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           }`}
         >
           <Ruler className="w-4 h-4" />
+        </button>
+      )}
+
+      {/* Safe Margins toggle */}
+      {onToggleSafeMargin && (
+        <button
+          onClick={onToggleSafeMargin}
+          title="Batas Area Aman / Safe Margin (Shift+M)"
+          className={`p-1.5 rounded-xl transition-colors ${
+            showSafeMargin ? 'bg-emerald-600/20 text-emerald-400' : 'hover:bg-slate-800 text-slate-400'
+          }`}
+        >
+          <Shield className="w-4 h-4" />
         </button>
       )}
 
