@@ -569,13 +569,18 @@ export function useDesignStore() {
     });
   }, [project.slides.length, pushHistory]);
 
-  const reorderSlide = useCallback((slideId: string, direction: 'left' | 'right') => {
+  const reorderSlide = useCallback((slideId: string, direction: 'left' | 'right' | 'start' | 'end') => {
     setProject(prev => {
       const index = prev.slides.findIndex(s => s.id === slideId);
       if (index === -1) return prev;
 
-      const targetIndex = direction === 'left' ? index - 1 : index + 1;
-      if (targetIndex < 0 || targetIndex >= prev.slides.length) return prev;
+      let targetIndex = index;
+      if (direction === 'left') targetIndex = index - 1;
+      else if (direction === 'right') targetIndex = index + 1;
+      else if (direction === 'start') targetIndex = 0;
+      else if (direction === 'end') targetIndex = prev.slides.length - 1;
+
+      if (targetIndex < 0 || targetIndex >= prev.slides.length || targetIndex === index) return prev;
 
       pushHistory(prev.slides);
       const newSlides = [...prev.slides];

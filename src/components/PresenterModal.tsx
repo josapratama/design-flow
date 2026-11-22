@@ -117,16 +117,22 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     return () => clearInterval(timer);
   }, [isAutoPlay, autoPlayInterval, slides.length, currentIndex]);
 
-  // Timer interval
+  // Timer interval & Target Minutes Alert
   useEffect(() => {
     let interval: any;
     if (isTimerRunning) {
       interval = setInterval(() => {
-        setSecondsElapsed(sec => sec + 1);
+        setSecondsElapsed(sec => {
+          const nextSec = sec + 1;
+          if (targetMinutes > 0 && nextSec === targetMinutes * 60) {
+            soundEffects.playTimerAlert();
+          }
+          return nextSec;
+        });
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isTimerRunning]);
+  }, [isTimerRunning, targetMinutes]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -493,7 +499,9 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             style={{
               width: `${currentSlide.width}px`,
               height: `${currentSlide.height}px`,
-              background: currentSlide.background || '#0f172a',
+              background: currentSlide.wallpaper
+                ? `url('${currentSlide.wallpaper}') center / cover no-repeat`
+                : currentSlide.background || '#0f172a',
               transform: `scale(${scale})`,
               transformOrigin: 'center center',
             }}

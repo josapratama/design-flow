@@ -28,6 +28,7 @@ import {
   Pipette,
   Image as ImageIcon,
   Sparkles,
+  Upload,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { POPULAR_FONTS } from '../utils/fontLoader';
@@ -278,16 +279,16 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               </div>
             </div>
 
-            {/* Wallpaper & Gambar Latar Slide (Unsplash HD Presets) */}
+            {/* Wallpaper & Gambar Latar Slide (Unsplash HD Presets & Custom Upload) */}
             <div className="space-y-2 pt-2 border-t border-slate-800">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-indigo-400" />
                   <span>Gambar Latar / Wallpaper HD</span>
                 </span>
-                {activeSlide.background?.includes('url(') && (
+                {activeSlide.wallpaper && (
                   <button
-                    onClick={() => onUpdateSlide(activeSlide.id, { background: '#0f172a' })}
+                    onClick={() => onUpdateSlide(activeSlide.id, { wallpaper: undefined })}
                     className="text-[9px] text-rose-400 hover:underline"
                   >
                     Hapus Wallpaper
@@ -317,12 +318,12 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 ].map(wp => (
                   <button
                     key={wp.name}
-                    onClick={() =>
-                      onUpdateSlide(activeSlide.id, {
-                        background: `url('${wp.url}') center / cover no-repeat`,
-                      })
-                    }
-                    className="group relative h-12 rounded-lg overflow-hidden border border-slate-800 hover:border-indigo-500 transition-all text-left"
+                    onClick={() => onUpdateSlide(activeSlide.id, { wallpaper: wp.url })}
+                    className={`group relative h-12 rounded-lg overflow-hidden border transition-all text-left ${
+                      activeSlide.wallpaper === wp.url
+                        ? 'border-indigo-500 ring-2 ring-indigo-500/30'
+                        : 'border-slate-800 hover:border-slate-700'
+                    }`}
                   >
                     <img
                       src={wp.url}
@@ -338,24 +339,43 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 ))}
               </div>
 
-              {/* Custom Image URL input */}
-              <div className="pt-1">
+              {/* Custom Image URL input and File Upload */}
+              <div className="pt-1 flex flex-col gap-1.5">
                 <input
                   type="text"
-                  placeholder="Atau tempel URL gambar latar..."
+                  placeholder="Tempel URL gambar latar lalu Enter..."
                   onKeyDown={e => {
                     if (e.key === 'Enter') {
                       const val = e.currentTarget.value.trim();
                       if (val) {
-                        onUpdateSlide(activeSlide.id, {
-                          background: `url('${val}') center / cover no-repeat`,
-                        });
+                        onUpdateSlide(activeSlide.id, { wallpaper: val });
                         e.currentTarget.value = '';
                       }
                     }
                   }}
                   className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-[11px] font-mono placeholder:text-slate-600"
                 />
+                <label className="w-full py-1.5 px-2 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 rounded-lg text-slate-300 hover:text-white text-[11px] flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
+                  <Upload className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Unggah Wallpaper dari Perangkat</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = ev => {
+                        const base64 = ev.target?.result as string;
+                        if (base64) {
+                          onUpdateSlide(activeSlide.id, { wallpaper: base64 });
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  />
+                </label>
               </div>
             </div>
           </div>
@@ -900,7 +920,9 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                   Konten Teks
                 </span>
-                <span className="text-[10px] text-slate-500">(Double-click di kanvas untuk edit cepat)</span>
+                <span className="text-[10px] font-mono text-indigo-400 font-medium">
+                  {(element.content || '').trim().split(/\s+/).filter(Boolean).length} kata • {(element.content || '').length} karakter
+                </span>
               </div>
               <textarea
                 rows={3}

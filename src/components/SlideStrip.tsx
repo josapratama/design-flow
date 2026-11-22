@@ -1,6 +1,14 @@
 import React from 'react';
 import { Slide } from '../types';
-import { Plus, Copy, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Plus,
+  Copy,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from 'lucide-react';
 
 interface SlideStripProps {
   slides: Slide[];
@@ -9,7 +17,7 @@ interface SlideStripProps {
   onAddSlide: () => void;
   onDuplicateSlide: (slideId: string) => void;
   onDeleteSlide: (slideId: string) => void;
-  onReorderSlide: (slideId: string, direction: 'left' | 'right') => void;
+  onReorderSlide: (slideId: string, direction: 'left' | 'right' | 'start' | 'end') => void;
   onUpdateSlideTitle?: (slideId: string, newTitle: string) => void;
 }
 
@@ -89,7 +97,11 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
             {/* Scaled Mini Visual Canvas Thumbnail */}
             <div
               className="relative w-full h-14 rounded-md overflow-hidden border border-slate-700/60 my-0.5 pointer-events-none shrink-0"
-              style={{ background: slide.background || '#0f172a' }}
+              style={{
+                background: slide.wallpaper
+                  ? `url('${slide.wallpaper}') center / cover no-repeat`
+                  : slide.background || '#0f172a',
+              }}
             >
               <div
                 className="absolute origin-top-left pointer-events-none"
@@ -134,7 +146,21 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
             </div>
 
             {/* Hover Action Buttons */}
-            <div className="absolute inset-0 bg-slate-950/90 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1 transition-opacity z-20">
+            <div className="absolute inset-0 bg-slate-950/90 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-0.5 transition-opacity z-20">
+              {/* Move to Start */}
+              {index > 1 && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    onReorderSlide(slide.id, 'start');
+                  }}
+                  title="Pindah ke Posisi Pertama (Slide 1)"
+                  className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded"
+                >
+                  <ChevronsLeft className="w-3.5 h-3.5" />
+                </button>
+              )}
+
               {/* Move Left */}
               {index > 0 && (
                 <button
@@ -188,10 +214,24 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
                     e.stopPropagation();
                     onReorderSlide(slide.id, 'right');
                   }}
-                  title="Geser Slide ke Kiri"
+                  title="Geser Slide ke Kanan"
                   className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              )}
+
+              {/* Move to End */}
+              {index < slides.length - 2 && (
+                <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    onReorderSlide(slide.id, 'end');
+                  }}
+                  title="Pindah ke Posisi Terakhir"
+                  className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded"
+                >
+                  <ChevronsRight className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>

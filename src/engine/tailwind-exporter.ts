@@ -159,6 +159,20 @@ function renderElementJSX(el: DesignElement): string {
         ${toStyleAttr({ backgroundColor: el.fill || '#3b82f6' })}
       />`;
 
+    case 'badge-shape':
+      return `      {/* Pill Badge: ${el.name} */}
+      <div 
+        className="absolute inline-flex items-center justify-center font-semibold rounded-full select-none ${getShadowClass(el.shadow)}"
+        ${toStyleAttr({
+          backgroundColor: el.fill || 'rgba(99, 102, 241, 0.2)',
+          color: el.color || '#818cf8',
+          border: el.stroke ? `${el.strokeWidth || 1}px solid ${el.stroke}` : '1px solid rgba(99, 102, 241, 0.4)',
+          fontSize: `${el.fontSize || 12}px`,
+        })}
+      >
+        <span>${escapeJSX(el.content || el.badgeText || 'NEW')}</span>
+      </div>`;
+
     case 'triangle':
       return `      {/* Triangle Shape: ${el.name} */}
       <svg 

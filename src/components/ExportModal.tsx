@@ -369,7 +369,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             style={{
               width: `${s.width}px`,
               height: `${s.height}px`,
-              background: s.background || '#0f172a',
+              background: s.wallpaper
+                ? `url('${s.wallpaper}') center / cover no-repeat`
+                : s.background || '#0f172a',
               position: 'relative',
               overflow: 'hidden',
             }}

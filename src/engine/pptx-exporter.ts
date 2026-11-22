@@ -17,7 +17,11 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
     // Background color or wallpaper
     if (slideData.wallpaper) {
       try {
-        slide.background = { path: slideData.wallpaper };
+        if (slideData.wallpaper.startsWith('data:image')) {
+          slide.background = { data: slideData.wallpaper };
+        } else {
+          slide.background = { path: slideData.wallpaper };
+        }
       } catch {
         slide.background = { color: '0F172A' };
       }
@@ -108,6 +112,30 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
             w: w,
             h: h,
             fontSize: 14,
+            bold: true,
+            color: cleanHex(el.color || '#FFFFFF'),
+            align: 'center',
+            valign: 'middle',
+          });
+          break;
+        }
+
+        case 'badge-shape': {
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '4F46E5' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
+            rectRadius: 0.5,
+          });
+          slide.addText(el.content || el.badgeText || 'BADGE', {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fontSize: el.fontSize ? Math.round(el.fontSize * 0.45) : 11,
             bold: true,
             color: cleanHex(el.color || '#FFFFFF'),
             align: 'center',
