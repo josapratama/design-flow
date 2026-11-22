@@ -68,6 +68,8 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['F5'], description: 'Mulai Mode Slideshow Presentasi Interaktif' },
         { keys: ['B'], description: 'Layar Kosong / Hitam (Blank screen) untuk menarik fokus audiens' },
         { keys: ['Home', 'End'], description: 'Lompat langsung ke slide pertama atau terakhir' },
+        { keys: ['B'], description: 'Layar Kosong Hitam (Black Screen) untuk fokus audiens' },
+        { keys: ['W'], description: 'Layar Kosong Putih (White Screen) untuk diskusi' },
         { keys: ['Ctrl', 'Z'], description: 'Urungkan tindakan terakhir (Undo)' },
         { keys: ['Ctrl', 'Y'], description: 'Ulangi tindakan (Redo)' },
         { keys: ['L'], description: 'Nyalakan / Matikan Laser Pointer saat presentasi' },

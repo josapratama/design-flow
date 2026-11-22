@@ -106,6 +106,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     setTimeout(() => setCopiedCode(false), 2000);
   };
 
+  const handleDownloadCodeFile = () => {
+    const blob = new Blob([tailwindCode], { type: 'text/typescript;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${activeSlide.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_slide.tsx`;
+    link.click();
+    URL.revokeObjectURL(url);
+    confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
       <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
@@ -341,15 +352,25 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-slate-400">
-                  Kode komponen React 19 + Tailwind CSS siap salin:
+                  Kode komponen React 19 + Tailwind CSS siap pakai:
                 </span>
-                <button
-                  onClick={handleCopyCode}
-                  className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                >
-                  {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Code2 className="w-3.5 h-3.5" />}
-                  <span>{copiedCode ? 'Tersalin ke Clipboard!' : 'Salin Kode'}</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleDownloadCodeFile}
+                    title="Unduh file komponen .tsx langsung ke komputer"
+                    className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-lg shadow-indigo-600/20 active:scale-95"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Unduh File .tsx</span>
+                  </button>
+                  <button
+                    onClick={handleCopyCode}
+                    className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                  >
+                    {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Code2 className="w-3.5 h-3.5" />}
+                    <span>{copiedCode ? 'Tersalin ke Clipboard!' : 'Salin Kode'}</span>
+                  </button>
+                </div>
               </div>
 
               <div className="max-h-60 overflow-y-auto bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-emerald-400">
