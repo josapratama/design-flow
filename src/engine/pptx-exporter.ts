@@ -522,6 +522,212 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
           break;
         }
 
+        case 'heart': {
+          slide.addShape(pptx.ShapeType.heart, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: 'F43F5E' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
+          });
+          break;
+        }
+
+        case 'diamond': {
+          slide.addShape(pptx.ShapeType.diamond, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '6366F1' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
+          });
+          break;
+        }
+
+        case 'speech-bubble': {
+          slide.addShape(pptx.ShapeType.wedgeRoundRectCallout, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '1E293B' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : { color: '6366F1', width: 1.5 },
+          });
+          if (el.content) {
+            slide.addText(el.content, {
+              x: posX,
+              y: posY,
+              w: w,
+              h: h * 0.75,
+              fontSize: el.fontSize ? Math.round(el.fontSize * 0.45) : 13,
+              color: cleanHex(el.color || '#F8FAFC'),
+              align: 'center',
+              valign: 'middle',
+            });
+          }
+          break;
+        }
+
+        case 'progress-bar': {
+          const val = Math.min(100, Math.max(0, parseInt(el.content || '75', 10) || 75));
+          // Outer container
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: { color: '0F172A' },
+            line: { color: '334155', width: 1 },
+            rectRadius: 0.15,
+          });
+          // Label and % text
+          slide.addText(
+            [
+              { text: el.subTitle || 'Progres Tugas', options: { color: 'CBD5E1', bold: true } },
+              { text: `   ${val}%`, options: { color: '818CF8', bold: true } },
+            ],
+            {
+              x: posX + 0.1,
+              y: posY + 0.05,
+              w: w - 0.2,
+              h: h * 0.45,
+              fontSize: 10,
+              align: 'left',
+              valign: 'middle',
+            }
+          );
+          // Bar background
+          const barTrackY = posY + h * 0.55;
+          const barTrackH = Math.max(0.08, h * 0.25);
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX + 0.1,
+            y: barTrackY,
+            w: w - 0.2,
+            h: barTrackH,
+            fill: { color: '1E293B' },
+            rectRadius: 0.5,
+          });
+          // Active bar
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX + 0.1,
+            y: barTrackY,
+            w: Math.max(0.1, (w - 0.2) * (val / 100)),
+            h: barTrackH,
+            fill: { color: '6366F1' },
+            rectRadius: 0.5,
+          });
+          break;
+        }
+
+        case 'rating': {
+          const score = Math.min(5, Math.max(1, Math.round(parseFloat(el.content || '5') || 5)));
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: { color: '0F172A' },
+            line: { color: '334155', width: 1 },
+            rectRadius: 0.2,
+          });
+          const starsText = '★'.repeat(score) + '☆'.repeat(5 - score);
+          slide.addText(
+            [
+              { text: starsText, options: { color: 'F59E0B', fontSize: 14 } },
+              { text: el.subTitle ? `  ${el.subTitle}` : '', options: { color: '94A3B8', fontSize: 10 } },
+            ],
+            {
+              x: posX + 0.1,
+              y: posY,
+              w: w - 0.2,
+              h: h,
+              align: 'left',
+              valign: 'middle',
+            }
+          );
+          break;
+        }
+
+        case 'alert-box': {
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: { color: '1E1B4B' },
+            line: { color: '6366F1', width: 1.5 },
+            rectRadius: 0.15,
+          });
+          slide.addText(
+            [
+              { text: '💡  ', options: { fontSize: 12 } },
+              { text: el.content || 'Informasi penting', options: { color: 'E2E8F0', fontSize: 11 } },
+            ],
+            {
+              x: posX + 0.1,
+              y: posY,
+              w: w - 0.2,
+              h: h,
+              align: 'left',
+              valign: 'middle',
+            }
+          );
+          break;
+        }
+
+        case 'chat-bubble': {
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: { color: '1E293B' },
+            line: { color: '475569', width: 1 },
+            rectRadius: 0.2,
+          });
+          slide.addText(
+            [
+              { text: (el.subTitle || 'User') + '\n', options: { color: '818CF8', bold: true, fontSize: 10 } },
+              { text: el.content || 'Pesan chat...', options: { color: 'F8FAFC', fontSize: 11 } },
+            ],
+            {
+              x: posX + 0.12,
+              y: posY + 0.08,
+              w: w - 0.24,
+              h: h - 0.16,
+              align: 'left',
+              valign: 'top',
+            }
+          );
+          break;
+        }
+
+        case 'code-snippet': {
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: { color: '0A0F1D' },
+            line: { color: '1E293B', width: 1 },
+            rectRadius: 0.1,
+          });
+          slide.addText(el.content || 'console.log("Hello World");', {
+            x: posX + 0.1,
+            y: posY + 0.08,
+            w: w - 0.2,
+            h: h - 0.16,
+            fontFace: 'Courier New',
+            fontSize: 10,
+            color: '38BDF8',
+            align: 'left',
+            valign: 'top',
+          });
+          break;
+        }
+
         case 'card': {
           slide.addShape(pptx.ShapeType.roundRect, {
             x: posX,

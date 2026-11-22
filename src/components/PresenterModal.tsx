@@ -400,8 +400,17 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       interval = setInterval(() => {
         setSecondsElapsed(sec => {
           const nextSec = sec + 1;
-          if (targetMinutes > 0 && nextSec === targetMinutes * 60) {
-            soundEffects.playTimerAlert();
+          if (targetMinutes > 0) {
+            const warningSec = Math.round(targetMinutes * 60 * 0.8);
+            const limitSec = targetMinutes * 60;
+            if (nextSec === warningSec) {
+              setSoundToast(`⏱️ Waktu Presentasi Tersisa 20% (~${Math.round((limitSec - nextSec) / 60)} menit)`);
+              setTimeout(() => setSoundToast(null), 3000);
+            } else if (nextSec === limitSec) {
+              soundEffects.playTimerAlert();
+              setSoundToast('⚠️ Batas Target Waktu Presentasi Tercapai!');
+              setTimeout(() => setSoundToast(null), 3500);
+            }
           }
           return nextSec;
         });
@@ -466,8 +475,15 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is typing in notes textarea
-      if (e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLInputElement) {
+      // Don't intercept if user is typing in notes textarea, search input, or contentEditable
+      const isInputFocused =
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLInputElement ||
+        (e.target as HTMLElement)?.isContentEditable;
+      if (isInputFocused) {
+        if (e.key === 'Escape') {
+          (e.target as HTMLElement)?.blur?.();
+        }
         return;
       }
 

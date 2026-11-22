@@ -207,6 +207,18 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                   <ElementRenderer element={element} isSelected={isSelected} />
                 )}
 
+                {/* Visual Prototyping Link Indicator Badge on Canvas */}
+                {element.linkToSlideId && !isEditing && (
+                  <div
+                    data-export-ignore="true"
+                    title={`Tertaut interaktif ke Slide Target`}
+                    className="absolute -top-2.5 -right-2.5 z-30 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-indigo-600/90 border border-indigo-400 text-white shadow-lg text-[9px] font-mono font-bold pointer-events-none select-none backdrop-blur-sm"
+                  >
+                    <span>🔗</span>
+                    <span className="hidden sm:inline">Link</span>
+                  </div>
+                )}
+
                 {/* Show resize, drag and rotate handles if selected and not actively typing */}
                 {isSelected && !isEditing && (
                   <TransformHandles

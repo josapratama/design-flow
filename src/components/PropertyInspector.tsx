@@ -752,19 +752,39 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
               <span>Transisi Slide Saat Presentasi</span>
             </span>
-            <select
-              value={activeSlide.transition || 'fade'}
-              onChange={e => onUpdateSlide(activeSlide.id, { transition: e.target.value as any })}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
-            >
-              <option value="fade">Fade Lembut (Elegan & Bersih)</option>
-              <option value="slide">Slide Horizontal (Geser Kanan)</option>
-              <option value="slide-vertical">Slide Vertikal (Meluncur Naik)</option>
-              <option value="zoom">Zoom Membesar (Dinamis)</option>
-              <option value="flip-cube">Flip 3D (Modern)</option>
-              <option value="blur-fade">Blur Focus (Sinematik)</option>
-              <option value="none">Tanpa Efek (Instan)</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <select
+                value={activeSlide.transition || 'fade'}
+                onChange={e => onUpdateSlide(activeSlide.id, { transition: e.target.value as any })}
+                className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+              >
+                <option value="fade">Fade Lembut (Elegan & Bersih)</option>
+                <option value="slide">Slide Horizontal (Geser Kanan)</option>
+                <option value="slide-vertical">Slide Vertikal (Meluncur Naik)</option>
+                <option value="zoom">Zoom Membesar (Dinamis)</option>
+                <option value="flip-cube">Flip 3D (Modern)</option>
+                <option value="blur-fade">Blur Focus (Sinematik)</option>
+                <option value="none">Tanpa Efek (Instan)</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => {
+                  const artboard = document.getElementById(`artboard-${activeSlide.id}`);
+                  if (artboard) {
+                    const trans = activeSlide.transition || 'fade';
+                    const cls = trans === 'slide-vertical' ? 'df-trans-slide-vertical' : trans === 'flip-cube' ? 'df-trans-flip-cube' : trans === 'blur-fade' ? 'df-trans-blur-fade' : trans === 'zoom' ? 'animate-in zoom-in-90 duration-300' : 'animate-in fade-in duration-300';
+                    artboard.classList.remove('animate-in', 'fade-in', 'zoom-in-90', 'df-trans-slide-vertical', 'df-trans-flip-cube', 'df-trans-blur-fade');
+                    void artboard.offsetWidth;
+                    artboard.classList.add(...cls.split(' '));
+                    setTimeout(() => artboard.classList.remove(...cls.split(' ')), 600);
+                  }
+                }}
+                title="Pratinjau Efek Transisi Langsung di Kanvas"
+                className="px-2.5 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 rounded-lg text-xs font-semibold shrink-0 transition-colors"
+              >
+                ▶ Tes
+              </button>
+            </div>
           </div>
 
           {/* Ganti Warna Global Serentak di Seluruh Slide */}
@@ -841,7 +861,17 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     if ((field === 'fill' || field === 'color' || field === 'stroke') && typeof val === 'string' && val.startsWith('#')) {
       recordRecentColor(val);
     }
-    onUpdateElement(element.id, { [field]: val });
+    const isStyleField = [
+      'fill', 'color', 'stroke', 'strokeWidth', 'strokeDash',
+      'opacity', 'fontFamily', 'fontSize', 'fontWeight', 'borderRadius',
+      'shadow', 'textAlign', 'letterSpacing', 'lineHeight'
+    ].includes(field as string);
+
+    if (isStyleField && selectedCount && selectedCount > 1 && onBatchUpdateElements) {
+      onBatchUpdateElements(() => ({ [field]: val }));
+    } else {
+      onUpdateElement(element.id, { [field]: val });
+    }
   };
 
   const handleEyeDropper = async (field: 'fill' | 'color' | 'stroke') => {
