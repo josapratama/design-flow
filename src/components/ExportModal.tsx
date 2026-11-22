@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DesignProject, Slide } from '../types';
 import { exportToPowerPoint } from '../engine/pptx-exporter';
 import { exportArtboardToImage } from '../engine/canvas-exporter';
-import { exportToReactTailwind } from '../engine/tailwind-exporter';
+import { exportToReactTailwind, exportProjectToReactDeck } from '../engine/tailwind-exporter';
 import { generateDesignDSL } from '../engine/dsl-generator';
 import { generateStandaloneHtmlPresentation } from '../engine/html-exporter';
 import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive, Globe, Copy } from 'lucide-react';
@@ -25,16 +25,20 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   artboardRef,
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<'pptx' | 'image' | 'pdf' | 'code' | 'notes' | 'html'>('pptx');
+  const [activeTab, setActiveTab] = useState<'pptx' | 'image' | 'pdf' | 'code' | 'notes' | 'html' | 'embed'>('pptx');
   const [isExporting, setIsExporting] = useState(false);
   const [imageScale, setImageScale] = useState<number>(2);
   const [pdfScope, setPdfScope] = useState<'all' | 'active'>('all');
+  const [codeScope, setCodeScope] = useState<'active' | 'deck'>('active');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedOutline, setCopiedOutline] = useState(false);
   const [copiedSvg, setCopiedSvg] = useState(false);
+  const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [exportProgress, setExportProgress] = useState<string>('');
 
-  const tailwindCode = exportToReactTailwind(activeSlide);
+  const tailwindCode = codeScope === 'deck'
+    ? exportProjectToReactDeck(project)
+    : exportToReactTailwind(activeSlide);
 
   const generateOutlineMarkdown = () => {
     const title = project.title || 'Presentasi';
@@ -275,7 +279,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${activeSlide.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_slide.tsx`;
+    const baseName = codeScope === 'deck'
+      ? `${(project.title || 'presentasi').toLowerCase().replace(/[^a-z0-9]/g, '_')}_deck.tsx`
+      : `${activeSlide.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_slide.tsx`;
+    link.download = baseName;
     link.click();
     URL.revokeObjectURL(url);
     confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
@@ -369,6 +376,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           >
             <Globe className="w-4 h-4" />
             <span>HTML Slideshow</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('embed')}
+            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'embed'
+              ? 'border-indigo-500 text-indigo-400'
+              : 'border-transparent text-slate-400 hover:text-white'
+              }`}
+          >
+            <Code2 className="w-4 h-4" />
+            <span>Embed & Iframe</span>
           </button>
         </div>
 
@@ -552,7 +570,36 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* TAB 4: REACT + TAILWIND CODE */}
           {activeTab === 'code' && (
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
+              {/* Code Scope Selector */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCodeScope('active')}
+                  className={`p-2.5 rounded-xl border text-left transition-all ${
+                    codeScope === 'active'
+                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <div className="font-bold text-xs truncate">Slide Aktif Saja</div>
+                  <div className="text-[10px] text-slate-500 truncate">Komponen: {activeSlide.title}</div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setCodeScope('deck')}
+                  className={`p-2.5 rounded-xl border text-left transition-all ${
+                    codeScope === 'deck'
+                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <div className="font-bold text-xs">Seluruh Deck Interaktif ({project.slides.length} Slide)</div>
+                  <div className="text-[10px] text-slate-500">Navigasi keyboard, state & progress bar</div>
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
                 <span className="text-xs text-slate-400">
                   Kode komponen React 19 + Tailwind CSS siap pakai:
                 </span>
@@ -563,7 +610,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-lg shadow-indigo-600/20 active:scale-95"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Unduh File .tsx</span>
+                    <span>{codeScope === 'deck' ? 'Unduh Deck .tsx' : 'Unduh Slide .tsx'}</span>
                   </button>
                   <button
                     onClick={handleCopyCode}
@@ -575,8 +622,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 </div>
               </div>
 
-              <div className="max-h-60 overflow-y-auto bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-emerald-400">
-                <pre>{tailwindCode}</pre>
+              {/* Code Box with Gutter Line Numbers */}
+              <div className="max-h-60 overflow-y-auto bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono flex">
+                <div className="w-10 py-3 pr-2 text-right bg-slate-950/90 text-slate-600 select-none border-r border-slate-800/80 shrink-0 leading-5 pointer-events-none">
+                  {tailwindCode.split('\n').map((_, idx) => (
+                    <div key={idx} className="text-[10px]">{idx + 1}</div>
+                  ))}
+                </div>
+                <pre className="p-3 pl-3 text-emerald-400 overflow-x-auto flex-1 leading-5 select-text font-mono">
+                  {tailwindCode}
+                </pre>
               </div>
             </div>
           )}
@@ -712,6 +767,49 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <Download className="w-4 h-4" />
                 <span>Unduh Berkas HTML Slideshow (.html)</span>
               </button>
+            </div>
+          )}
+
+          {/* TAB 7: EMBED & WEB WIDGET */}
+          {activeTab === 'embed' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
+                <div className="text-xs text-slate-300 leading-relaxed">
+                  <strong className="text-white block mb-0.5">Kode Semat Iframe Responsif (Embed Widget)</strong>
+                  Salin potongan kode HTML Iframe berikut untuk menyematkan presentasi atau wireframe Anda langsung ke dalam Notion, Medium, WordPress, Webflow, atau situs dokumentasi tim.
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                    <Code2 className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Kode Semat Iframe Responsif (Rasio 16:9):</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const iframeSnippet = `<div style="position: relative; width: 100%; height: 0; padding-top: 56.25%; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">\n  <iframe src="presentation.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>\n</div>`;
+                      navigator.clipboard.writeText(iframeSnippet);
+                      setCopiedEmbed(true);
+                      setTimeout(() => setCopiedEmbed(false), 2000);
+                      confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
+                    }}
+                    className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+                  >
+                    {copiedEmbed ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedEmbed ? 'Tersalin ke Clipboard!' : 'Salin Kode Iframe'}</span>
+                  </button>
+                </div>
+
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-emerald-400 select-text overflow-x-auto leading-relaxed">
+                  <code>{`<div style="position: relative; width: 100%; height: 0; padding-top: 56.25%; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">\n  <iframe src="presentation.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>\n</div>`}</code>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Tip: Ganti <code>presentation.html</code> dengan URL tempat berkas HTML diunggah, atau unduh berkas HTML dari tab <strong>HTML Slideshow</strong> dan letakkan di hosting web Anda.
+                </p>
+              </div>
             </div>
           )}
         </div>

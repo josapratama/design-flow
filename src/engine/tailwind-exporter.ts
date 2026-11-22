@@ -1,4 +1,4 @@
-import { Slide, DesignElement } from '../types';
+import { Slide, DesignElement, DesignProject } from '../types';
 
 /**
  * Converts a Slide or UI/UX Artboard into clean React 19 + Tailwind CSS code.
@@ -12,7 +12,18 @@ export function exportToReactTailwind(slide: Slide): string {
     )
   );
 
+  const googleFonts = Array.from(
+    new Set(
+      slide.elements
+        .map(el => el.fontFamily)
+        .filter((f): f is string => Boolean(f && !['sans', 'serif', 'mono'].includes(f)))
+    )
+  );
+
   const lucideImport = usedIcons.length > 0 ? `import { ${usedIcons.join(', ')} } from 'lucide-react';\n` : '';
+  const fontStyleTag = googleFonts.length > 0
+    ? `      <style>{\`@import url('https://fonts.googleapis.com/css2?${googleFonts.map(f => `family=${encodeURIComponent(f)}:wght@400;600;700`).join('&')}&display=swap');\`}</style>\n`
+    : '';
 
   const jsxElements = slide.elements
     .filter(el => !el.hidden)
@@ -33,7 +44,153 @@ export default function ${sanitizeComponentName(slide.title)}Screen() {
         ${slide.wallpaper ? (slide.wallpaperOverlay && slide.wallpaperOverlay > 0 ? `backgroundImage: 'linear-gradient(rgba(0,0,0,${slide.wallpaperOverlay}), rgba(0,0,0,${slide.wallpaperOverlay})), url(${slide.wallpaper})', backgroundSize: 'cover', backgroundPosition: 'center',` : `backgroundImage: 'url(${slide.wallpaper})', backgroundSize: 'cover', backgroundPosition: 'center',`) : ''}
       }}
     >
+${fontStyleTag}${jsxElements}
+    </div>
+  );
+}
+`;
+}
+
+/**
+ * Converts an entire presentation deck (multi-slide) into a complete, interactive
+ * React 19 + Tailwind CSS slideshow component with state, navigation, keyboard controls, and progress.
+ */
+export function exportProjectToReactDeck(project: DesignProject): string {
+  const allIcons = Array.from(
+    new Set(
+      project.slides.flatMap(s =>
+        s.elements
+          .filter(el => !el.hidden && el.type === 'icon')
+          .map(el => el.iconName || 'Sparkles')
+      )
+    )
+  );
+
+  const allGoogleFonts = Array.from(
+    new Set(
+      project.slides.flatMap(s =>
+        s.elements
+          .map(el => el.fontFamily)
+          .filter((f): f is string => Boolean(f && !['sans', 'serif', 'mono'].includes(f)))
+      )
+    )
+  );
+
+  const lucideIcons = ['ChevronLeft', 'ChevronRight', ...allIcons];
+  const lucideImport = `import { ${Array.from(new Set(lucideIcons)).join(', ')} } from 'lucide-react';\n`;
+  const fontStyleTag = allGoogleFonts.length > 0
+    ? `      <style>{\`@import url('https://fonts.googleapis.com/css2?${allGoogleFonts.map(f => `family=${encodeURIComponent(f)}:wght@400;600;700`).join('&')}&display=swap');\`}</style>\n`
+    : '';
+
+  const slideComponents = project.slides.map((slide, idx) => {
+    const compName = `Slide${idx + 1}_${sanitizeComponentName(slide.title)}`;
+    const jsxElements = slide.elements
+      .filter(el => !el.hidden)
+      .sort((a, b) => a.zIndex - b.zIndex)
+      .map(el => renderElementJSX(el))
+      .join('\n\n');
+
+    return `function ${compName}() {
+  return (
+    <div 
+      className="relative overflow-hidden shadow-2xl transition-all duration-300 select-none mx-auto"
+      style={{
+        width: '${slide.width}px',
+        height: '${slide.height}px',
+        background: '${slide.background || '#0f172a'}',
+        ${slide.wallpaper ? (slide.wallpaperOverlay && slide.wallpaperOverlay > 0 ? `backgroundImage: 'linear-gradient(rgba(0,0,0,${slide.wallpaperOverlay}), rgba(0,0,0,${slide.wallpaperOverlay})), url(${slide.wallpaper})', backgroundSize: 'cover', backgroundPosition: 'center',` : `backgroundImage: 'url(${slide.wallpaper})', backgroundSize: 'cover', backgroundPosition: 'center',`) : ''}
+      }}
+    >
 ${jsxElements}
+    </div>
+  );
+}`;
+  }).join('\n\n');
+
+  const slideListArray = project.slides
+    .map((slide, idx) => `    { id: '${slide.id}', title: '${escapeJSX(slide.title)}', Component: Slide${idx + 1}_${sanitizeComponentName(slide.title)} },`)
+    .join('\n');
+
+  return `import React, { useState, useEffect } from 'react';
+${lucideImport}
+${slideComponents}
+
+const SLIDES = [
+${slideListArray}
+];
+
+export default function ${sanitizeComponentName(project.title || 'Presentation')}Deck() {
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const goToNext = () => {
+    setCurrentSlideIndex(prev => Math.min(prev + 1, SLIDES.length - 1));
+  };
+
+  const goToPrev = () => {
+    setCurrentSlideIndex(prev => Math.max(prev - 1, 0));
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        e.preventDefault();
+        goToNext();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goToPrev();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const ActiveComponent = SLIDES[currentSlideIndex].Component;
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-4 sm:p-6 font-sans select-none">
+${fontStyleTag}
+      {/* Top Header: Title & Progress Bar */}
+      <header className="flex items-center justify-between max-w-7xl w-full mx-auto mb-4 pb-3 border-b border-slate-800">
+        <div>
+          <h1 className="text-sm sm:text-base font-bold text-slate-100">${escapeJSX(project.title || 'Presentasi')}</h1>
+          <p className="text-xs text-slate-400">Slide {currentSlideIndex + 1} dari {SLIDES.length}: {SLIDES[currentSlideIndex].title}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold border border-indigo-500/30">
+            {Math.round(((currentSlideIndex + 1) / SLIDES.length) * 100)}%
+          </span>
+        </div>
+      </header>
+
+      {/* Main Slide Presentation Viewport */}
+      <main className="flex-1 flex items-center justify-center overflow-auto my-2">
+        <ActiveComponent />
+      </main>
+
+      {/* Bottom Controls Bar */}
+      <footer className="flex items-center justify-between max-w-7xl w-full mx-auto mt-4 pt-3 border-t border-slate-800">
+        <span className="text-xs text-slate-500 hidden sm:inline">
+          Gunakan tombol <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-indigo-400 font-mono">←</kbd> dan <kbd className="px-1.5 py-0.5 rounded bg-slate-800 text-indigo-400 font-mono">→</kbd> untuk berpindah slide
+        </span>
+        <div className="flex items-center gap-2 ml-auto">
+          <button
+            onClick={goToPrev}
+            disabled={currentSlideIndex === 0}
+            className="px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900 text-xs font-semibold flex items-center gap-1 transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>Sebelumnya</span>
+          </button>
+          <button
+            onClick={goToNext}
+            disabled={currentSlideIndex === SLIDES.length - 1}
+            className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:hover:bg-indigo-600 text-white text-xs font-semibold flex items-center gap-1 transition-all shadow-lg shadow-indigo-600/30"
+          >
+            <span>Selanjutnya</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -56,6 +213,18 @@ function renderElementJSX(el: DesignElement): string {
   ].filter(Boolean);
   if (transforms.length > 0) baseStyle.transform = transforms.join(' ');
   if (el.opacity !== undefined && el.opacity < 1) baseStyle.opacity = el.opacity;
+  if (el.letterSpacing !== undefined && el.letterSpacing !== 0) baseStyle.letterSpacing = `${el.letterSpacing}px`;
+  if (el.lineHeight !== undefined) baseStyle.lineHeight = el.lineHeight;
+
+  // Custom typography (Google Fonts)
+  if (el.fontFamily && !['sans', 'serif', 'mono'].includes(el.fontFamily)) {
+    baseStyle.fontFamily = `'${el.fontFamily}', sans-serif`;
+  }
+
+  // Border / Stroke styling
+  if (el.stroke) {
+    baseStyle.border = `${el.strokeWidth || 1}px ${el.strokeDash || 'solid'} ${el.stroke}`;
+  }
 
   const toStyleAttr = (extras: Record<string, string | number | undefined> = {}) => {
     const merged = { ...baseStyle };
@@ -411,17 +580,20 @@ ${innerChart}
 
     case 'rect':
     case 'card':
-    default:
+    default: {
+      const hasCustomBorder = Boolean(el.stroke);
+      const borderClass = hasCustomBorder ? '' : 'border border-slate-700/50';
       return `      {/* Container Card: ${el.name} */}
       <div 
-        className="absolute border border-slate-700/50 ${getShadowClass(el.shadow)}"
+        className="absolute ${borderClass} ${getShadowClass(el.shadow)}"
         ${toStyleAttr({
           backgroundColor: el.fill || '#1e293b',
-          borderRadius: `${el.borderRadius || 16}px`,
+          borderRadius: `${el.borderRadius !== undefined ? el.borderRadius : 16}px`,
         })}
       >
         ${el.content ? `<div className="p-4 text-slate-200">${escapeJSX(el.content)}</div>` : ''}
       </div>`;
+    }
   }
 }
 
