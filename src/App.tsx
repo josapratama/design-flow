@@ -448,6 +448,16 @@ export default function App() {
         onSaveProject={saveProjectToFile}
         onLoadProject={loadProjectData}
         lastSaved={lastSaved}
+        onToggleMobileLeft={() => {
+          setIsMobileLeftOpen(prev => !prev);
+          setIsMobileRightOpen(false);
+        }}
+        onToggleMobileRight={() => {
+          setIsMobileRightOpen(prev => !prev);
+          setIsMobileLeftOpen(false);
+        }}
+        isMobileLeftOpen={isMobileLeftOpen}
+        isMobileRightOpen={isMobileRightOpen}
       />
 
       {/* Main Workspace Workspace */}
@@ -504,17 +514,17 @@ export default function App() {
 
         {/* Center Visual Canvas */}
         <main className="flex-1 relative overflow-hidden bg-slate-950">
-          {/* Mobile Floating Toggle Pills (< 1024px) */}
-          <div className="absolute top-3 left-3 z-30 flex items-center gap-2 lg:hidden">
+          {/* Mobile Floating Toggle Pills (< 1024px) - Minimalist Glassmorphism */}
+          <div className="absolute top-3 left-3 z-30 flex items-center gap-1.5 lg:hidden">
             <button
               onClick={() => {
                 setIsMobileLeftOpen(prev => !prev);
                 setIsMobileRightOpen(false);
               }}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 shadow-lg backdrop-blur-md transition-all ${
+              className={`px-2.5 py-1 rounded-lg border text-xs font-semibold flex items-center gap-1.5 shadow-xl backdrop-blur-xl transition-all ${
                 isMobileLeftOpen
                   ? 'bg-indigo-600 text-white border-indigo-400'
-                  : 'bg-slate-900/90 text-slate-300 border-slate-700/80 hover:text-white'
+                  : 'bg-slate-900/85 text-slate-300 border-slate-800 hover:text-white'
               }`}
             >
               <Layers className="w-3.5 h-3.5 text-indigo-400" />
@@ -525,10 +535,10 @@ export default function App() {
                 setIsMobileRightOpen(prev => !prev);
                 setIsMobileLeftOpen(false);
               }}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 shadow-lg backdrop-blur-md transition-all ${
+              className={`px-2.5 py-1 rounded-lg border text-xs font-semibold flex items-center gap-1.5 shadow-xl backdrop-blur-xl transition-all ${
                 isMobileRightOpen
                   ? 'bg-indigo-600 text-white border-indigo-400'
-                  : 'bg-slate-900/90 text-slate-300 border-slate-700/80 hover:text-white'
+                  : 'bg-slate-900/85 text-slate-300 border-slate-800 hover:text-white'
               }`}
             >
               <Sliders className="w-3.5 h-3.5 text-cyan-400" />

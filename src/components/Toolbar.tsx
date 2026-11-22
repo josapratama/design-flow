@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ZoomIn,
   ZoomOut,
@@ -8,13 +8,13 @@ import {
   Ruler,
   Trash2,
   Copy,
-  RotateCcw,
-  RotateCw,
   Shield,
   PanelLeftClose,
   Focus,
   LayoutGrid,
   Boxes,
+  SlidersHorizontal,
+  Check,
 } from 'lucide-react';
 
 interface ToolbarProps {
@@ -58,10 +58,6 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   hasSelectedElements,
   selectedCount = 0,
   isGrouped = false,
-  canUndo = false,
-  canRedo = false,
-  onUndo,
-  onRedo,
   onZoomIn,
   onZoomOut,
   onResetZoom,
@@ -78,223 +74,262 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onDeleteSelected,
   onDuplicateSelected,
 }) => {
-  const [showZoomMenu, setShowZoomMenu] = React.useState(false);
+  const [showZoomMenu, setShowZoomMenu] = useState(false);
+  const [showViewMenu, setShowViewMenu] = useState(false);
   const zoomLevels = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-  const zoomMenuRef = React.useRef<HTMLDivElement>(null);
+  const zoomMenuRef = useRef<HTMLDivElement>(null);
+  const viewMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close zoom menu on click outside
-  React.useEffect(() => {
-    if (!showZoomMenu) return;
+  // Close menus on click outside
+  useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (zoomMenuRef.current && !zoomMenuRef.current.contains(e.target as Node)) {
         setShowZoomMenu(false);
       }
+      if (viewMenuRef.current && !viewMenuRef.current.contains(e.target as Node)) {
+        setShowViewMenu(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showZoomMenu]);
+  }, []);
 
   return (
-    <div className="absolute bottom-6 left-6 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800/80 p-1.5 rounded-2xl shadow-2xl backdrop-blur-md select-none z-20 max-w-[calc(100vw-3rem)] overflow-x-auto no-scrollbar">
-      {/* Zoom Controls */}
-      <button
-        onClick={onZoomOut}
-        title="Perkecil Kanvas"
-        className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
-      >
-        <ZoomOut className="w-4 h-4" />
-      </button>
-
-      <div ref={zoomMenuRef} className="relative">
+    <div className="absolute bottom-5 left-5 flex items-center gap-1 bg-slate-900/90 border border-slate-800/90 p-1.5 rounded-2xl shadow-2xl backdrop-blur-xl select-none z-20 max-w-[calc(100vw-2.5rem)] transition-all">
+      {/* 1. Zoom Controls Group */}
+      <div className="flex items-center gap-0.5">
         <button
-          onClick={() => setShowZoomMenu(!showZoomMenu)}
-          title="Pilih level zoom"
-          className="text-xs font-mono font-semibold text-slate-300 px-2 py-0.5 hover:bg-slate-800 rounded transition-colors"
+          onClick={onZoomOut}
+          title="Perkecil Kanvas"
+          className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
         >
-          {Math.round(scale * 100)}%
+          <ZoomOut className="w-3.5 h-3.5" />
         </button>
 
-        {showZoomMenu && (
-          <div className="absolute bottom-full mb-2 left-0 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-1 z-30 flex flex-col gap-0.5 min-w-[120px] animate-in fade-in zoom-in-95 duration-100">
-            {zoomLevels.map(lvl => (
+        <div ref={zoomMenuRef} className="relative">
+          <button
+            onClick={() => {
+              setShowZoomMenu(!showZoomMenu);
+              setShowViewMenu(false);
+            }}
+            title="Pilih level perbesaran kanvas"
+            className="text-xs font-mono font-medium text-slate-300 px-2 py-1 hover:bg-slate-800 rounded-lg transition-colors"
+          >
+            {Math.round(scale * 100)}%
+          </button>
+
+          {showZoomMenu && (
+            <div className="absolute bottom-full mb-2 left-0 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-1 z-30 flex flex-col gap-0.5 min-w-[130px] animate-in fade-in zoom-in-95 duration-100 backdrop-blur-xl">
+              <div className="px-2 py-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+                Tingkat Zoom
+              </div>
+              {zoomLevels.map(lvl => (
+                <button
+                  key={lvl}
+                  onClick={() => {
+                    onSetScale?.(lvl);
+                    setShowZoomMenu(false);
+                  }}
+                  className={`px-2 py-1 text-left rounded-lg text-xs font-mono transition-colors flex items-center justify-between ${
+                    Math.round(scale * 100) === Math.round(lvl * 100)
+                      ? 'bg-indigo-600 text-white font-semibold'
+                      : 'text-slate-300 hover:bg-slate-800'
+                  }`}
+                >
+                  <span>{Math.round(lvl * 100)}%</span>
+                  {Math.round(scale * 100) === Math.round(lvl * 100) && <Check className="w-3 h-3" />}
+                </button>
+              ))}
+              <div className="h-[1px] bg-slate-800 my-1" />
               <button
-                key={lvl}
                 onClick={() => {
-                  onSetScale?.(lvl);
+                  onResetZoom();
                   setShowZoomMenu(false);
                 }}
-                className={`px-2 py-1 text-left rounded text-xs font-mono transition-colors ${
-                  Math.round(scale * 100) === Math.round(lvl * 100)
-                    ? 'bg-indigo-600 text-white font-bold'
-                    : 'text-slate-300 hover:bg-slate-800'
+                className="px-2 py-1 text-left rounded-lg text-xs text-slate-300 hover:text-white hover:bg-slate-800 flex items-center justify-between"
+              >
+                <span>Sesuaikan Layar</span>
+                <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+0</kbd>
+              </button>
+              {hasSelectedElements && onZoomToSelection && (
+                <button
+                  onClick={() => {
+                    onZoomToSelection();
+                    setShowZoomMenu(false);
+                  }}
+                  className="px-2 py-1 text-left rounded-lg text-xs text-indigo-300 hover:bg-slate-800 font-medium"
+                >
+                  Fokus Pilihan (Shift+2)
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={onZoomIn}
+          title="Perbesar Kanvas"
+          className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
+        >
+          <ZoomIn className="w-3.5 h-3.5" />
+        </button>
+
+        <button
+          onClick={onResetZoom}
+          title="Sesuaikan Layar (Ctrl+0)"
+          className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
+        >
+          <Maximize className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
+      <div className="h-4 w-[1px] bg-slate-800 mx-1" />
+
+      {/* 2. Consolidated View Options Popover (All auxiliary display controls into 1 neat menu) */}
+      <div ref={viewMenuRef} className="relative">
+        <button
+          onClick={() => {
+            setShowViewMenu(!showViewMenu);
+            setShowZoomMenu(false);
+          }}
+          title="Pengaturan Tampilan & Kisi Kanvas"
+          className={`px-2 py-1.5 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-colors ${
+            showViewMenu || showGrid || showSafeMargin || snapToGrid || isZenMode
+              ? 'bg-slate-800 text-indigo-300'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800'
+          }`}
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="hidden sm:inline">Tampilan</span>
+          {(showGrid || snapToGrid || showSafeMargin) && (
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+          )}
+        </button>
+
+        {showViewMenu && (
+          <div className="absolute bottom-full mb-2 left-0 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-30 flex flex-col gap-1 w-56 animate-in fade-in zoom-in-95 duration-100 backdrop-blur-xl">
+            <div className="px-2 py-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/80 mb-1">
+              Panduan Visual Kanvas
+            </div>
+
+            {/* Grid Toggle */}
+            <button
+              onClick={onToggleGrid}
+              className={`w-full px-2.5 py-1.5 text-left rounded-xl text-xs flex items-center justify-between transition-colors ${
+                showGrid ? 'bg-indigo-600/15 text-indigo-300 font-semibold' : 'text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Grid className="w-3.5 h-3.5" />
+                <span>Titik Kisi Grid</span>
+              </div>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded ${showGrid ? 'bg-indigo-600 text-white' : 'text-slate-500'}`}>
+                {showGrid ? 'ON' : 'OFF'}
+              </span>
+            </button>
+
+            {/* Snap To Grid Toggle */}
+            {onToggleSnapToGrid && (
+              <button
+                onClick={onToggleSnapToGrid}
+                className={`w-full px-2.5 py-1.5 text-left rounded-xl text-xs flex items-center justify-between transition-colors ${
+                  snapToGrid ? 'bg-indigo-600/15 text-indigo-300 font-semibold' : 'text-slate-300 hover:bg-slate-800'
                 }`}
               >
-                {Math.round(lvl * 100)}%
+                <div className="flex items-center gap-2">
+                  <Magnet className="w-3.5 h-3.5" />
+                  <span>Magnet Snap to Grid</span>
+                </div>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded ${snapToGrid ? 'bg-indigo-600 text-white' : 'text-slate-500'}`}>
+                  {snapToGrid ? 'ON' : 'OFF'}
+                </span>
               </button>
-            ))}
-            <div className="h-[1px] bg-slate-800 my-1" />
-            <button
-              onClick={() => {
-                onResetZoom();
-                setShowZoomMenu(false);
-              }}
-              className="px-2 py-1 text-left rounded text-xs text-slate-300 hover:bg-slate-800"
-            >
-              Fit Screen (Ctrl+0)
-            </button>
-            {hasSelectedElements && onZoomToSelection && (
+            )}
+
+            {/* Rulers Toggle */}
+            {onToggleRulers && (
+              <button
+                onClick={onToggleRulers}
+                className={`w-full px-2.5 py-1.5 text-left rounded-xl text-xs flex items-center justify-between transition-colors ${
+                  showRulers ? 'bg-indigo-600/15 text-indigo-300 font-semibold' : 'text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Ruler className="w-3.5 h-3.5" />
+                  <span>Penggaris Piksel</span>
+                </div>
+                <kbd className="text-[10px] text-slate-500 font-mono">Shift+R</kbd>
+              </button>
+            )}
+
+            {/* Safe Margin Toggle */}
+            {onToggleSafeMargin && (
+              <button
+                onClick={onToggleSafeMargin}
+                className={`w-full px-2.5 py-1.5 text-left rounded-xl text-xs flex items-center justify-between transition-colors ${
+                  showSafeMargin ? 'bg-emerald-600/15 text-emerald-300 font-semibold' : 'text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Batas Aman / Margin</span>
+                </div>
+                <kbd className="text-[10px] text-slate-500 font-mono">Shift+M</kbd>
+              </button>
+            )}
+
+            {/* Focus / Zen Mode */}
+            {onToggleZenMode && (
               <button
                 onClick={() => {
-                  onZoomToSelection();
-                  setShowZoomMenu(false);
+                  onToggleZenMode();
+                  setShowViewMenu(false);
                 }}
-                className="px-2 py-1 text-left rounded text-xs text-indigo-300 hover:bg-slate-800 font-medium"
+                className={`w-full px-2.5 py-1.5 text-left rounded-xl text-xs flex items-center justify-between transition-colors border-t border-slate-800/80 mt-1 pt-1.5 ${
+                  isZenMode ? 'bg-purple-600/20 text-purple-300 font-semibold' : 'text-slate-300 hover:bg-slate-800'
+                }`}
               >
-                Pilihan (Shift+2)
+                <div className="flex items-center gap-2">
+                  <PanelLeftClose className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Mode Fokus Kanvas</span>
+                </div>
+                <kbd className="text-[10px] text-slate-500 font-mono">Shift+F</kbd>
+              </button>
+            )}
+
+            {/* Slide Sorter Light Table */}
+            {onOpenSlideSorter && (
+              <button
+                onClick={() => {
+                  onOpenSlideSorter();
+                  setShowViewMenu(false);
+                }}
+                className="w-full px-2.5 py-1.5 text-left rounded-xl text-xs text-slate-300 hover:text-white hover:bg-slate-800 flex items-center justify-between transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Pengatur Kisi Slide</span>
+                </div>
+                <kbd className="text-[10px] text-slate-500 font-mono">Alt+S</kbd>
               </button>
             )}
           </div>
         )}
       </div>
 
-      <button
-        onClick={onZoomIn}
-        title="Perbesar Kanvas"
-        className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
-      >
-        <ZoomIn className="w-4 h-4" />
-      </button>
-
-      <div className="h-4 w-[1px] bg-slate-800 mx-1" />
-
-      {/* Fit to screen */}
-      <button
-        onClick={onResetZoom}
-        title="Sesuaikan dengan Layar (Fit Screen - Ctrl+0)"
-        className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
-      >
-        <Maximize className="w-4 h-4" />
-      </button>
-
-      {/* Zoom to selection button when elements selected */}
-      {hasSelectedElements && onZoomToSelection && (
-        <button
-          onClick={onZoomToSelection}
-          title="Zoom ke Elemen Terpilih (Shift+2)"
-          className="p-1.5 hover:bg-indigo-600/20 text-indigo-400 hover:text-indigo-300 rounded-xl transition-colors"
-        >
-          <Focus className="w-4 h-4" />
-        </button>
-      )}
-
-      {/* Grid toggle */}
-      <button
-        onClick={onToggleGrid}
-        title="Tampilkan / Sembunyikan Titik Grid"
-        className={`p-1.5 rounded-xl transition-colors ${
-          showGrid ? 'bg-indigo-600/20 text-indigo-400' : 'hover:bg-slate-800 text-slate-400'
-        }`}
-      >
-        <Grid className="w-4 h-4" />
-      </button>
-
-      {/* Snap to Grid toggle */}
-      {onToggleSnapToGrid && (
-        <button
-          onClick={onToggleSnapToGrid}
-          title={`Snap ke Grid: ${snapToGrid ? 'Aktif' : 'Nonaktif'}`}
-          className={`p-1.5 rounded-xl transition-colors ${
-            snapToGrid ? 'bg-indigo-600/20 text-indigo-400 font-bold' : 'hover:bg-slate-800 text-slate-400'
-          }`}
-        >
-          <Magnet className="w-4 h-4" />
-        </button>
-      )}
-
-      {/* Rulers toggle */}
-      {onToggleRulers && (
-        <button
-          onClick={onToggleRulers}
-          title="Tampilkan / Sembunyikan Penggaris Piksel (Shift+R)"
-          className={`p-1.5 rounded-xl transition-colors ${
-            showRulers ? 'bg-indigo-600/20 text-indigo-400' : 'hover:bg-slate-800 text-slate-400'
-          }`}
-        >
-          <Ruler className="w-4 h-4" />
-        </button>
-      )}
-
-      {/* Safe Margins toggle */}
-      {onToggleSafeMargin && (
-        <button
-          onClick={onToggleSafeMargin}
-          title="Batas Area Aman / Safe Margin (Shift+M)"
-          className={`p-1.5 rounded-xl transition-colors ${
-            showSafeMargin ? 'bg-emerald-600/20 text-emerald-400' : 'hover:bg-slate-800 text-slate-400'
-          }`}
-        >
-          <Shield className="w-4 h-4" />
-        </button>
-      )}
-
-      {/* Zen / Focus Canvas Mode Toggle */}
-      {onToggleZenMode && (
-        <button
-          onClick={onToggleZenMode}
-          title={`Mode Fokus Kanvas (Shift+F): ${isZenMode ? 'Aktif' : 'Nonaktif'}`}
-          className={`p-1.5 rounded-xl transition-colors ${
-            isZenMode ? 'bg-purple-600/30 text-purple-300 font-bold' : 'hover:bg-slate-800 text-slate-400'
-          }`}
-        >
-          <PanelLeftClose className="w-4 h-4" />
-        </button>
-      )}
-
-      {/* Slide Sorter / Light Table Mode */}
-      {onOpenSlideSorter && (
-        <button
-          onClick={onOpenSlideSorter}
-          title="Buka Pengatur Kisi Slide (Alt+S)"
-          className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded-xl transition-colors"
-        >
-          <LayoutGrid className="w-4 h-4" />
-        </button>
-      )}
-
-      {/* Undo & Redo History Controls */}
-      <div className="h-4 w-[1px] bg-slate-800 mx-1" />
-
-      <button
-        onClick={onUndo}
-        disabled={!canUndo}
-        title="Urungkan Tindakan (Ctrl+Z)"
-        className="p-1.5 hover:bg-slate-800 disabled:opacity-25 disabled:hover:bg-transparent text-slate-400 hover:text-white rounded-xl transition-colors"
-      >
-        <RotateCcw className="w-4 h-4" />
-      </button>
-
-      <button
-        onClick={onRedo}
-        disabled={!canRedo}
-        title="Ulangi Tindakan (Ctrl+Y)"
-        className="p-1.5 hover:bg-slate-800 disabled:opacity-25 disabled:hover:bg-transparent text-slate-400 hover:text-white rounded-xl transition-colors"
-      >
-        <RotateCw className="w-4 h-4" />
-      </button>
-
-      {/* Contextual actions for selected element */}
+      {/* 3. Contextual Actions for Selected Elements (Only appears when items are selected) */}
       {hasSelectedElements && (
         <>
           <div className="h-4 w-[1px] bg-slate-800 mx-1" />
 
-          {/* Group / Ungroup buttons */}
+          {/* Group / Ungroup */}
           {selectedCount > 1 && onGroup && (
             <button
               onClick={onGroup}
               title="Kelompokkan Elemen Terpilih (Ctrl+G)"
               className="p-1.5 hover:bg-emerald-600/20 text-emerald-400 rounded-xl transition-colors"
             >
-              <Boxes className="w-4 h-4" />
+              <Boxes className="w-3.5 h-3.5" />
             </button>
           )}
 
@@ -304,24 +339,26 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               title="Pisahkan Elemen dari Grup (Ctrl+Shift+G)"
               className="p-1.5 hover:bg-amber-500/20 text-amber-400 rounded-xl transition-colors"
             >
-              <Boxes className="w-4 h-4" />
+              <Boxes className="w-3.5 h-3.5" />
             </button>
           )}
 
+          {/* Duplicate */}
           <button
             onClick={onDuplicateSelected}
-            title="Duplikat Elemen Terpilih"
-            className="p-1.5 hover:bg-slate-800 text-slate-300 rounded-xl transition-colors"
+            title="Duplikat Elemen Terpilih (Ctrl+D)"
+            className="p-1.5 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl transition-colors"
           >
-            <Copy className="w-4 h-4" />
+            <Copy className="w-3.5 h-3.5" />
           </button>
 
+          {/* Delete */}
           <button
             onClick={onDeleteSelected}
-            title="Hapus Elemen Terpilih"
+            title="Hapus Elemen Terpilih (Delete)"
             className="p-1.5 hover:bg-rose-500/20 text-rose-400 rounded-xl transition-colors"
           >
-            <Trash2 className="w-4 h-4" />
+            <Trash2 className="w-3.5 h-3.5" />
           </button>
         </>
       )}

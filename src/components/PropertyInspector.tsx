@@ -224,28 +224,32 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             </div>
 
             {/* Quick Palette Swatches */}
-            <div className="grid grid-cols-4 gap-1.5 pt-1">
+            <div className="flex items-center flex-wrap gap-2 pt-1">
               {bgSwatches.map(swatch => (
                 <button
                   key={swatch.color}
                   onClick={() => onUpdateSlide(activeSlide.id, { background: swatch.color })}
                   title={swatch.name}
-                  className="h-7 rounded-md border border-slate-700 hover:scale-105 transition-transform"
+                  className={`h-7 w-7 rounded-full border border-white/10 hover:scale-110 transition-transform shadow-md relative ${
+                    activeSlide.background === swatch.color ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-900 scale-105' : ''
+                  }`}
                   style={{ backgroundColor: swatch.color }}
                 />
               ))}
             </div>
 
             {/* Modern Linear Gradients */}
-            <div className="space-y-1 pt-1.5">
-              <span className="text-[10px] text-slate-500 font-semibold">Gradasi Modern</span>
+            <div className="space-y-1.5 pt-2">
+              <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider block">Gradasi Modern</span>
               <div className="grid grid-cols-3 gap-1.5">
                 {gradientSwatches.map(grad => (
                   <button
                     key={grad.name}
                     onClick={() => onUpdateSlide(activeSlide.id, { background: grad.bg })}
                     title={grad.name}
-                    className="h-7 rounded-md border border-slate-700 hover:scale-105 transition-transform text-[8px] font-medium text-white/90 flex items-center justify-center shadow-sm"
+                    className={`h-8 rounded-lg border border-slate-700/80 hover:border-indigo-500/80 hover:scale-[1.02] transition-all text-[9px] font-semibold text-white/95 flex items-center justify-center shadow-sm truncate px-1 ${
+                      activeSlide.background === grad.bg ? 'ring-2 ring-indigo-500 border-indigo-400' : ''
+                    }`}
                     style={{ background: grad.bg }}
                   >
                     {grad.name.split(' ')[0]}

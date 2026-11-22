@@ -416,78 +416,78 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
 
   return (
     <aside className="w-64 h-full bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 select-none z-10">
-      {/* 6 Category Tabs */}
-      <div className="grid grid-cols-6 border-b border-slate-800 bg-slate-950/60 p-1 gap-0.5">
+      {/* 6 Category Tabs - Sleek Modern Icon & Label */}
+      <div className="grid grid-cols-6 border-b border-slate-800/80 bg-slate-950/70 p-1 gap-0.5">
         <button
           onClick={() => setActiveTab('elements')}
           title="Tipografi & Teks"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'elements'
-            ? 'bg-indigo-600 text-white shadow'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'elements'
+            ? 'bg-indigo-600 text-white shadow-sm font-bold'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             }`}
         >
-          <Type className="w-4 h-4" />
-          <span className="text-[9px] mt-1 font-medium">Teks</span>
+          <Type className="w-3.5 h-3.5" />
+          <span className="text-[9px] mt-0.5 font-medium">Teks</span>
         </button>
 
         <button
           onClick={() => setActiveTab('ui')}
           title="UI Kit & Komponen Antarmuka"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'ui'
-            ? 'bg-indigo-600 text-white shadow'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'ui'
+            ? 'bg-indigo-600 text-white shadow-sm font-bold'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             }`}
         >
-          <MousePointerClick className="w-4 h-4" />
-          <span className="text-[9px] mt-1 font-medium">UI Kit</span>
+          <MousePointerClick className="w-3.5 h-3.5" />
+          <span className="text-[9px] mt-0.5 font-medium">UI Kit</span>
         </button>
 
         <button
           onClick={() => setActiveTab('shapes')}
           title="Bentuk & Garis Vektor"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'shapes'
-            ? 'bg-indigo-600 text-white shadow'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'shapes'
+            ? 'bg-indigo-600 text-white shadow-sm font-bold'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             }`}
         >
-          <Square className="w-4 h-4" />
-          <span className="text-[9px] mt-1 font-medium">Bentuk</span>
+          <Square className="w-3.5 h-3.5" />
+          <span className="text-[9px] mt-0.5 font-medium">Bentuk</span>
         </button>
 
         <button
           onClick={() => setActiveTab('media')}
           title="Gambar & Unggah Foto"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'media'
-            ? 'bg-indigo-600 text-white shadow'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'media'
+            ? 'bg-indigo-600 text-white shadow-sm font-bold'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             }`}
         >
-          <Upload className="w-4 h-4" />
-          <span className="text-[9px] mt-1 font-medium">Media</span>
+          <Upload className="w-3.5 h-3.5" />
+          <span className="text-[9px] mt-0.5 font-medium">Media</span>
         </button>
 
         <button
           onClick={() => setActiveTab('blocks')}
           title="Blok Tata Letak AI Cepat"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'blocks'
-            ? 'bg-indigo-600 text-white shadow'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'blocks'
+            ? 'bg-indigo-600 text-white shadow-sm font-bold'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             }`}
         >
-          <Sparkles className="w-4 h-4 text-amber-300" />
-          <span className="text-[9px] mt-1 font-medium">Blok AI</span>
+          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+          <span className="text-[9px] mt-0.5 font-medium">Blok AI</span>
         </button>
 
         <button
           onClick={() => setActiveTab('layers')}
           title="Daftar Layer & Susunan Elemen"
-          className={`flex flex-col items-center justify-center py-2 rounded transition-colors ${activeTab === 'layers'
-            ? 'bg-indigo-600 text-white shadow'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'layers'
+            ? 'bg-indigo-600 text-white shadow-sm font-bold'
+            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             }`}
         >
-          <Layers className="w-4 h-4" />
-          <span className="text-[9px] mt-1 font-medium">Layer</span>
+          <Layers className="w-3.5 h-3.5" />
+          <span className="text-[9px] mt-0.5 font-medium">Layer</span>
         </button>
       </div>
 
