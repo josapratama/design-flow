@@ -208,11 +208,18 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
                 )}
               </div>
 
-              {slide.notes && slide.notes.trim() ? (
-                <span title="Terdapat Catatan Pembicara" className="text-amber-400 p-0.5 shrink-0">
-                  <FileText className="w-2.5 h-2.5" />
-                </span>
-              ) : null}
+              <div className="flex items-center gap-0.5 shrink-0">
+                {slide.transition && slide.transition !== 'none' && (
+                  <span title={`Efek Transisi: ${slide.transition}`} className="text-indigo-400 p-0.5 text-[9px] font-bold">
+                    ✦
+                  </span>
+                )}
+                {slide.notes && slide.notes.trim() ? (
+                  <span title="Terdapat Catatan Pembicara" className="text-amber-400 p-0.5 shrink-0">
+                    <FileText className="w-2.5 h-2.5" />
+                  </span>
+                ) : null}
+              </div>
             </div>
 
             {/* Scaled Mini Visual Canvas Thumbnail */}

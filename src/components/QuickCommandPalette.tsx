@@ -35,6 +35,12 @@ import {
   Quote,
   Code,
   HardDrive,
+  Heart,
+  Diamond,
+  MessageSquare,
+  Sliders,
+  AlertCircle,
+  Terminal,
 } from 'lucide-react';
 import { DesignElement, ElementType } from '../types';
 import { SMART_BLOCKS } from '../templates/smart-blocks';
@@ -480,6 +486,129 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
         onAddElement(
           createBaseElement('hexagon', 'Segi Enam', 160, 160, {
             fill: '#10b981',
+          })
+        ),
+    },
+    {
+      id: 'heart',
+      title: 'Hati Vektor (Heart)',
+      subtitle: 'Bentuk hati romantis & selebrasi',
+      category: 'Bentuk',
+      icon: <Heart className="w-4 h-4 text-rose-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('heart', 'Hati', 140, 130, {
+            fill: '#f43f5e',
+          })
+        ),
+    },
+    {
+      id: 'diamond',
+      title: 'Berlian Vektor (Diamond)',
+      subtitle: 'Bentuk belah ketupat modern',
+      category: 'Bentuk',
+      icon: <Diamond className="w-4 h-4 text-indigo-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('diamond', 'Berlian', 140, 140, {
+            fill: '#6366f1',
+          })
+        ),
+    },
+    {
+      id: 'speech-bubble',
+      title: 'Balon Ucapan (Speech Bubble)',
+      subtitle: 'Bentuk balon dialog pesan',
+      category: 'Bentuk',
+      icon: <MessageSquare className="w-4 h-4 text-amber-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('speech-bubble', 'Balon Ucapan', 200, 120, {
+            fill: '#1e293b',
+            stroke: '#6366f1',
+            strokeWidth: 2,
+            content: 'Halo!',
+            color: '#f8fafc',
+          })
+        ),
+    },
+    {
+      id: 'progress-bar',
+      title: 'Progress Bar Interaktif',
+      subtitle: 'Bilah kemajuan persentase tugas atau metrik target',
+      category: 'UI Kit',
+      icon: <Sliders className="w-4 h-4 text-cyan-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('progress-bar', 'Progress Bar', 280, 50, {
+            content: '75',
+            subTitle: 'Progres Pekerjaan',
+            color: '#e2e8f0',
+          })
+        ),
+    },
+    {
+      id: 'rating-stars',
+      title: 'Rating Bintang 5',
+      subtitle: 'Skor kepuasan ulasan bintang interaktif',
+      category: 'UI Kit',
+      icon: <Star className="w-4 h-4 text-amber-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('rating', 'Rating Bintang', 220, 48, {
+            content: '5',
+            subTitle: '4.9/5 (1.2k ulasan)',
+            color: '#f8fafc',
+          })
+        ),
+    },
+    {
+      id: 'alert-box',
+      title: 'Kotak Alert / Pemberitahuan',
+      subtitle: 'Notifikasi tips, peringatan, atau pengumuman penting',
+      category: 'UI Kit',
+      icon: <AlertCircle className="w-4 h-4 text-indigo-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('alert-box', 'Alert Box', 320, 70, {
+            content: 'Tips: Tekan tombol F5 untuk memulai slideshow langsung.',
+            color: '#e2e8f0',
+            fill: 'rgba(99, 102, 241, 0.1)',
+            stroke: '#6366f1',
+            borderRadius: 12,
+          })
+        ),
+    },
+    {
+      id: 'chat-bubble-ui',
+      title: 'Balon Chat Pengguna',
+      subtitle: 'Tampilan pesan chat pengguna interaktif',
+      category: 'UI Kit',
+      icon: <MessageSquare className="w-4 h-4 text-emerald-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('chat-bubble', 'Chat Bubble', 260, 75, {
+            content: 'Desain berhasil diterapkan dengan sangat rapi!',
+            subTitle: 'Andi Pratama',
+            color: '#f8fafc',
+            fill: '#1e293b',
+            borderRadius: 16,
+          })
+        ),
+    },
+    {
+      id: 'code-snippet-ui',
+      title: 'Cuplikan Kode (Code Snippet)',
+      subtitle: 'Blok kode monospace dengan latar syntax gelap',
+      category: 'UI Kit',
+      icon: <Terminal className="w-4 h-4 text-cyan-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('code-snippet', 'Code Snippet', 340, 80, {
+            content: 'const designFlow = new PresentationEngine();',
+            color: '#38bdf8',
+            fill: '#0f172a',
+            borderRadius: 12,
           })
         ),
     },
