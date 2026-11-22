@@ -17,6 +17,7 @@ export const AudienceScreen: React.FC = () => {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [blankMode, setBlankMode] = useState<'none' | 'black' | 'white'>('none');
+  const [transitionEffect, setTransitionEffect] = useState<'fade' | 'slide' | 'zoom'>('fade');
   const [laserPos, setLaserPos] = useState<LaserData | null>(null);
   const [strokes, setStrokes] = useState<DoodleStroke[]>([]);
   const [showHint, setShowHint] = useState(true);
@@ -78,6 +79,7 @@ export const AudienceScreen: React.FC = () => {
         if (parsed.slides) setSlides(parsed.slides);
         if (typeof parsed.currentIndex === 'number') setCurrentIndex(parsed.currentIndex);
         if (parsed.blankMode) setBlankMode(parsed.blankMode);
+        if (parsed.transitionEffect) setTransitionEffect(parsed.transitionEffect);
       }
     } catch (e) {
       console.warn('Gagal membaca saved audience state:', e);
@@ -91,6 +93,7 @@ export const AudienceScreen: React.FC = () => {
 
       if (data.type === 'SYNC_PROJECT') {
         if (data.slides) setSlides(data.slides);
+        if (data.transitionEffect) setTransitionEffect(data.transitionEffect);
         if (typeof data.currentIndex === 'number') {
           setCurrentIndex(prev => {
             if (prev !== data.currentIndex) {
@@ -175,7 +178,14 @@ export const AudienceScreen: React.FC = () => {
 
       {/* Slide Canvas Container */}
       <div
-        className="relative shadow-2xl overflow-hidden shrink-0"
+        key={currentIndex}
+        className={`relative shadow-2xl overflow-hidden shrink-0 ${
+          transitionEffect === 'slide'
+            ? 'animate-in slide-in-from-right-10 duration-300'
+            : transitionEffect === 'zoom'
+              ? 'animate-in zoom-in-95 duration-200'
+              : 'animate-in fade-in duration-200'
+        }`}
         style={{
           width: `${currentSlide.width}px`,
           height: `${currentSlide.height}px`,

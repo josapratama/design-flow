@@ -67,6 +67,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'elements' | 'ui' | 'shapes' | 'media' | 'blocks' | 'layers'>('elements');
   const [layerSearch, setLayerSearch] = useState('');
+  const [mediaCategory, setMediaCategory] = useState<'all' | 'tech' | 'business' | 'arch' | 'nature' | 'people'>('all');
   const [aiTopic, setAiTopic] = useState('');
   const [isAiGenerating, setIsAiGenerating] = useState(false);
 
@@ -194,21 +195,114 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
   };
 
   const sampleStockPhotos = [
+    // Tech & AI
     {
-      title: 'Kampus & Universitas',
-      url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      title: 'Teknologi & Server AI',
+      title: 'Server Cloud & AI',
+      category: 'tech',
       url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=80',
     },
     {
-      title: 'Arsitektur Minimalis',
+      title: 'Kode & Pengembangan',
+      category: 'tech',
+      url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Hardware & Chipset',
+      category: 'tech',
+      url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Siber & Jaringan',
+      category: 'tech',
+      url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
+    },
+
+    // Business & Meeting
+    {
+      title: 'Pertemuan Eksekutif',
+      category: 'business',
+      url: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Diskusi Tim Kreatif',
+      category: 'business',
+      url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Ruang Kerja Modern',
+      category: 'business',
+      url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Analitik & Finansial',
+      category: 'business',
+      url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80',
+    },
+
+    // Architecture & Space
+    {
+      title: 'Gedung Pencakar Langit',
+      category: 'arch',
       url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80',
     },
     {
-      title: 'Foto Profil Tim / User',
+      title: 'Struktur Minimalis',
+      category: 'arch',
+      url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Interior Galeri Seni',
+      category: 'arch',
+      url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Kampus Universitas',
+      category: 'arch',
+      url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=80',
+    },
+
+    // Nature & Abstract
+    {
+      title: 'Pemandangan Pegunungan',
+      category: 'nature',
+      url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Samudra & Horizon',
+      category: 'nature',
+      url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Gradasi Kabut Senja',
+      category: 'nature',
+      url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Pendar Aurora Kutub',
+      category: 'nature',
+      url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&auto=format&fit=crop&q=80',
+    },
+
+    // People & Team
+    {
+      title: 'Foto Profil Profesional',
+      category: 'people',
       url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Pengembang Software',
+      category: 'people',
+      url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Desainer & Kreator',
+      category: 'people',
+      url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Kepemimpinan & Presentasi',
+      category: 'people',
+      url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80',
     },
   ];
 
@@ -757,37 +851,68 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
               />
             </label>
 
-            {/* Preset Stock Photos */}
+            {/* Preset Stock Photos with Category Chips */}
             <div className="space-y-2 pt-2 border-t border-slate-800">
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                Foto Contoh Siap Pakai
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                {sampleStockPhotos.map((photo, i) => (
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Foto Stok Bebas Royalti
+                </span>
+                <span className="text-[9px] text-indigo-400 font-mono">Unsplash HD</span>
+              </div>
+
+              {/* Category Filter Chips */}
+              <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar">
+                {[
+                  { id: 'all', label: 'Semua' },
+                  { id: 'tech', label: 'Teknologi' },
+                  { id: 'business', label: 'Bisnis' },
+                  { id: 'arch', label: 'Arsitektur' },
+                  { id: 'nature', label: 'Alam' },
+                  { id: 'people', label: 'Tim' },
+                ].map(cat => (
                   <button
-                    key={i}
-                    onClick={() =>
-                      onAddElement(
-                        createBaseElement('image', photo.title, 360, 240, {
-                          imageUrl: photo.url,
-                          borderRadius: 12,
-                        })
-                      )
-                    }
-                    className="group relative rounded-lg overflow-hidden border border-slate-800 hover:border-indigo-500 text-left transition-all aspect-video"
+                    key={cat.id}
+                    onClick={() => setMediaCategory(cat.id as any)}
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-medium shrink-0 transition-all ${
+                      mediaCategory === cat.id
+                        ? 'bg-indigo-600 text-white font-semibold shadow'
+                        : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+                    }`}
                   >
-                    <img
-                      src={photo.url}
-                      alt={photo.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-1.5">
-                      <span className="text-[9px] font-medium text-white truncate">
-                        {photo.title}
-                      </span>
-                    </div>
+                    {cat.label}
                   </button>
                 ))}
+              </div>
+
+              {/* Photo Grid */}
+              <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+                {sampleStockPhotos
+                  .filter(p => mediaCategory === 'all' || p.category === mediaCategory)
+                  .map((photo, i) => (
+                    <button
+                      key={i}
+                      onClick={() =>
+                        onAddElement(
+                          createBaseElement('image', photo.title, 360, 240, {
+                            imageUrl: photo.url,
+                            borderRadius: 12,
+                          })
+                        )
+                      }
+                      className="group relative rounded-lg overflow-hidden border border-slate-800 hover:border-indigo-500 text-left transition-all aspect-video"
+                    >
+                      <img
+                        src={photo.url}
+                        alt={photo.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-1.5">
+                        <span className="text-[9px] font-medium text-white truncate">
+                          {photo.title}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
               </div>
             </div>
           </div>

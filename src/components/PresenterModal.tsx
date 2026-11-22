@@ -89,6 +89,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           slides,
           currentIndex,
           blankMode,
+          transitionEffect,
         });
       }
     };
@@ -96,7 +97,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     try {
       localStorage.setItem(
         'designflow_audience_state',
-        JSON.stringify({ slides, currentIndex, blankMode })
+        JSON.stringify({ slides, currentIndex, blankMode, transitionEffect })
       );
     } catch { }
 
@@ -105,12 +106,13 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       slides,
       currentIndex,
       blankMode,
+      transitionEffect,
     });
 
     return () => {
       channelRef.current?.close();
     };
-  }, [slides, currentIndex, blankMode]);
+  }, [slides, currentIndex, blankMode, transitionEffect]);
 
   useEffect(() => {
     if (!isLaserActive) {

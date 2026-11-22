@@ -3,7 +3,8 @@ import { DesignProject, Slide } from '../types';
 import { exportToPowerPoint } from '../engine/pptx-exporter';
 import { exportArtboardToImage } from '../engine/canvas-exporter';
 import { exportToReactTailwind } from '../engine/tailwind-exporter';
-import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X } from 'lucide-react';
+import { generateDesignDSL } from '../engine/dsl-generator';
+import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
@@ -22,7 +23,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   artboardRef,
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<'pptx' | 'image' | 'pdf' | 'code'>('pptx');
+  const [activeTab, setActiveTab] = useState<'pptx' | 'image' | 'pdf' | 'code' | 'notes'>('pptx');
   const [isExporting, setIsExporting] = useState(false);
   const [imageScale, setImageScale] = useState<number>(2);
   const [pdfScope, setPdfScope] = useState<'all' | 'active'>('all');
@@ -30,6 +31,62 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [exportProgress, setExportProgress] = useState<string>('');
 
   const tailwindCode = exportToReactTailwind(activeSlide);
+
+  const handleDownloadSpeakerNotes = () => {
+    const title = project.title || 'Presentasi';
+    const lines = [
+      `# Naskah Pembicara: ${title}`,
+      `Total Slide: ${project.slides.length} | Dibuat dengan DesignFlow Studio`,
+      '',
+      '============================================================',
+      '',
+    ];
+
+    project.slides.forEach((s, idx) => {
+      lines.push(`## Slide ${idx + 1}: ${s.title}`);
+      lines.push(
+        s.notes && s.notes.trim()
+          ? s.notes.trim()
+          : '*(Tidak ada catatan pembicara untuk slide ini)*'
+      );
+      lines.push('');
+      lines.push('------------------------------------------------------------');
+      lines.push('');
+    });
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_naskah_pembicara.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+    confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
+  };
+
+  const handleDownloadDSL = () => {
+    const dslText = generateDesignDSL(project);
+    const blob = new Blob([dslText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${project.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.dflow`;
+    link.click();
+    URL.revokeObjectURL(url);
+    confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
+  };
+
+  const handleDownloadJSON = () => {
+    const jsonStr = JSON.stringify(project, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${project.title.toLowerCase().replace(/[^a-z0-9]/g, '_')}.designflow.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+    confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
+  };
 
   const handleExportPPTX = async () => {
     setIsExporting(true);
@@ -187,6 +244,18 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           >
             <Code2 className="w-4 h-4" />
             <span>React & Tailwind</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('notes')}
+            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
+              activeTab === 'notes'
+                ? 'border-indigo-500 text-indigo-400'
+                : 'border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Naskah & Cadangan</span>
           </button>
         </div>
 
@@ -375,6 +444,81 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
               <div className="max-h-60 overflow-y-auto bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-emerald-400">
                 <pre>{tailwindCode}</pre>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5: NOTES & BACKUP */}
+          {activeTab === 'notes' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
+                <div className="text-xs text-slate-300 leading-relaxed">
+                  <strong className="text-white block mb-0.5">Naskah Pembicara & Cadangan Proyek Lengkap</strong>
+                  Unduh seluruh catatan narasi presentasi dalam format Markdown atau simpan cadangan kode proyek yang dapat dimuat kembali sewaktu-waktu.
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                {/* Speaker Notes (.md) */}
+                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs mb-1">
+                      <BookOpen className="w-4 h-4" />
+                      <span>Naskah Markdown (.md)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Kompilasi seluruh catatan pembicara slide terstruktur rapi untuk gladi bersih atau cetak teks.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleDownloadSpeakerNotes}
+                    className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-600/30"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Unduh .md</span>
+                  </button>
+                </div>
+
+                {/* Declarative DSL (.dflow) */}
+                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center gap-2 text-cyan-400 font-bold text-xs mb-1">
+                      <FileCode className="w-4 h-4" />
+                      <span>Kode DSL (.dflow)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Sintaks teks deklaratif ringkas yang dapat disinkronkan kembali lewat Code Drawer (<kbd className="font-mono text-[10px]">Alt+C</kbd>).
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleDownloadDSL}
+                    className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-cyan-600/30"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Unduh .dflow</span>
+                  </button>
+                </div>
+
+                {/* Full JSON Project (.json) */}
+                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between space-y-3">
+                  <div>
+                    <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs mb-1">
+                      <HardDrive className="w-4 h-4" />
+                      <span>Cadangan JSON (.json)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      Arsip data mentah proyek 100% lengkap untuk dicadangkan ke Google Drive atau perangkat offline.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleDownloadJSON}
+                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-600/30"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Unduh .json</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}

@@ -76,14 +76,14 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         const potentialWidth = initialWidth - deltaX;
         if (potentialWidth > 20) {
           newWidth = applySnap(potentialWidth);
-          newX = applySnap(initialX + deltaX);
+          newX = snapToGrid ? Math.round((initialX + deltaX) / gridSize) * gridSize : Math.round(initialX + deltaX);
         }
       }
       if (direction.includes('n')) {
         const potentialHeight = initialHeight - deltaY;
         if (potentialHeight > 20) {
           newHeight = applySnap(potentialHeight);
-          newY = applySnap(initialY + deltaY);
+          newY = snapToGrid ? Math.round((initialY + deltaY) / gridSize) * gridSize : Math.round(initialY + deltaY);
         }
       }
 
@@ -143,8 +143,12 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
       const deltaX = (moveEvent.clientX - startX) / scale;
       const deltaY = (moveEvent.clientY - startY) / scale;
 
-      let finalDeltaX = applySnap(deltaX);
-      let finalDeltaY = applySnap(deltaY);
+      let finalDeltaX = snapToGrid
+        ? Math.round((element.x + deltaX) / gridSize) * gridSize - element.x
+        : Math.round(deltaX);
+      let finalDeltaY = snapToGrid
+        ? Math.round((element.y + deltaY) / gridSize) * gridSize - element.y
+        : Math.round(deltaY);
 
       const guides: { x?: number; y?: number; isElementSnap?: boolean } = {};
       const snapThreshold = 7;
