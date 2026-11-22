@@ -4,6 +4,16 @@ import { Slide, DesignElement } from '../types';
  * Converts a Slide or UI/UX Artboard into clean React 19 + Tailwind CSS code.
  */
 export function exportToReactTailwind(slide: Slide): string {
+  const usedIcons = Array.from(
+    new Set(
+      slide.elements
+        .filter(el => !el.hidden && el.type === 'icon')
+        .map(el => el.iconName || 'Sparkles')
+    )
+  );
+
+  const lucideImport = usedIcons.length > 0 ? `import { ${usedIcons.join(', ')} } from 'lucide-react';\n` : '';
+
   const jsxElements = slide.elements
     .filter(el => !el.hidden)
     .sort((a, b) => a.zIndex - b.zIndex)
@@ -11,7 +21,7 @@ export function exportToReactTailwind(slide: Slide): string {
     .join('\n\n');
 
   return `import React from 'react';
-
+${lucideImport}
 export default function ${sanitizeComponentName(slide.title)}Screen() {
   return (
     <div 
@@ -340,7 +350,8 @@ ${innerChart}
       </div>`;
     }
 
-    case 'icon':
+    case 'icon': {
+      const iconComp = el.iconName || 'Sparkles';
       return `      {/* Vector Icon: ${el.name} */}
       <div 
         className="absolute flex items-center justify-center select-none ${getShadowClass(el.shadow)}"
@@ -348,8 +359,9 @@ ${innerChart}
           color: el.color || '#818cf8',
         })}
       >
-        <span className="text-2xl font-bold">★</span>
+        <${iconComp} className="w-full h-full" strokeWidth={${el.strokeWidth || 2}} />
       </div>`;
+    }
 
     case 'navbar':
       return `      {/* Navigation Bar: ${el.name} */}

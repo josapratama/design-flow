@@ -395,12 +395,31 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             </div>
           </div>
 
-          {/* Catatan Pembicara (Speaker Notes) */}
+          {/* Catatan Pembicara (Speaker Notes) with Pacing Estimator */}
           <div className="space-y-1.5 pt-2 border-t border-slate-800">
-            <span className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1.5">
-              <StickyNote className="w-3.5 h-3.5 text-amber-400" />
-              <span>Catatan Pembicara (Notes)</span>
-            </span>
+            {(() => {
+              const notesText = (activeSlide.notes || '').trim();
+              const words = notesText ? notesText.split(/\s+/).filter(Boolean).length : 0;
+              const totalSec = Math.ceil((words / 130) * 60);
+              const durationStr = totalSec < 60 ? `${totalSec}d` : `${Math.floor(totalSec / 60)}m ${totalSec % 60}d`;
+
+              return (
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1.5">
+                    <StickyNote className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Catatan Pembicara</span>
+                  </span>
+                  {words > 0 && (
+                    <span
+                      title="Estimasi durasi bicara (~130 kata/menit)"
+                      className="text-[9px] font-mono text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20"
+                    >
+                      {words} kata • ~{durationStr}
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
             <textarea
               rows={4}
               value={activeSlide.notes || ''}
@@ -1280,52 +1299,50 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
           </div>
 
           {/* Efek Bayangan (Shadow) */}
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <label className="text-[10px] text-slate-500 block">Efek Bayangan (Shadow)</label>
-            <div className="grid grid-cols-4 gap-1">
-              <div className="grid grid-cols-6 gap-1">
-                {['none', 'sm', 'md', 'lg', 'xl', '2xl'].map(s => (
-                  <button
-                    key={s}
-                    onClick={() => handleChange('shadow', s)}
-                    className={`py-1 rounded text-[10px] uppercase font-semibold border transition-colors ${(element.shadow || 'none') === s
-                      ? 'bg-indigo-600 border-indigo-500 text-white'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                      }`}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+            <div className="grid grid-cols-6 gap-1">
+              {['none', 'sm', 'md', 'lg', 'xl', '2xl'].map(s => (
+                <button
+                  key={s}
+                  onClick={() => handleChange('shadow', s)}
+                  className={`py-1 rounded text-[10px] uppercase font-semibold border transition-colors ${(element.shadow || 'none') === s
+                    ? 'bg-indigo-600 border-indigo-500 text-white'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
 
-              {/* Neon Glow Presets */}
-              <div className="pt-2 space-y-1">
-                <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">
-                  Efek Pendaran Neon (Glow)
-                </span>
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[
-                    { id: 'glow-indigo', name: 'Indigo', color: 'bg-indigo-500', border: 'border-indigo-500/60' },
-                    { id: 'glow-cyan', name: 'Cyan', color: 'bg-cyan-400', border: 'border-cyan-500/60' },
-                    { id: 'glow-emerald', name: 'Emerald', color: 'bg-emerald-400', border: 'border-emerald-500/60' },
-                    { id: 'glow-rose', name: 'Rose', color: 'bg-rose-500', border: 'border-rose-500/60' },
-                  ].map(glow => {
-                    const isSelected = element.shadow === glow.id;
-                    return (
-                      <button
-                        key={glow.id}
-                        onClick={() => handleChange('shadow', isSelected ? 'none' : glow.id)}
-                        className={`flex items-center justify-center gap-1.5 py-1 px-1.5 rounded-lg border text-[10px] font-medium transition-all ${isSelected
-                          ? `${glow.border} bg-slate-800 text-white shadow-sm ring-1 ring-white/20`
-                          : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                          }`}
-                      >
-                        <span className={`w-2 h-2 rounded-full ${glow.color} shadow-sm shrink-0`} />
-                        <span className="truncate">{glow.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+            {/* Neon Glow Presets */}
+            <div className="pt-1 space-y-1">
+              <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">
+                Efek Pendaran Neon (Glow)
+              </span>
+              <div className="grid grid-cols-4 gap-1.5">
+                {[
+                  { id: 'glow-indigo', name: 'Indigo', color: 'bg-indigo-500', border: 'border-indigo-500/60' },
+                  { id: 'glow-cyan', name: 'Cyan', color: 'bg-cyan-400', border: 'border-cyan-500/60' },
+                  { id: 'glow-emerald', name: 'Emerald', color: 'bg-emerald-400', border: 'border-emerald-500/60' },
+                  { id: 'glow-rose', name: 'Rose', color: 'bg-rose-500', border: 'border-rose-500/60' },
+                ].map(glow => {
+                  const isSelected = element.shadow === glow.id;
+                  return (
+                    <button
+                      key={glow.id}
+                      onClick={() => handleChange('shadow', isSelected ? 'none' : glow.id)}
+                      className={`flex items-center justify-center gap-1.5 py-1 px-1.5 rounded-lg border text-[10px] font-medium transition-all ${isSelected
+                        ? `${glow.border} bg-slate-800 text-white shadow-sm ring-1 ring-white/20`
+                        : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                        }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full ${glow.color} shadow-sm shrink-0`} />
+                      <span className="truncate">{glow.name}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
