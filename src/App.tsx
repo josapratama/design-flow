@@ -679,6 +679,8 @@ export default function App() {
         onCopyArtboardImage={handleCopyArtboardToClipboard}
         onInvertSlideTheme={invertActiveSlideTheme}
         onOpenSlideSorter={() => setIsSlideSorterOpen(true)}
+        onOpenCodeEditor={() => setIsCodeDrawerOpen(true)}
+        onSaveProject={saveProjectToFile}
       />
 
       {/* Floating Right-Click Context Menu */}

@@ -541,9 +541,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               overflow: 'hidden',
             }}
           >
-            {s.elements.map(el => (
-              <div
-                key={el.id}
+            {s.elements.map(el => {
+              if (el.hidden) return null;
+              return (
+                <div
+                  key={el.id}
                 style={{
                   position: 'absolute',
                   left: `${el.x}px`,
@@ -561,7 +563,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               >
                 <ElementRenderer element={el} isSelected={false} />
               </div>
-            ))}
+            );
+          })}
           </div>
         ))}
       </div>

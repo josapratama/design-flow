@@ -270,10 +270,12 @@ export const AudienceScreen: React.FC = () => {
         }}
       >
         {/* Slide Elements */}
-        {currentSlide.elements.map(el => (
-          <div
-            key={el.id}
-            className="absolute"
+        {currentSlide.elements.map(el => {
+          if (el.hidden) return null;
+          return (
+            <div
+              key={el.id}
+              className="absolute"
             style={{
               left: `${el.x}px`,
               top: `${el.y}px`,
@@ -292,7 +294,8 @@ export const AudienceScreen: React.FC = () => {
           >
             <ElementRenderer element={el} isSelected={false} />
           </div>
-        ))}
+        );
+      })}
 
         {/* Live Synchronized Doodle Canvas from Presenter */}
         <canvas

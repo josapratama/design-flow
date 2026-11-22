@@ -296,9 +296,11 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
                       transformOrigin: 'top left',
                     }}
                   >
-                    {slide.elements.map(el => (
-                      <div
-                        key={el.id}
+                    {slide.elements.map(el => {
+                      if (el.hidden) return null;
+                      return (
+                        <div
+                          key={el.id}
                         style={{
                           position: 'absolute',
                           left: `${el.x}px`,
@@ -318,7 +320,8 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
                       >
                         <ElementRenderer element={el} isSelected={false} />
                       </div>
-                    ))}
+                    );
+                  })}
                   </div>
                 </div>
 

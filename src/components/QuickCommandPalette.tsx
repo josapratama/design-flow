@@ -33,6 +33,8 @@ import {
   Split,
   LayoutGrid,
   Quote,
+  Code,
+  HardDrive,
 } from 'lucide-react';
 import { DesignElement, ElementType } from '../types';
 import { SMART_BLOCKS } from '../templates/smart-blocks';
@@ -52,6 +54,8 @@ interface QuickCommandPaletteProps {
   onCopyArtboardImage?: () => void;
   onInvertSlideTheme?: () => void;
   onOpenSlideSorter?: () => void;
+  onOpenCodeEditor?: () => void;
+  onSaveProject?: () => void;
 }
 
 interface CommandItem {
@@ -78,6 +82,8 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
   onCopyArtboardImage,
   onInvertSlideTheme,
   onOpenSlideSorter,
+  onOpenCodeEditor,
+  onSaveProject,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -199,6 +205,30 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
             category: 'Aksi Studio',
             icon: <LayoutGrid className="w-4 h-4 text-indigo-400" />,
             action: () => onOpenSlideSorter(),
+          },
+        ]
+      : []),
+    ...(onOpenCodeEditor
+      ? [
+          {
+            id: 'action-code-editor',
+            title: 'Buka Editor Kode DSL (Alt+C)',
+            subtitle: 'Sinkronisasi dua arah struktur visual dan sintaks deklaratif kode',
+            category: 'Aksi Studio',
+            icon: <Code className="w-4 h-4 text-cyan-400" />,
+            action: () => onOpenCodeEditor(),
+          },
+        ]
+      : []),
+    ...(onSaveProject
+      ? [
+          {
+            id: 'action-save-project',
+            title: 'Simpan & Cadangkan Berkas Proyek (.json)',
+            subtitle: 'Unduh seluruh slide dan elemen dalam format berkas .designflow.json',
+            category: 'Aksi Studio',
+            icon: <HardDrive className="w-4 h-4 text-emerald-400" />,
+            action: () => onSaveProject(),
           },
         ]
       : []),

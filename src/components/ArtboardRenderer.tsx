@@ -90,6 +90,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
           .slice()
           .sort((a, b) => a.zIndex - b.zIndex)
           .map(element => {
+            if (element.hidden) return null;
             const isSelected = selectedElementIds.includes(element.id);
             const isEditing = editingElementId === element.id;
             const isTextual = ['heading', 'text', 'quote', 'button'].includes(element.type);
