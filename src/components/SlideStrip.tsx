@@ -19,6 +19,7 @@ interface SlideStripProps {
   onDuplicateSlide: (slideId: string) => void;
   onDeleteSlide: (slideId: string) => void;
   onReorderSlide: (slideId: string, direction: 'left' | 'right' | 'start' | 'end') => void;
+  onMoveSlideToIndex?: (slideId: string, targetIndex: number) => void;
   onUpdateSlideTitle?: (slideId: string, newTitle: string) => void;
   onOpenSlideSorter?: () => void;
 }
@@ -31,11 +32,14 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
   onDuplicateSlide,
   onDeleteSlide,
   onReorderSlide,
+  onMoveSlideToIndex,
   onUpdateSlideTitle,
   onOpenSlideSorter,
 }) => {
   const [editingSlideId, setEditingSlideId] = React.useState<string | null>(null);
   const [tempTitle, setTempTitle] = React.useState('');
+  const [draggedSlideId, setDraggedSlideId] = React.useState<string | null>(null);
+  const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
   return (
     <div className="h-32 bg-slate-900 border-t border-slate-800 px-4 py-2 flex items-center gap-3 overflow-x-auto select-none shrink-0 z-10">
       {slides.map((slide, index) => {
@@ -45,10 +49,42 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
         return (
           <div
             key={slide.id}
+            draggable={!editingSlideId}
+            onDragStart={e => {
+              e.dataTransfer.setData('text/plain', slide.id);
+              setDraggedSlideId(slide.id);
+            }}
+            onDragEnd={() => {
+              setDraggedSlideId(null);
+              setDragOverIndex(null);
+            }}
+            onDragOver={e => {
+              e.preventDefault();
+              if (dragOverIndex !== index) {
+                setDragOverIndex(index);
+              }
+            }}
+            onDragLeave={() => {
+              if (dragOverIndex === index) {
+                setDragOverIndex(null);
+              }
+            }}
+            onDrop={e => {
+              e.preventDefault();
+              const sourceId = e.dataTransfer.getData('text/plain') || draggedSlideId;
+              if (sourceId && onMoveSlideToIndex && sourceId !== slide.id) {
+                onMoveSlideToIndex(sourceId, index);
+              }
+              setDraggedSlideId(null);
+              setDragOverIndex(null);
+            }}
             onClick={() => onSelectSlide(slide.id)}
-            className={`group relative h-26 w-38 rounded-xl border-2 transition-all cursor-pointer flex flex-col justify-between p-2 shrink-0 overflow-hidden ${isActive
-              ? 'border-indigo-500 bg-slate-800/90 shadow-xl shadow-indigo-500/20 ring-1 ring-indigo-400/50'
-              : 'border-slate-800 bg-slate-950/80 hover:border-slate-700'
+            className={`group relative h-26 w-38 rounded-xl border-2 transition-all cursor-grab active:cursor-grabbing flex flex-col justify-between p-2 shrink-0 overflow-hidden ${
+              dragOverIndex === index && draggedSlideId !== slide.id
+                ? 'border-indigo-400 ring-4 ring-indigo-500/50 scale-105 bg-indigo-950/40 shadow-indigo-500/20'
+                : isActive
+                ? 'border-indigo-500 bg-slate-800/90 shadow-xl shadow-indigo-500/20 ring-1 ring-indigo-400/50'
+                : 'border-slate-800 bg-slate-950/80 hover:border-slate-700'
               }`}
           >
             {/* Header: Slide Number & Title */}

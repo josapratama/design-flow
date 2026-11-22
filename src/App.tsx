@@ -571,6 +571,7 @@ export default function App() {
           onDuplicateSlide={duplicateSlide}
           onDeleteSlide={deleteSlide}
           onReorderSlide={reorderSlide}
+          onMoveSlideToIndex={moveSlideToIndex}
           onUpdateSlideTitle={(slideId, title) => updateSlideSettings(slideId, { title })}
           onOpenSlideSorter={() => setIsSlideSorterOpen(true)}
         />
@@ -629,6 +630,8 @@ export default function App() {
           onZoomToFit={handleZoomToFit}
           onCopyArtboardImage={handleCopyArtboardToClipboard}
           onOpenSlideSorter={() => setIsSlideSorterOpen(true)}
+          onOpenCodeEditor={() => setIsCodeDrawerOpen(true)}
+          onOpenExport={() => setIsExportOpen(true)}
           onInvertSlideTheme={invertActiveSlideTheme}
         />
       )}

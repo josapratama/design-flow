@@ -313,6 +313,90 @@ ${innerChart}
         ${toStyleAttr({ backgroundColor: el.fill || '#475569' })}
       />`;
 
+    case 'avatar':
+      return `      {/* Avatar Profile: ${el.name} */}
+      <div 
+        className="absolute relative rounded-full overflow-hidden border-2 flex items-center justify-center select-none ${getShadowClass(el.shadow)}"
+        ${toStyleAttr({
+          backgroundColor: el.fill || '#1e293b',
+          borderColor: el.stroke || '#6366f1',
+          borderWidth: `${el.strokeWidth || 2}px`,
+        })}
+      >
+        ${el.imageUrl ? `<img src="${el.imageUrl}" alt="${escapeJSX(el.name || 'Avatar')}" className="w-full h-full object-cover pointer-events-none" />` : `<span className="font-bold text-sm" style={{ color: '${el.color || '#ffffff'}' }}>${escapeJSX(el.content || 'DF')}</span>`}
+        <span className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border border-slate-900" />
+      </div>`;
+
+    case 'toggle': {
+      const isActive = el.content !== 'off';
+      return `      {/* Toggle Switch: ${el.name} */}
+      <div 
+        className="absolute rounded-full p-1 flex items-center cursor-pointer transition-colors duration-200 ${getShadowClass(el.shadow)}"
+        ${toStyleAttr({
+          backgroundColor: isActive ? (el.fill || '#10b981') : '#334155',
+        })}
+      >
+        <div className="h-full aspect-square rounded-full bg-white shadow-md transition-transform duration-200 transform ${isActive ? 'translate-x-full' : 'translate-x-0'}" />
+      </div>`;
+    }
+
+    case 'icon':
+      return `      {/* Vector Icon: ${el.name} */}
+      <div 
+        className="absolute flex items-center justify-center select-none ${getShadowClass(el.shadow)}"
+        ${toStyleAttr({
+          color: el.color || '#818cf8',
+        })}
+      >
+        <span className="text-2xl font-bold">★</span>
+      </div>`;
+
+    case 'navbar':
+      return `      {/* Navigation Bar: ${el.name} */}
+      <nav 
+        className="absolute px-6 flex items-center justify-between border-b border-slate-800"
+        ${toStyleAttr({
+          backgroundColor: el.fill || '#0f172a',
+        })}
+      >
+        <div className="flex items-center gap-2 font-bold text-sm text-indigo-400">
+          <span className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs">⚡</span>
+          <span>App Branding</span>
+        </div>
+        <div className="flex items-center gap-4 text-xs text-slate-300 font-medium">
+          <a href="#home" className="hover:text-white transition-colors">Home</a>
+          <a href="#features" className="hover:text-white transition-colors">Fitur</a>
+          <a href="#pricing" className="hover:text-white transition-colors">Harga</a>
+          <button className="px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">Masuk</button>
+        </div>
+      </nav>`;
+
+    case 'bottom-nav':
+      return `      {/* Mobile Bottom Navigation: ${el.name} */}
+      <nav 
+        className="absolute px-6 flex items-center justify-around border-t border-slate-800 text-slate-400"
+        ${toStyleAttr({
+          backgroundColor: el.fill || '#0f172a',
+        })}
+      >
+        <button className="flex flex-col items-center gap-1 text-indigo-400 font-medium text-[10px]">
+          <span>🏠</span>
+          <span>Beranda</span>
+        </button>
+        <button className="flex flex-col items-center gap-1 hover:text-slate-200 text-[10px]">
+          <span>🧭</span>
+          <span>Eksplor</span>
+        </button>
+        <button className="flex flex-col items-center gap-1 hover:text-slate-200 text-[10px]">
+          <span>💳</span>
+          <span>Dompet</span>
+        </button>
+        <button className="flex flex-col items-center gap-1 hover:text-slate-200 text-[10px]">
+          <span>👤</span>
+          <span>Profil</span>
+        </button>
+      </nav>`;
+
     case 'rect':
     case 'card':
     default:

@@ -27,6 +27,8 @@ import {
   Image as ImageIcon,
   LayoutGrid,
   SunMoon,
+  Code,
+  Download,
 } from 'lucide-react';
 import { DesignElement } from '../types';
 
@@ -56,6 +58,8 @@ interface ContextMenuProps {
   onZoomToFit?: () => void;
   onCopyArtboardImage?: () => void;
   onOpenSlideSorter?: () => void;
+  onOpenCodeEditor?: () => void;
+  onOpenExport?: () => void;
   onInvertSlideTheme?: () => void;
 }
 
@@ -85,6 +89,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onZoomToFit,
   onCopyArtboardImage,
   onOpenSlideSorter,
+  onOpenCodeEditor,
+  onOpenExport,
   onInvertSlideTheme,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -508,6 +514,38 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 <span>Pengatur Kisi Slide</span>
               </span>
               <kbd className="text-[10px] text-slate-500 font-mono">Alt+S</kbd>
+            </button>
+          )}
+
+          {onOpenCodeEditor && (
+            <button
+              onClick={() => {
+                onOpenCodeEditor();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Code className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Editor Kode DSL</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Alt+C</kbd>
+            </button>
+          )}
+
+          {onOpenExport && (
+            <button
+              onClick={() => {
+                onOpenExport();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Download className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Ekspor Desain</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+E</kbd>
             </button>
           )}
 

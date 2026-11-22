@@ -7,11 +7,17 @@ interface DoodleStroke {
   points: Array<{ x: number; y: number }>;
 }
 
+interface LaserData {
+  xRatio: number;
+  yRatio: number;
+  color?: string;
+}
+
 export const AudienceScreen: React.FC = () => {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [blankMode, setBlankMode] = useState<'none' | 'black' | 'white'>('none');
-  const [laserPos, setLaserPos] = useState<{ xRatio: number; yRatio: number } | null>(null);
+  const [laserPos, setLaserPos] = useState<LaserData | null>(null);
   const [strokes, setStrokes] = useState<DoodleStroke[]>([]);
   const [showHint, setShowHint] = useState(true);
   const [windowDimensions, setWindowDimensions] = useState({
@@ -85,7 +91,14 @@ export const AudienceScreen: React.FC = () => {
 
       if (data.type === 'SYNC_PROJECT') {
         if (data.slides) setSlides(data.slides);
-        if (typeof data.currentIndex === 'number') setCurrentIndex(data.currentIndex);
+        if (typeof data.currentIndex === 'number') {
+          setCurrentIndex(prev => {
+            if (prev !== data.currentIndex) {
+              setStrokes([]);
+            }
+            return data.currentIndex;
+          });
+        }
         if (data.blankMode) setBlankMode(data.blankMode);
       } else if (data.type === 'SLIDE_CHANGE') {
         if (typeof data.index === 'number') {
@@ -216,8 +229,17 @@ export const AudienceScreen: React.FC = () => {
             }}
           >
             <div className="relative flex items-center justify-center">
-              <span className="absolute w-8 h-8 rounded-full bg-rose-500/35 animate-ping" />
-              <span className="w-4 h-4 rounded-full bg-rose-500 shadow-[0_0_20px_8px_rgba(244,63,94,0.95),0_0_6px_#fff]" />
+              <span
+                className="absolute w-8 h-8 rounded-full animate-ping opacity-40"
+                style={{ backgroundColor: laserPos.color || '#f43f5e' }}
+              />
+              <span
+                className="w-4 h-4 rounded-full shadow-lg"
+                style={{
+                  backgroundColor: laserPos.color || '#f43f5e',
+                  boxShadow: `0 0 18px 6px ${laserPos.color || '#f43f5e'}, 0 0 4px #fff`,
+                }}
+              />
             </div>
           </div>
         )}

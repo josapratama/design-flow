@@ -47,6 +47,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [blankMode, setBlankMode] = useState<'none' | 'black' | 'white'>('none');
   const [isLaserActive, setIsLaserActive] = useState(false);
+  const [laserColor, setLaserColor] = useState('#f43f5e');
   const [isPenActive, setIsPenActive] = useState(false);
   const [penColor, setPenColor] = useState('#f43f5e');
   const [isSoundMuted, setIsSoundMuted] = useState(!soundEffects.isSoundEnabled());
@@ -97,7 +98,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         'designflow_audience_state',
         JSON.stringify({ slides, currentIndex, blankMode })
       );
-    } catch {}
+    } catch { }
 
     channelRef.current.postMessage({
       type: 'SYNC_PROJECT',
@@ -437,6 +438,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         pos: {
           xRatio: Math.max(0, Math.min(1, x / rect.width)),
           yRatio: Math.max(0, Math.min(1, y / rect.height)),
+          color: laserColor,
         },
       });
     }
@@ -520,13 +522,12 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             const remainingAbs = Math.abs(diff);
             return (
               <div
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold border transition-all ${
-                  isOver
-                    ? 'bg-rose-500/25 border-rose-500 text-rose-300 animate-pulse'
-                    : diff <= 120
-                      ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                      : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                }`}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold border transition-all ${isOver
+                  ? 'bg-rose-500/25 border-rose-500 text-rose-300 animate-pulse'
+                  : diff <= 120
+                    ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                    : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                  }`}
                 title={
                   isOver
                     ? 'Waktu presentasi telah melewati batas target!'
@@ -534,9 +535,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 }
               >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isOver ? 'bg-rose-400' : diff <= 120 ? 'bg-amber-400' : 'bg-emerald-400'
-                  }`}
+                  className={`w-1.5 h-1.5 rounded-full ${isOver ? 'bg-rose-400' : diff <= 120 ? 'bg-amber-400' : 'bg-emerald-400'
+                    }`}
                 />
                 <span>{isOver ? `+${formatTimer(remainingAbs)} Lewat` : `Sisa ${formatTimer(remainingAbs)}`}</span>
               </div>
@@ -592,21 +592,41 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             {!isSoundMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
 
-          {/* Laser Pointer Toggle */}
-          <button
-            onClick={() => {
-              setIsLaserActive(!isLaserActive);
-              if (!isLaserActive) setIsPenActive(false);
-            }}
-            title="Laser Pointer (Tekan 'L')"
-            className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 border transition-all ${isLaserActive
-              ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20'
-              : 'bg-slate-800 border-slate-700 text-slate-400'
-              }`}
-          >
-            <CircleDot className="w-3.5 h-3.5" />
-            <span>Laser {isLaserActive ? 'Aktif' : 'Pointer'}</span>
-          </button>
+          {/* Laser Pointer Toggle & Color Picker */}
+          <div className="flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-lg p-0.5">
+            <button
+              onClick={() => {
+                setIsLaserActive(!isLaserActive);
+                if (!isLaserActive) setIsPenActive(false);
+              }}
+              title="Laser Pointer (Tekan 'L')"
+              className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${isLaserActive
+                ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20'
+                : 'text-slate-400 hover:text-white'
+                }`}
+            >
+              <CircleDot className="w-3.5 h-3.5" />
+              <span>Laser {isLaserActive ? 'Aktif' : 'Pointer'}</span>
+            </button>
+            {isLaserActive && (
+              <div className="flex items-center gap-1 px-1 border-l border-slate-700/80 ml-0.5">
+                {[
+                  { color: '#f43f5e', name: 'Merah' },
+                  { color: '#38bdf8', name: 'Cyan' },
+                  { color: '#10b981', name: 'Hijau' },
+                  { color: '#facc15', name: 'Emas' },
+                ].map(c => (
+                  <button
+                    key={c.color}
+                    onClick={() => setLaserColor(c.color)}
+                    title={`Laser ${c.name}`}
+                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${laserColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                    style={{ backgroundColor: c.color }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Live Pen / Doodle Annotation Toggle */}
           <div className="flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-lg p-0.5">
@@ -822,8 +842,17 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               }}
             >
               <div className="relative flex items-center justify-center">
-                <span className="absolute w-8 h-8 rounded-full bg-rose-500/30 animate-ping" />
-                <span className="w-4 h-4 rounded-full bg-rose-500 shadow-[0_0_18px_6px_rgba(244,63,94,0.9),0_0_6px_#fff]" />
+                <span
+                  className="absolute w-8 h-8 rounded-full animate-ping opacity-35"
+                  style={{ backgroundColor: laserColor }}
+                />
+                <span
+                  className="w-4 h-4 rounded-full shadow-lg"
+                  style={{
+                    backgroundColor: laserColor,
+                    boxShadow: `0 0 18px 6px ${laserColor}, 0 0 6px #fff`,
+                  }}
+                />
               </div>
             </div>
           )}
@@ -945,15 +974,14 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                   value={currentSlide.notes || ''}
                   onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
                   placeholder="Ketik poin penting, panduan berbicara, atau naskah presentasi untuk slide ini..."
-                  className={`w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl p-3 text-slate-200 outline-none leading-relaxed min-h-[170px] resize-none font-sans ${
-                    notesFontSize === 'sm'
-                      ? 'text-xs'
-                      : notesFontSize === 'base'
-                        ? 'text-sm'
-                        : notesFontSize === 'lg'
-                          ? 'text-base'
-                          : 'text-lg font-medium'
-                  }`}
+                  className={`w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl p-3 text-slate-200 outline-none leading-relaxed min-h-[170px] resize-none font-sans ${notesFontSize === 'sm'
+                    ? 'text-xs'
+                    : notesFontSize === 'base'
+                      ? 'text-sm'
+                      : notesFontSize === 'lg'
+                        ? 'text-base'
+                        : 'text-lg font-medium'
+                    }`}
                 />
               </div>
             </div>
