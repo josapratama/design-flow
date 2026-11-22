@@ -5,6 +5,7 @@ import confetti from 'canvas-confetti';
 
 interface DoodleStroke {
   color: string;
+  width?: number;
   points: Array<{ x: number; y: number }>;
 }
 
@@ -59,7 +60,7 @@ export const AudienceScreen: React.FC = () => {
     strokes.forEach(stroke => {
       if (stroke.points.length < 2) return;
       ctx.strokeStyle = stroke.color;
-      ctx.lineWidth = 4;
+      ctx.lineWidth = stroke.width || 4;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();

@@ -22,6 +22,7 @@ import {
   Undo2,
   HelpCircle,
   PartyPopper,
+  LayoutGrid,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../utils/audioEffects';
@@ -52,6 +53,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [laserColor, setLaserColor] = useState('#f43f5e');
   const [isPenActive, setIsPenActive] = useState(false);
   const [penColor, setPenColor] = useState('#f43f5e');
+  const [penWidth, setPenWidth] = useState<number>(4);
+  const [showSlideNavigator, setShowSlideNavigator] = useState(false);
   const [isSoundMuted, setIsSoundMuted] = useState(!soundEffects.isSoundEnabled());
   const [laserPos, setLaserPos] = useState({ x: -100, y: -100 });
   const [isAutoPlay, setIsAutoPlay] = useState(false);
@@ -75,6 +78,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   // Doodle stroke history for Undo
   interface DoodleStroke {
     color: string;
+    width: number;
     points: Array<{ x: number; y: number }>;
   }
   const strokesRef = useRef<DoodleStroke[]>([]);
@@ -182,7 +186,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     strokesRef.current.forEach(stroke => {
       if (stroke.points.length < 2) return;
       ctx.strokeStyle = stroke.color;
-      ctx.lineWidth = 4;
+      ctx.lineWidth = stroke.width || 4;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
@@ -235,6 +239,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     lastPenPosRef.current = coords;
     currentStrokeRef.current = {
       color: penColor,
+      width: penWidth,
       points: [coords],
     };
   };
@@ -250,7 +255,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     currentStrokeRef.current?.points.push(coords);
 
     ctx.strokeStyle = penColor;
-    ctx.lineWidth = 4;
+    ctx.lineWidth = penWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
@@ -434,6 +439,18 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       clearPenCanvas();
       setCurrentIndex(i => i - 1);
       soundEffects.playSlideTransition();
+    }
+  };
+
+  const goToSlide = (index: number) => {
+    if (index >= 0 && index < slides.length && index !== currentIndex) {
+      clearPenCanvas();
+      setCurrentIndex(index);
+      soundEffects.playSlideTransition();
+      if (index === slides.length - 1) {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        channelRef.current?.postMessage({ type: 'CONFETTI' });
+      }
     }
   };
 
@@ -689,6 +706,27 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                     />
                   ))}
                 </div>
+                {/* Pen Stroke Width Controls */}
+                <div className="flex items-center gap-0.5 border-l border-slate-700 pl-1.5 ml-0.5">
+                  {[
+                    { width: 2, label: '2px', title: 'Ketebalan Halus (2px)' },
+                    { width: 4, label: '4px', title: 'Ketebalan Sedang (4px)' },
+                    { width: 8, label: '8px', title: 'Ketebalan Tebal (8px)' },
+                  ].map(w => (
+                    <button
+                      key={w.width}
+                      onClick={() => setPenWidth(w.width)}
+                      title={w.title}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold transition-all ${
+                        penWidth === w.width
+                          ? 'bg-amber-400 text-slate-950 shadow-sm'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-700'
+                      }`}
+                    >
+                      {w.label}
+                    </button>
+                  ))}
+                </div>
                 <button
                   onClick={undoPenStroke}
                   title="Batalkan Coretan Terakhir (Tekan 'U' atau 'Ctrl+Z')"
@@ -894,6 +932,57 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             </div>
           )}
 
+          {/* Quick Slide Navigator Drawer */}
+          {showSlideNavigator && (
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-[92%] max-w-4xl z-50 bg-slate-900/95 border border-slate-700/80 rounded-2xl p-3 shadow-2xl backdrop-blur-md flex flex-col gap-2 animate-in slide-in-from-bottom-4 duration-150">
+              <div className="flex items-center justify-between text-xs px-1">
+                <span className="font-bold text-slate-200 flex items-center gap-1.5">
+                  <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Lompat Cepat ke Slide</span>
+                </span>
+                <span className="text-[11px] text-slate-400">Pilih slide untuk langsung berpindah</span>
+              </div>
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {slides.map((s, idx) => {
+                  const isCur = idx === currentIndex;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => {
+                        goToSlide(idx);
+                        setShowSlideNavigator(false);
+                      }}
+                      className={`flex flex-col items-start p-2 rounded-xl border text-left shrink-0 transition-all w-36 ${
+                        isCur
+                          ? 'bg-indigo-600/25 border-indigo-500 ring-2 ring-indigo-500/40 text-white'
+                          : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/80'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full mb-1">
+                        <span
+                          className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded ${
+                            isCur ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'
+                          }`}
+                        >
+                          {idx + 1}
+                        </span>
+                        {s.notes && s.notes.trim() && (
+                          <span className="text-[9px] text-amber-400 font-mono">📝 Notes</span>
+                        )}
+                      </div>
+                      <span className="text-xs font-semibold truncate w-full">
+                        {s.title}
+                      </span>
+                      <span className="text-[10px] text-slate-500">
+                        {s.elements.length} elemen
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Floating Navigation Controls & Keyboard Hints */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-40">
             <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 px-3 py-1.5 rounded-full shadow-2xl backdrop-blur-md">
@@ -905,9 +994,18 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-xs font-mono font-medium text-slate-300 px-2">
-                {currentIndex + 1} / {slides.length}
-              </span>
+              <button
+                onClick={() => setShowSlideNavigator(prev => !prev)}
+                title="Buka Kisi Miniatur Slide untuk Melompat Cepat"
+                className={`text-xs font-mono font-medium px-2.5 py-1 rounded-full transition-colors flex items-center gap-1.5 ${
+                  showSlideNavigator
+                    ? 'bg-indigo-600 text-white font-bold shadow'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
+                <span>{currentIndex + 1} / {slides.length}</span>
+              </button>
               <button
                 onClick={goToNext}
                 disabled={currentIndex === slides.length - 1}

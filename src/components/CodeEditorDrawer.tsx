@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DesignProject } from '../types';
 import { generateDesignDSL } from '../engine/dsl-generator';
 import { parseDesignDSL } from '../engine/dsl-parser';
-import { Code, Check, AlertCircle, Copy, RefreshCw, Download, Upload } from 'lucide-react';
+import { Code, Check, AlertCircle, Copy, RefreshCw, Download, Upload, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface CodeEditorDrawerProps {
@@ -55,6 +55,23 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
     navigator.clipboard.writeText(code);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleFormatDSL = () => {
+    try {
+      const parsed = parseDesignDSL(code, project.mode);
+      const formatted = generateDesignDSL({
+        ...project,
+        title: parsed.title,
+        mode: parsed.mode,
+        slides: parsed.slides,
+      });
+      setCode(formatted);
+      setError(null);
+      confetti({ particleCount: 35, spread: 50, origin: { y: 0.8 } });
+    } catch (err: any) {
+      setError('Format gagal: ' + (err.message || 'Periksa sintaks kode DSL terlebih dahulu.'));
+    }
   };
 
   const handleDownloadDSL = () => {
@@ -138,6 +155,14 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
           >
             <Download className="w-3.5 h-3.5 text-cyan-400" />
             <span className="hidden sm:inline text-[10px]">Unduh</span>
+          </button>
+          <button
+            onClick={handleFormatDSL}
+            title="Format dan rapikan sintaks kode DSL secara otomatis"
+            className="p-1 hover:bg-slate-800 text-slate-400 hover:text-amber-300 rounded-lg text-xs transition-colors flex items-center gap-1"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline text-[10px]">Format</span>
           </button>
           <button
             onClick={() => {

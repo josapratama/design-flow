@@ -50,6 +50,7 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
   const [tempTitle, setTempTitle] = useState('');
   const [draggedSlideId, setDraggedSlideId] = useState<string | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [density, setDensity] = useState<'large' | 'normal' | 'compact'>('normal');
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -132,8 +133,30 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
               placeholder="Cari judul slide..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500 w-48 transition-all"
+              className="bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500 w-44 transition-all"
             />
+          </div>
+
+          {/* Density Grid Switcher */}
+          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-0.5 gap-0.5">
+            {[
+              { id: 'large', label: 'Besar', title: '3 Kolom (Tampilan Detail)' },
+              { id: 'normal', label: 'Standar', title: '4 Kolom (Tampilan Default)' },
+              { id: 'compact', label: 'Ringkas', title: '6 Kolom (Tampilan Kompak/Overview)' },
+            ].map(d => (
+              <button
+                key={d.id}
+                onClick={() => setDensity(d.id as any)}
+                title={d.title}
+                className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                  density === d.id
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                {d.label}
+              </button>
+            ))}
           </div>
 
           {/* Add Slide Button */}
@@ -160,11 +183,21 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
 
       {/* Grid Canvas Area */}
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div
+          className={`max-w-7xl mx-auto grid ${
+            density === 'large'
+              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+              : density === 'compact'
+              ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3.5'
+              : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+          }`}
+        >
           {filteredSlides.map((slide, index) => {
             const isActive = slide.id === activeSlideId;
             const originalIndex = slides.findIndex(s => s.id === slide.id);
-            const scale = 260 / (slide.width || 1920);
+            const scale =
+              (density === 'large' ? 340 : density === 'compact' ? 170 : 260) /
+              (slide.width || 1920);
 
             return (
               <div
@@ -264,11 +297,22 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1.5 text-slate-400">
-                    {slide.notes && (
-                      <span title="Memiliki catatan pembicara" className="text-indigo-400">
-                        <FileText className="w-3.5 h-3.5" />
+                    {slide.transition && slide.transition !== 'fade' && (
+                      <span
+                        title={`Transisi: ${slide.transition}`}
+                        className="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono text-[9px] uppercase font-semibold"
+                      >
+                        {slide.transition}
                       </span>
                     )}
+                    {slide.notes && slide.notes.trim() ? (
+                      <span
+                        title={`Catatan Pembicara: "${slide.notes.slice(0, 80)}${slide.notes.length > 80 ? '...' : ''}"`}
+                        className="text-amber-400 p-0.5 hover:scale-110 transition-transform"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                      </span>
+                    ) : null}
                     <span className="text-[10px] font-mono text-slate-500 flex items-center gap-0.5">
                       <Layers className="w-3 h-3" />
                       <span>{slide.elements.length}</span>
