@@ -788,4 +788,213 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+
+  // 11. GRID TESTIMONI PELANGGAN (3 ULASAN)
+  {
+    id: 'customer-testimonials-grid',
+    name: 'Grid Testimoni Pelanggan (3 Ulasan)',
+    description: '3 kartu ulasan sosial proof berisi rating bintang 5, kutipan testimoni, avatar, nama, dan jabatan.',
+    icon: 'Users',
+    category: 'all',
+    generateElements: (startX = 240, startY = 320) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+      const cardW = 440;
+      const cardH = 340;
+      const gap = 30;
+
+      const testimonials = [
+        {
+          rating: '★★★★★',
+          quote: '“DesignFlow memangkas waktu persiapan sidang presentasi kami hingga 70%. Alur kerja visual dan kode DSL-nya benar-benar luar biasa!”',
+          author: 'Dr. Sarah Amalia',
+          role: 'Dosen Pembimbing & Peneliti AI',
+          initials: 'SA',
+          avatarBg: '#4f46e5',
+        },
+        {
+          rating: '★★★★★',
+          quote: '“Kemampuan mengekspor ke kode React 19 + Tailwind bersih membuat proses transisi dari slide pitch ke prototipe MVP aplikasi sangat cepat.”',
+          author: 'Rian Pratama',
+          role: 'Lead Frontend Engineer',
+          initials: 'RP',
+          avatarBg: '#059669',
+        },
+        {
+          rating: '★★★★★',
+          quote: '“Fitur Teleprompter Podium dan mode audiens multi-layar membuat saya percaya diri saat berbicara di depan ratusan delegasi konferensi.”',
+          author: 'Farhan Maulana',
+          role: 'Founder & CEO FinTech',
+          initials: 'FM',
+          avatarBg: '#d97706',
+        },
+      ];
+
+      testimonials.forEach((t, idx) => {
+        const xPos = startX + idx * (cardW + gap);
+
+        // Container Card
+        elements.push({
+          id: `el_${now}_testi_card_${idx}`,
+          type: 'card',
+          name: `Kartu Testimoni ${t.author}`,
+          x: xPos,
+          y: startY,
+          width: cardW,
+          height: cardH,
+          zIndex: 1,
+          fill: '#131b2e',
+          stroke: '#1e293b',
+          strokeWidth: 1.5,
+          borderRadius: 20,
+          shadow: 'lg',
+        });
+
+        // 5 Star Rating
+        elements.push({
+          id: `el_${now}_testi_stars_${idx}`,
+          type: 'text',
+          name: `Rating Bintang ${idx + 1}`,
+          x: xPos + 24,
+          y: startY + 24,
+          width: 140,
+          height: 24,
+          zIndex: 2,
+          content: t.rating,
+          fontSize: 18,
+          color: '#f59e0b',
+        });
+
+        // Quote Content
+        elements.push({
+          id: `el_${now}_testi_quote_${idx}`,
+          type: 'text',
+          name: `Kutipan ${t.author}`,
+          x: xPos + 24,
+          y: startY + 60,
+          width: cardW - 48,
+          height: 160,
+          zIndex: 2,
+          content: t.quote,
+          fontSize: 15,
+          lineHeight: 1.6,
+          color: '#cbd5e1',
+        });
+
+        // Avatar Initials Circle
+        elements.push({
+          id: `el_${now}_testi_avt_${idx}`,
+          type: 'avatar',
+          name: `Avatar ${t.author}`,
+          x: xPos + 24,
+          y: startY + 244,
+          width: 52,
+          height: 52,
+          zIndex: 2,
+          fill: t.avatarBg,
+          content: t.initials,
+          color: '#ffffff',
+          borderRadius: 9999,
+        });
+
+        // Author Name & Role
+        elements.push({
+          id: `el_${now}_testi_meta_${idx}`,
+          type: 'text',
+          name: `Identitas ${t.author}`,
+          x: xPos + 88,
+          y: startY + 246,
+          width: cardW - 110,
+          height: 48,
+          zIndex: 2,
+          content: `${t.author}\n${t.role}`,
+          fontSize: 14,
+          lineHeight: 1.4,
+          color: '#ffffff',
+          fontWeight: 'semibold',
+        });
+      });
+
+      return elements;
+    },
+  },
+
+  // 12. GRID TANYA JAWAB / FAQ (4 PERTANYAAN)
+  {
+    id: 'app-faq-accordion-grid',
+    name: 'Grid Tanya Jawab / FAQ (4 Kolom)',
+    description: '4 kartu tanya jawab interaktif untuk mengatasi keraguan audiens atau pelanggan.',
+    icon: 'HelpCircle',
+    category: 'all',
+    generateElements: (startX = 240, startY = 320) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+      const boxW = 680;
+      const boxH = 170;
+      const gapX = 40;
+      const gapY = 24;
+
+      const faqs = [
+        {
+          q: '❓ Apakah DesignFlow mendukung ekspor ke format PowerPoint (.pptx)?',
+          a: 'Ya, Anda dapat langsung mengunduh seluruh presentasi ke format PPTX asli dengan tata letak teks dan bentuk yang tetap dapat diedit.',
+          x: startX,
+          y: startY,
+        },
+        {
+          q: '⚡ Bisakah saya menggunakan kode DSL untuk membuat slide secara otomatis?',
+          a: 'Tentu! Format DSL deklaratif mendukung pembuatan dan modifikasi slide instan dengan AI atau editor teks favorit Anda.',
+          x: startX + boxW + gapX,
+          y: startY,
+        },
+        {
+          q: '🔒 Di mana data presentasi dan desain saya disimpan?',
+          a: 'Seluruh proyek tersimpan 100% lokal di browser menggunakan IndexedDB aman tanpa mengirimkan konten rahasia ke cloud luar.',
+          x: startX,
+          y: startY + boxH + gapY,
+        },
+        {
+          q: '💻 Apakah mode presentasi mendukung presenter layar ganda?',
+          a: 'Ya, cukup klik Buka Layar Audiens untuk menampilkan slide murni ke proyektor sembari Anda melihat teleprompter naskah di laptop.',
+          x: startX + boxW + gapX,
+          y: startY + boxH + gapY,
+        },
+      ];
+
+      faqs.forEach((faq, idx) => {
+        elements.push({
+          id: `el_${now}_faq_card_${idx}`,
+          type: 'card',
+          name: `FAQ ${idx + 1}`,
+          x: faq.x,
+          y: faq.y,
+          width: boxW,
+          height: boxH,
+          zIndex: 1,
+          fill: '#131b2e',
+          stroke: '#1e293b',
+          strokeWidth: 1.5,
+          borderRadius: 18,
+          shadow: 'md',
+        });
+
+        elements.push({
+          id: `el_${now}_faq_txt_${idx}`,
+          type: 'text',
+          name: `Konten FAQ ${idx + 1}`,
+          x: faq.x + 24,
+          y: faq.y + 18,
+          width: boxW - 48,
+          height: boxH - 36,
+          zIndex: 2,
+          content: `${faq.q}\n\n${faq.a}`,
+          fontSize: 14,
+          lineHeight: 1.6,
+          color: '#e2e8f0',
+        });
+      });
+
+      return elements;
+    },
+  },
 ];

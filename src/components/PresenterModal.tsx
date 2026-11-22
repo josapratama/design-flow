@@ -1606,17 +1606,67 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               </div>
             </div>
 
-            {/* Next Slide Preview thumbnail */}
-            {currentIndex < slides.length - 1 && (
-              <div className="pt-4 border-t border-slate-800 space-y-1.5">
-                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
-                  Slide Selanjutnya ({currentIndex + 2}/{slides.length})
-                </span>
-                <div className="p-3 bg-slate-950/60 border border-slate-800 rounded-xl text-xs font-medium text-slate-300 truncate">
-                  {slides[currentIndex + 1].title}
+            {/* Next Slide Preview thumbnail (Interactive Mini Canvas Preview) */}
+            {currentIndex < slides.length - 1 && (() => {
+              const nextSlide = slides[currentIndex + 1];
+              const miniScale = Math.min(270 / nextSlide.width, 140 / nextSlide.height);
+              return (
+                <div className="pt-3 border-t border-slate-800 space-y-1.5 shrink-0">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="font-semibold text-slate-500 uppercase tracking-wider">
+                      Slide Selanjutnya ({currentIndex + 2}/{slides.length})
+                    </span>
+                    <span className="text-indigo-400 font-mono text-[9px]">Klik untuk Maju →</span>
+                  </div>
+                  <button
+                    onClick={goToNext}
+                    title="Klik untuk berpindah ke slide berikutnya"
+                    className="w-full text-left group bg-slate-950/80 hover:bg-slate-950 border border-slate-800 hover:border-indigo-500/70 rounded-xl p-2 transition-all shadow hover:shadow-indigo-500/10"
+                  >
+                    {/* Visual scaled miniature */}
+                    <div className="w-full h-24 bg-slate-950 rounded-lg border border-slate-800/80 overflow-hidden relative mb-2 flex items-center justify-center">
+                      <div
+                        style={{
+                          width: `${nextSlide.width}px`,
+                          height: `${nextSlide.height}px`,
+                          background: getSlideBackground(nextSlide),
+                          transform: `scale(${miniScale})`,
+                          transformOrigin: 'center center',
+                        }}
+                        className="relative pointer-events-none select-none"
+                      >
+                        {nextSlide.elements.map(el => (
+                          <div
+                            key={el.id}
+                            className="absolute"
+                            style={{
+                              left: `${el.x}px`,
+                              top: `${el.y}px`,
+                              width: `${el.width}px`,
+                              height: `${el.height}px`,
+                              zIndex: el.zIndex,
+                            }}
+                          >
+                            <ElementRenderer element={el} isSelected={false} />
+                          </div>
+                        ))}
+                      </div>
+                      <div className="absolute inset-0 bg-transparent group-hover:bg-indigo-500/5 transition-colors" />
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs font-semibold text-slate-300 group-hover:text-white">
+                      <span className="truncate pr-1">{nextSlide.title}</span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                    {nextSlide.notes && nextSlide.notes.trim() && (
+                      <p className="text-[10px] text-slate-400 font-mono italic truncate mt-0.5 line-clamp-1 text-slate-500">
+                        "{nextSlide.notes.trim()}"
+                      </p>
+                    )}
+                  </button>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </aside>
         )}
       </div>

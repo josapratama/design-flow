@@ -35,6 +35,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Format DSL'], description: 'Format dan rapikan kode DSL otomatis dengan 1 klik' },
         { keys: ['Ctrl', 'Enter'], description: 'Terapkan Perubahan Kode DSL ke Kanvas Visual' },
         { keys: ['Tab', 'Shift+Tab'], description: 'Indent / Outdent 2 spasi di Editor Kode DSL' },
+        { keys: ['Ctrl', 'F'], description: 'Cari & Ganti Teks / Warna Token di Editor DSL (Find & Replace)' },
         { keys: ['Ctrl', 'K'], description: 'Buka Spotlight Command Palette Cepat' },
         { keys: ['Ctrl', 'H'], description: 'Buka Dialog Cari & Ganti Teks (Find & Replace)' },
         { keys: ['Ctrl', 'E'], description: 'Buka Modal Ekspor Desain (PNG/WebP/PDF/React)' },

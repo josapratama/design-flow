@@ -700,11 +700,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setCodeScope('active')}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
-                    codeScope === 'active'
-                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
+                  className={`p-2.5 rounded-xl border text-left transition-all ${codeScope === 'active'
+                    ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
                 >
                   <div className="font-bold text-xs truncate">Slide Aktif Saja</div>
                   <div className="text-[10px] text-slate-500 truncate">Komponen: {activeSlide.title}</div>
@@ -713,11 +712,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setCodeScope('deck')}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
-                    codeScope === 'deck'
-                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
+                  className={`p-2.5 rounded-xl border text-left transition-all ${codeScope === 'deck'
+                    ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
                 >
                   <div className="font-bold text-xs">Seluruh Deck Interaktif ({project.slides.length} Slide)</div>
                   <div className="text-[10px] text-slate-500">Navigasi keyboard, state & progress bar</div>

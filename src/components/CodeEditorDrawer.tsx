@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DesignProject } from '../types';
 import { generateDesignDSL } from '../engine/dsl-generator';
 import { parseDesignDSL } from '../engine/dsl-parser';
-import { Code, Check, AlertCircle, Copy, RefreshCw, Download, Upload, Sparkles } from 'lucide-react';
+import { Code, Check, AlertCircle, Copy, RefreshCw, Download, Upload, Sparkles, Search, Replace, X, ChevronUp, ChevronDown } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface CodeEditorDrawerProps {
@@ -23,9 +23,91 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
   const [fileSuccessInfo, setFileSuccessInfo] = useState<{ fileName: string; slideCount: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const [appliedSuccess, setAppliedSuccess] = useState(false);
+  const [showFindReplace, setShowFindReplace] = useState(false);
+  const [findText, setFindText] = useState('');
+  const [replaceText, setReplaceText] = useState('');
+  const [caseSensitive, setCaseSensitive] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const findInputRef = useRef<HTMLInputElement>(null);
+
+  const matchCount = React.useMemo(() => {
+    if (!findText) return 0;
+    try {
+      const regex = new RegExp(findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), caseSensitive ? 'g' : 'gi');
+      return (code.match(regex) || []).length;
+    } catch {
+      return 0;
+    }
+  }, [code, findText, caseSensitive]);
+
+  const handleFindNext = () => {
+    if (!findText) return;
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const haystack = caseSensitive ? code : code.toLowerCase();
+    const needle = caseSensitive ? findText : findText.toLowerCase();
+    const startPos = textarea.selectionEnd;
+    let idx = haystack.indexOf(needle, startPos);
+    if (idx === -1) {
+      idx = haystack.indexOf(needle, 0); // wrap around
+    }
+    if (idx !== -1) {
+      textarea.focus();
+      textarea.setSelectionRange(idx, idx + needle.length);
+    }
+  };
+
+  const handleFindPrev = () => {
+    if (!findText) return;
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const haystack = caseSensitive ? code : code.toLowerCase();
+    const needle = caseSensitive ? findText : findText.toLowerCase();
+    const startPos = textarea.selectionStart - 1;
+    let idx = startPos >= 0 ? haystack.lastIndexOf(needle, startPos) : -1;
+    if (idx === -1) {
+      idx = haystack.lastIndexOf(needle); // wrap around
+    }
+    if (idx !== -1) {
+      textarea.focus();
+      textarea.setSelectionRange(idx, idx + needle.length);
+    }
+  };
+
+  const handleReplaceOne = () => {
+    if (!findText) return;
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = code.substring(start, end);
+    const match = caseSensitive ? selectedText === findText : selectedText.toLowerCase() === findText.toLowerCase();
+    if (match) {
+      const newCode = code.substring(0, start) + replaceText + code.substring(end);
+      setCode(newCode);
+      setTimeout(() => {
+        textarea.setSelectionRange(start, start + replaceText.length);
+        handleFindNext();
+      }, 0);
+    } else {
+      handleFindNext();
+    }
+  };
+
+  const handleReplaceAll = () => {
+    if (!findText) return;
+    try {
+      const regex = new RegExp(findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), caseSensitive ? 'g' : 'gi');
+      const count = (code.match(regex) || []).length;
+      if (count > 0) {
+        const newCode = code.replace(regex, replaceText);
+        setCode(newCode);
+        confetti({ particleCount: 30, spread: 45, origin: { y: 0.8 } });
+      }
+    } catch { }
+  };
 
   // Synchronize visual state to DSL code whenever project updates
   useEffect(() => {
@@ -157,6 +239,21 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => {
+              setShowFindReplace(prev => !prev);
+              if (!showFindReplace) {
+                setTimeout(() => findInputRef.current?.focus(), 50);
+              }
+            }}
+            title="Cari & Ganti Teks (Ctrl+F)"
+            className={`p-1 rounded-lg text-xs transition-colors flex items-center gap-1 ${
+              showFindReplace ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/50' : 'hover:bg-slate-800 text-slate-400 hover:text-white'
+            }`}
+          >
+            <Search className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="hidden sm:inline text-[10px]">Cari</span>
+          </button>
           <input
             ref={fileInputRef}
             type="file"
@@ -214,6 +311,100 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
         </div>
       </div>
 
+      {/* Find and Replace Bar (Ctrl+F) */}
+      {showFindReplace && (
+        <div className="bg-slate-950 border-b border-slate-800 p-2.5 flex flex-col gap-1.5 animate-in slide-in-from-top-2 duration-150">
+          <div className="flex items-center gap-1.5">
+            <div className="relative flex-1">
+              <input
+                ref={findInputRef}
+                type="text"
+                value={findText}
+                onChange={e => setFindText(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (e.shiftKey) handleFindPrev();
+                    else handleFindNext();
+                  } else if (e.key === 'Escape') {
+                    setShowFindReplace(false);
+                  }
+                }}
+                placeholder="Cari teks di DSL..."
+                className="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 rounded-lg pl-2.5 pr-14 py-1 text-xs text-slate-200 outline-none font-mono"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-slate-500">
+                {matchCount > 0 ? `${matchCount} cocok` : findText ? '0 cocok' : ''}
+              </span>
+            </div>
+            <button
+              onClick={handleFindPrev}
+              disabled={!findText}
+              title="Temukan Sebelumnya (Shift+Enter)"
+              className="p-1 hover:bg-slate-800 disabled:opacity-30 rounded text-slate-400 hover:text-white"
+            >
+              <ChevronUp className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={handleFindNext}
+              disabled={!findText}
+              title="Temukan Berikutnya (Enter)"
+              className="p-1 hover:bg-slate-800 disabled:opacity-30 rounded text-slate-400 hover:text-white"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => setCaseSensitive(!caseSensitive)}
+              title={caseSensitive ? 'Huruf Besar/Kecil Berpengaruh (Aktif)' : 'Abaikan Huruf Besar/Kecil'}
+              className={`px-1.5 py-0.5 rounded text-[10px] font-mono border transition-colors ${
+                caseSensitive ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300 font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'
+              }`}
+            >
+              Aa
+            </button>
+            <button
+              onClick={() => setShowFindReplace(false)}
+              className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <input
+              type="text"
+              value={replaceText}
+              onChange={e => setReplaceText(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleReplaceOne();
+                } else if (e.key === 'Escape') {
+                  setShowFindReplace(false);
+                }
+              }}
+              placeholder="Ganti dengan..."
+              className="flex-1 bg-slate-900 border border-slate-800 focus:border-indigo-500 rounded-lg px-2.5 py-1 text-xs text-slate-200 outline-none font-mono"
+            />
+            <button
+              onClick={handleReplaceOne}
+              disabled={!findText}
+              title="Ganti yang cocok saat ini"
+              className="px-2 py-1 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 border border-slate-800 text-slate-300 rounded text-[11px] font-medium"
+            >
+              Ganti
+            </button>
+            <button
+              onClick={handleReplaceAll}
+              disabled={!findText}
+              title="Ganti semua kecocokan"
+              className="px-2 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 disabled:opacity-30 border border-indigo-500/40 text-indigo-300 rounded text-[11px] font-medium"
+            >
+              Semua
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Code Editor Body with Line Number Gutter */}
       <div className="flex-1 relative bg-slate-950 font-mono text-xs flex overflow-hidden">
         {/* Line Numbers Gutter */}
@@ -236,8 +427,18 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
           }}
           onScroll={handleScroll}
           onKeyDown={e => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+              e.preventDefault();
+              setShowFindReplace(true);
+              setTimeout(() => findInputRef.current?.focus(), 50);
+              return;
+            }
             if (e.key === 'Escape') {
               e.preventDefault();
+              if (showFindReplace) {
+                setShowFindReplace(false);
+                return;
+              }
               onClose();
               return;
             }
@@ -252,8 +453,13 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
                 // Multi-line indent / outdent
                 const before = code.substring(0, start);
                 const lineStart = before.lastIndexOf('\n') === -1 ? 0 : before.lastIndexOf('\n') + 1;
-                const after = code.substring(end);
-                const selectedBlock = code.substring(lineStart, end);
+                // Avoid indenting trailing empty newline boundary
+                let effectiveEnd = end;
+                if (effectiveEnd > lineStart && code[effectiveEnd - 1] === '\n') {
+                  effectiveEnd--;
+                }
+                const after = code.substring(effectiveEnd);
+                const selectedBlock = code.substring(lineStart, effectiveEnd);
                 const lines = selectedBlock.split('\n');
 
                 if (e.shiftKey) {
@@ -348,6 +554,9 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
           </span>
           <span className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-300">
             {(code.match(/slide\s+"[^"]*"/g) || []).length || project.slides.length} slide
+          </span>
+          <span className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-400">
+            {(new Blob([code]).size / 1024).toFixed(1)} KB
           </span>
           <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
             error

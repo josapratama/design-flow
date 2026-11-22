@@ -125,7 +125,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       const next = [color.toLowerCase(), ...prev.filter(c => c.toLowerCase() !== color.toLowerCase())].slice(0, 8);
       try {
         localStorage.setItem('designflow_recent_colors', JSON.stringify(next));
-      } catch {}
+      } catch { }
       return next;
     });
   };
@@ -264,9 +264,8 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   key={swatch.color}
                   onClick={() => onUpdateSlide(activeSlide.id, { background: swatch.color })}
                   title={swatch.name}
-                  className={`h-7 w-7 rounded-full border border-white/10 hover:scale-110 transition-transform shadow-md relative ${
-                    activeSlide.background === swatch.color ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-900 scale-105' : ''
-                  }`}
+                  className={`h-7 w-7 rounded-full border border-white/10 hover:scale-110 transition-transform shadow-md relative ${activeSlide.background === swatch.color ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-slate-900 scale-105' : ''
+                    }`}
                   style={{ backgroundColor: swatch.color }}
                 />
               ))}
@@ -281,9 +280,8 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     key={grad.name}
                     onClick={() => onUpdateSlide(activeSlide.id, { background: grad.bg })}
                     title={grad.name}
-                    className={`h-8 rounded-lg border border-slate-700/80 hover:border-indigo-500/80 hover:scale-[1.02] transition-all text-[9px] font-semibold text-white/95 flex items-center justify-center shadow-sm truncate px-1 ${
-                      activeSlide.background === grad.bg ? 'ring-2 ring-indigo-500 border-indigo-400' : ''
-                    }`}
+                    className={`h-8 rounded-lg border border-slate-700/80 hover:border-indigo-500/80 hover:scale-[1.02] transition-all text-[9px] font-semibold text-white/95 flex items-center justify-center shadow-sm truncate px-1 ${activeSlide.background === grad.bg ? 'ring-2 ring-indigo-500 border-indigo-400' : ''
+                      }`}
                     style={{ background: grad.bg }}
                   >
                     {grad.name.split(' ')[0]}
@@ -1078,11 +1076,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   type="button"
                   onClick={() => setIsRatioLocked(!isRatioLocked)}
                   title={isRatioLocked ? 'Kunci Rasio Aktif (Klik untuk Buka)' : 'Kunci Rasio Aspek W:H'}
-                  className={`p-1.5 rounded-lg border transition-colors ${
-                    isRatioLocked
-                      ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
-                      : 'bg-slate-950 border-slate-800 text-slate-500 hover:text-slate-300'
-                  }`}
+                  className={`p-1.5 rounded-lg border transition-colors ${isRatioLocked
+                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
+                    : 'bg-slate-950 border-slate-800 text-slate-500 hover:text-slate-300'
+                    }`}
                 >
                   {isRatioLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                 </button>
@@ -1714,11 +1711,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                               type="button"
                               onClick={() => handleChange('textAlign', item.id)}
                               title={`Rata ${item.label}`}
-                              className={`p-1.5 rounded transition-colors ${
-                                isActive
-                                  ? 'bg-indigo-600 text-white shadow'
-                                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                              }`}
+                              className={`p-1.5 rounded transition-colors ${isActive
+                                ? 'bg-indigo-600 text-white shadow'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                }`}
                             >
                               <Icon className="w-3.5 h-3.5" />
                             </button>
@@ -1752,11 +1748,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                             key={val}
                             type="button"
                             onClick={() => handleChange('letterSpacing', val)}
-                            className={`py-0.5 rounded text-center text-[9px] font-mono border transition-all ${
-                              (element.letterSpacing || 0) === val
-                                ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300 font-bold'
-                                : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-white'
-                            }`}
+                            className={`py-0.5 rounded text-center text-[9px] font-mono border transition-all ${(element.letterSpacing || 0) === val
+                              ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300 font-bold'
+                              : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-white'
+                              }`}
                           >
                             {val > 0 ? `+${val}` : `${val}`}px
                           </button>
@@ -1778,11 +1773,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                             key={lh}
                             type="button"
                             onClick={() => handleChange('lineHeight', lh)}
-                            className={`py-1 rounded text-center text-[10px] font-mono border transition-all ${
-                              (element.lineHeight || (element.type === 'heading' ? 1.2 : 1.35)) === lh
-                                ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300 font-bold'
-                                : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-white'
-                            }`}
+                            className={`py-1 rounded text-center text-[10px] font-mono border transition-all ${(element.lineHeight || (element.type === 'heading' ? 1.2 : 1.35)) === lh
+                              ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300 font-bold'
+                              : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-white'
+                              }`}
                           >
                             {lh}
                           </button>
@@ -2158,11 +2152,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                         if (!element.stroke) handleChange('stroke', '#6366f1');
                         if (!element.strokeWidth) handleChange('strokeWidth', 2);
                       }}
-                      className={`flex-1 py-1 rounded text-[10px] transition-colors ${
-                        (element.strokeDash || 'solid') === dash.id && element.stroke
-                          ? 'bg-indigo-600 text-white font-semibold'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
+                      className={`flex-1 py-1 rounded text-[10px] transition-colors ${(element.strokeDash || 'solid') === dash.id && element.stroke
+                        ? 'bg-indigo-600 text-white font-semibold'
+                        : 'text-slate-400 hover:text-white'
+                        }`}
                     >
                       {dash.label}
                     </button>
@@ -2193,11 +2186,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                         handleChange('strokeWidth', w);
                       }
                     }}
-                    className={`py-1 rounded text-center text-[10px] font-mono border transition-all ${
-                      (w === 0 && !element.stroke) || (element.stroke && (element.strokeWidth || 1) === w)
-                        ? 'bg-indigo-600 border-indigo-500 text-white font-bold shadow'
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
+                    className={`py-1 rounded text-center text-[10px] font-mono border transition-all ${(w === 0 && !element.stroke) || (element.stroke && (element.strokeWidth || 1) === w)
+                      ? 'bg-indigo-600 border-indigo-500 text-white font-bold shadow'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
                   >
                     {w === 0 ? '0px' : `${w}px`}
                   </button>

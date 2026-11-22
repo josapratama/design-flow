@@ -119,11 +119,25 @@ const SLIDES = [
 ${slideListArray}
 ];
 
-export default function ${sanitizeComponentName(project.title || 'Presentation')}Deck() {
-  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+export interface PresentationDeckProps {
+  initialSlide?: number;
+  onFinish?: () => void;
+  className?: string;
+}
+
+export default function ${sanitizeComponentName(project.title || 'Presentation')}Deck({
+  initialSlide = 0,
+  onFinish,
+  className = '',
+}: PresentationDeckProps = {}) {
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(initialSlide);
 
   const goToNext = () => {
-    setCurrentSlideIndex(prev => Math.min(prev + 1, SLIDES.length - 1));
+    if (currentSlideIndex === SLIDES.length - 1) {
+      onFinish?.();
+    } else {
+      setCurrentSlideIndex(prev => Math.min(prev + 1, SLIDES.length - 1));
+    }
   };
 
   const goToPrev = () => {
@@ -147,7 +161,7 @@ export default function ${sanitizeComponentName(project.title || 'Presentation')
   const ActiveComponent = SLIDES[currentSlideIndex].Component;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-4 sm:p-6 font-sans select-none">
+    <div className={"min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-4 sm:p-6 font-sans select-none " + (className || '')}>
 ${fontStyleTag}
       {/* Top Header: Title & Progress Bar */}
       <header className="flex items-center justify-between max-w-7xl w-full mx-auto mb-4 pb-3 border-b border-slate-800">
