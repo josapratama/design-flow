@@ -22,6 +22,25 @@ export const TemplatesModal: React.FC<TemplatesModalProps> = ({
   const [previewTemplate, setPreviewTemplate] = useState<TemplateDefinition | null>(null);
   const [previewSlideIdx, setPreviewSlideIdx] = useState(0);
 
+  // Keyboard navigation for carousel preview lightbox
+  React.useEffect(() => {
+    if (!previewTemplate) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setPreviewTemplate(null);
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setPreviewSlideIdx(prev => Math.max(0, prev - 1));
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setPreviewSlideIdx(prev => Math.min(previewTemplate.slides.length - 1, prev + 1));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewTemplate]);
+
   const handleReplace = (template: TemplateDefinition) => {
     if (currentSlideCount > 1) {
       const confirmReplace = window.confirm(

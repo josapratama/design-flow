@@ -31,11 +31,36 @@ import {
   Sparkles,
   Upload,
   Boxes,
+  Paintbrush,
+  Check,
+  Code,
+  CopyCheck,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { POPULAR_FONTS, getFontFamilyStyle } from '../utils/fontLoader';
 import { evaluateContrast } from '../utils/colorContrast';
 import { extractPaletteFromImage, ExtractedPalette } from '../utils/paletteExtractor';
+import { renderElementJSX } from '../engine/tailwind-exporter';
+
+interface CopiedVisualAttributes {
+  fill?: string;
+  color?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  strokeDash?: 'solid' | 'dashed' | 'dotted';
+  borderRadius?: number;
+  shadow?: DesignElement['shadow'];
+  fontFamily?: string;
+  fontSize?: number;
+  fontWeight?: DesignElement['fontWeight'];
+  opacity?: number;
+  letterSpacing?: number;
+  lineHeight?: number;
+  textAlign?: DesignElement['textAlign'];
+}
+
+let clipboardVisualAttributes: CopiedVisualAttributes | null = null;
 
 interface PropertyInspectorProps {
   element: DesignElement | null;
@@ -669,8 +694,95 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     name.toLowerCase().includes(iconFilter.toLowerCase())
   );
 
+  const [copiedStyleActive, setCopiedStyleActive] = useState<boolean>(() => Boolean(clipboardVisualAttributes));
+  const [inspectorToast, setInspectorToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setInspectorToast(msg);
+    setTimeout(() => setInspectorToast(null), 2000);
+  };
+
+  const handleCopyStyle = () => {
+    if (!element) return;
+    clipboardVisualAttributes = {
+      fill: element.fill,
+      color: element.color,
+      stroke: element.stroke,
+      strokeWidth: element.strokeWidth,
+      strokeDash: element.strokeDash,
+      borderRadius: element.borderRadius,
+      shadow: element.shadow,
+      fontFamily: element.fontFamily,
+      fontSize: element.fontSize,
+      fontWeight: element.fontWeight,
+      opacity: element.opacity,
+      letterSpacing: element.letterSpacing,
+      lineHeight: element.lineHeight,
+      textAlign: element.textAlign,
+    };
+    setCopiedStyleActive(true);
+    showToast('Gaya Disalin! (Pilih elemen lain untuk Tempel)');
+  };
+
+  const handlePasteStyle = () => {
+    if (!element || !clipboardVisualAttributes) return;
+    const updates: Partial<DesignElement> = {};
+    if (clipboardVisualAttributes.fill !== undefined) updates.fill = clipboardVisualAttributes.fill;
+    if (clipboardVisualAttributes.color !== undefined) updates.color = clipboardVisualAttributes.color;
+    if (clipboardVisualAttributes.stroke !== undefined) updates.stroke = clipboardVisualAttributes.stroke;
+    if (clipboardVisualAttributes.strokeWidth !== undefined) updates.strokeWidth = clipboardVisualAttributes.strokeWidth;
+    if (clipboardVisualAttributes.strokeDash !== undefined) updates.strokeDash = clipboardVisualAttributes.strokeDash;
+    if (clipboardVisualAttributes.borderRadius !== undefined) updates.borderRadius = clipboardVisualAttributes.borderRadius;
+    if (clipboardVisualAttributes.shadow !== undefined) updates.shadow = clipboardVisualAttributes.shadow;
+    if (clipboardVisualAttributes.fontFamily !== undefined) updates.fontFamily = clipboardVisualAttributes.fontFamily;
+    if (clipboardVisualAttributes.fontSize !== undefined) updates.fontSize = clipboardVisualAttributes.fontSize;
+    if (clipboardVisualAttributes.fontWeight !== undefined) updates.fontWeight = clipboardVisualAttributes.fontWeight;
+    if (clipboardVisualAttributes.opacity !== undefined) updates.opacity = clipboardVisualAttributes.opacity;
+    if (clipboardVisualAttributes.letterSpacing !== undefined) updates.letterSpacing = clipboardVisualAttributes.letterSpacing;
+    if (clipboardVisualAttributes.lineHeight !== undefined) updates.lineHeight = clipboardVisualAttributes.lineHeight;
+    if (clipboardVisualAttributes.textAlign !== undefined) updates.textAlign = clipboardVisualAttributes.textAlign;
+
+    onUpdateElement(element.id, updates);
+    showToast('Gaya Diterapkan!');
+    confetti({ particleCount: 25, spread: 45, origin: { y: 0.7 } });
+  };
+
+  const handleCopyJSX = () => {
+    if (!element) return;
+    try {
+      const snippet = renderElementJSX(element);
+      navigator.clipboard.writeText(snippet);
+      showToast('Kode JSX Disalin!');
+      confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
+    } catch {
+      showToast('Gagal menyalin JSX.');
+    }
+  };
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        handleCopyStyle();
+      } else if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        handlePasteStyle();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [element]);
+
   return (
-    <aside className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 select-none z-10">
+    <aside className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 select-none z-10 relative">
+      {/* Toast Feedback */}
+      {inspectorToast && (
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-50 px-3 py-1.5 bg-slate-950 border border-indigo-500/60 text-white rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-1.5 animate-in fade-in zoom-in-95 duration-100 whitespace-nowrap">
+          <Check className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-[11px] font-medium">{inspectorToast}</span>
+        </div>
+      )}
       {/* Header with Title and Quick Action Buttons */}
       <div className="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
         <div className="flex items-center gap-2 truncate">
@@ -729,6 +841,35 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               <Boxes className="w-3.5 h-3.5" />
             </button>
           )}
+
+          {/* Format Painter: Salin Gaya */}
+          <button
+            onClick={handleCopyStyle}
+            title="Salin Gaya Visual Elemen (Ctrl+Alt+C)"
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded-lg transition-colors"
+          >
+            <Paintbrush className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Format Painter: Tempel Gaya */}
+          {copiedStyleActive && (
+            <button
+              onClick={handlePasteStyle}
+              title="Tempelkan Gaya Visual yang Disalin (Ctrl+Alt+V)"
+              className="p-1.5 hover:bg-indigo-600/20 text-indigo-400 hover:text-indigo-300 rounded-lg transition-colors animate-pulse"
+            >
+              <CopyCheck className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Salin Kode JSX */}
+          <button
+            onClick={handleCopyJSX}
+            title="Salin Kode Komponen React 19 + Tailwind JSX"
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-cyan-400 rounded-lg transition-colors"
+          >
+            <Code className="w-3.5 h-3.5" />
+          </button>
 
           <button
             onClick={onDuplicate}
@@ -1834,6 +1975,119 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   {r === 9999 ? 'Pill' : `${r}px`}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Garis Tepi (Border / Stroke) */}
+          <div className="space-y-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                Garis Tepi (Border / Stroke)
+              </label>
+              {element.stroke && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleChange('stroke', undefined);
+                    handleChange('strokeWidth', 0);
+                  }}
+                  className="text-[9px] text-rose-400 hover:underline"
+                >
+                  Hapus Border
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-slate-500">Warna Garis</span>
+                  <button
+                    type="button"
+                    onClick={() => handleEyeDropper('stroke')}
+                    title="Ambil warna dari layar (Pipet Eyedropper)"
+                    className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded"
+                  >
+                    <Pipette className="w-3 h-3" />
+                  </button>
+                </div>
+                <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
+                  <input
+                    type="color"
+                    value={element.stroke && element.stroke.startsWith('#') ? element.stroke : '#6366f1'}
+                    onChange={e => {
+                      handleChange('stroke', e.target.value);
+                      if (!element.strokeWidth) handleChange('strokeWidth', 2);
+                    }}
+                    className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                  />
+                  <span className="text-[11px] font-mono text-slate-300 truncate">
+                    {element.stroke || 'Tanpa Border'}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <span className="text-[10px] text-slate-500 block mb-1">Gaya Garis</span>
+                <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg p-0.5">
+                  {[
+                    { id: 'solid', label: 'Solid' },
+                    { id: 'dashed', label: 'Putus' },
+                    { id: 'dotted', label: 'Titik' },
+                  ].map(dash => (
+                    <button
+                      key={dash.id}
+                      type="button"
+                      onClick={() => {
+                        handleChange('strokeDash', dash.id as any);
+                        if (!element.stroke) handleChange('stroke', '#6366f1');
+                        if (!element.strokeWidth) handleChange('strokeWidth', 2);
+                      }}
+                      className={`flex-1 py-1 rounded text-[10px] transition-colors ${
+                        (element.strokeDash || 'solid') === dash.id && element.stroke
+                          ? 'bg-indigo-600 text-white font-semibold'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {dash.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Ketebalan Garis */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-slate-500">Ketebalan Garis</span>
+                <span className="font-mono text-indigo-400 font-semibold">
+                  {element.stroke ? `${element.strokeWidth || 1}px` : '0px'}
+                </span>
+              </div>
+              <div className="grid grid-cols-5 gap-1">
+                {[0, 1, 2, 3, 4].map(w => (
+                  <button
+                    key={w}
+                    type="button"
+                    onClick={() => {
+                      if (w === 0) {
+                        handleChange('stroke', undefined);
+                        handleChange('strokeWidth', 0);
+                      } else {
+                        if (!element.stroke) handleChange('stroke', '#6366f1');
+                        handleChange('strokeWidth', w);
+                      }
+                    }}
+                    className={`py-1 rounded text-center text-[10px] font-mono border transition-all ${
+                      (w === 0 && !element.stroke) || (element.stroke && (element.strokeWidth || 1) === w)
+                        ? 'bg-indigo-600 border-indigo-500 text-white font-bold shadow'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {w === 0 ? '0px' : `${w}px`}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

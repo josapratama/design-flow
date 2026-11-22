@@ -108,7 +108,7 @@ ${jsxElements}
   }).join('\n\n');
 
   const slideListArray = project.slides
-    .map((slide, idx) => `    { id: '${slide.id}', title: '${escapeJSX(slide.title)}', Component: Slide${idx + 1}_${sanitizeComponentName(slide.title)} },`)
+    .map((slide, idx) => `    { id: '${slide.id}', title: ${JSON.stringify(slide.title)}, Component: Slide${idx + 1}_${sanitizeComponentName(slide.title)} },`)
     .join('\n');
 
   return `import React, { useState, useEffect } from 'react';
@@ -197,7 +197,7 @@ ${fontStyleTag}
 `;
 }
 
-function renderElementJSX(el: DesignElement): string {
+export function renderElementJSX(el: DesignElement): string {
   const baseStyle: Record<string, string | number> = {
     left: `${Math.round(el.x)}px`,
     top: `${Math.round(el.y)}px`,
@@ -620,8 +620,15 @@ function getTextAlignClass(align?: string): string {
   }
 }
 
-function escapeJSX(str: string): string {
-  return str.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+export function escapeJSX(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\{/g, '&#123;')
+    .replace(/\}/g, '&#125;');
 }
 
 function sanitizeComponentName(name: string): string {

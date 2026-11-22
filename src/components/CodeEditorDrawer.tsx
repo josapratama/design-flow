@@ -35,6 +35,14 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
     }
   }, [isOpen, project]);
 
+  const isDirty = React.useMemo(() => {
+    try {
+      return code.trim() !== generateDesignDSL(project).trim();
+    } catch {
+      return false;
+    }
+  }, [code, project]);
+
   if (!isOpen) return null;
 
   const handleApply = () => {
@@ -127,7 +135,7 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
   const lines = code.split('\n');
 
   return (
-    <div className="absolute top-14 bottom-0 right-0 w-[500px] bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col z-30 select-none animate-in slide-in-from-right duration-200">
+    <div className="absolute top-14 bottom-0 right-0 w-full sm:w-[500px] max-w-full bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col z-30 select-none animate-in slide-in-from-right duration-200">
       {/* Drawer Header */}
       <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
         <div className="flex items-center gap-2">
@@ -136,7 +144,15 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
           </div>
           <div>
             <h3 className="text-xs font-bold text-slate-100">Declarative Design DSL</h3>
-            <span className="text-[10px] text-slate-400">Sinkronisasi 2 arah visual & kode</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-slate-400">Sinkronisasi 2 arah visual & kode</span>
+              {isDirty && !appliedSuccess && (
+                <span className="flex items-center gap-1 text-[9px] px-1.5 py-0.2 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-semibold animate-pulse">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  Ada Perubahan
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -305,9 +321,11 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
           <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
             error
               ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
-              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+              : isDirty
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
           }`}>
-            {error ? 'Sintaks Error' : 'DSL Valid'}
+            {error ? 'Sintaks Error' : isDirty ? 'Belum Diterapkan' : 'Tersinkron'}
           </span>
           <span className="text-slate-500 hidden sm:inline">• <kbd className="text-indigo-400">Ctrl+Enter</kbd></span>
         </div>
@@ -317,7 +335,9 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
           className={`px-4 py-1.5 text-white font-semibold rounded-xl text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95 ${
             appliedSuccess
               ? 'bg-emerald-600 shadow-emerald-600/30'
-              : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30'
+              : isDirty
+                ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/30 ring-2 ring-amber-400/30'
+                : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30'
           }`}
         >
           {appliedSuccess ? <Check className="w-3.5 h-3.5 text-emerald-200" /> : <RefreshCw className="w-3.5 h-3.5" />}
