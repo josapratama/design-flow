@@ -85,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="h-14 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between select-none z-20 shrink-0">
+    <header className="h-14 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between select-none z-20 shrink-0 overflow-x-auto">
       {/* Brand & Project Title */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">

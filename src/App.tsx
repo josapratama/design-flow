@@ -19,6 +19,7 @@ import { DesignElement } from './types';
 import { preloadCoreFonts } from './utils/fontLoader';
 import { AudienceScreen } from './components/AudienceScreen';
 import { copyArtboardToClipboard } from './engine/canvas-exporter';
+import { Layers, Sliders, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function App() {
@@ -83,6 +84,8 @@ export default function App() {
   const [isSlideSorterOpen, setIsSlideSorterOpen] = useState(false);
   const [showSafeMargin, setShowSafeMargin] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
+  const [isMobileLeftOpen, setIsMobileLeftOpen] = useState(false);
+  const [isMobileRightOpen, setIsMobileRightOpen] = useState(false);
 
   // Floating Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -443,24 +446,90 @@ export default function App() {
 
       {/* Main Workspace Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
+        {/* Mobile Backdrop Overlay */}
+        {(isMobileLeftOpen || isMobileRightOpen) && (
+          <div
+            onClick={() => {
+              setIsMobileLeftOpen(false);
+              setIsMobileRightOpen(false);
+            }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
+          />
+        )}
+
         {/* Left Elements Palette (Includes Smart Blocks, Media & Layers) */}
         {!isZenMode && (
-          <SidebarPalette
-            mode={project.mode}
-            activeSlide={activeSlide}
-            selectedElementIds={project.selectedElementIds}
-            onSelectElement={handleSelectElementWithGroup}
-            onToggleLock={toggleLockElement}
-            onToggleHide={toggleHideElement}
-            onDeleteElement={deleteElementById}
-            onReorderElement={reorderSelectedElement}
-            onAddElement={addElement}
-            onAddElements={addElements}
-          />
+          <div
+            className={`${
+              isMobileLeftOpen
+                ? 'fixed inset-y-0 left-0 z-40 shadow-2xl flex animate-in slide-in-from-left duration-200'
+                : 'hidden lg:flex'
+            } shrink-0 relative`}
+          >
+            <SidebarPalette
+              mode={project.mode}
+              activeSlide={activeSlide}
+              selectedElementIds={project.selectedElementIds}
+              onSelectElement={handleSelectElementWithGroup}
+              onToggleLock={toggleLockElement}
+              onToggleHide={toggleHideElement}
+              onDeleteElement={deleteElementById}
+              onReorderElement={reorderSelectedElement}
+              onAddElement={el => {
+                addElement(el);
+                if (window.innerWidth < 1024) setIsMobileLeftOpen(false);
+              }}
+              onAddElements={els => {
+                addElements(els);
+                if (window.innerWidth < 1024) setIsMobileLeftOpen(false);
+              }}
+            />
+            {isMobileLeftOpen && (
+              <button
+                onClick={() => setIsMobileLeftOpen(false)}
+                className="absolute top-3 right-3 p-1.5 rounded-lg bg-slate-800 text-slate-300 lg:hidden z-50 hover:text-white"
+                title="Tutup Palet"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         )}
 
         {/* Center Visual Canvas */}
         <main className="flex-1 relative overflow-hidden bg-slate-950">
+          {/* Mobile Floating Toggle Pills (< 1024px) */}
+          <div className="absolute top-3 left-3 z-30 flex items-center gap-2 lg:hidden">
+            <button
+              onClick={() => {
+                setIsMobileLeftOpen(prev => !prev);
+                setIsMobileRightOpen(false);
+              }}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 shadow-lg backdrop-blur-md transition-all ${
+                isMobileLeftOpen
+                  ? 'bg-indigo-600 text-white border-indigo-400'
+                  : 'bg-slate-900/90 text-slate-300 border-slate-700/80 hover:text-white'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Elemen</span>
+            </button>
+            <button
+              onClick={() => {
+                setIsMobileRightOpen(prev => !prev);
+                setIsMobileLeftOpen(false);
+              }}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 shadow-lg backdrop-blur-md transition-all ${
+                isMobileRightOpen
+                  ? 'bg-indigo-600 text-white border-indigo-400'
+                  : 'bg-slate-900/90 text-slate-300 border-slate-700/80 hover:text-white'
+              }`}
+            >
+              <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+              <span>Properti</span>
+            </button>
+          </div>
+
           <CanvasViewport
             slide={activeSlide}
             scale={project.scale}
@@ -530,22 +599,39 @@ export default function App() {
 
         {/* Right Property Inspector with Visual Icon Picker & Style Controls */}
         {!isZenMode && (
-          <PropertyInspector
-            element={selectedElement}
-            activeSlide={activeSlide}
-            selectedCount={project.selectedElementIds.length}
-            onUpdateElement={updateElement}
-            onUpdateSlide={updateSlideSettings}
-            onDelete={deleteSelectedElements}
-            onDuplicate={duplicateSelectedElements}
-            onReorder={reorderSelectedElement}
-            onAlignElement={alignSelectedElement}
-            onDistributeElements={distributeSelectedElements}
-            onApplySlideTheme={applyThemeToActiveSlide}
-            onInvertSlideTheme={invertActiveSlideTheme}
-            onToggleLock={toggleLockElement}
-            onToggleHide={toggleHideElement}
-          />
+          <div
+            className={`${
+              isMobileRightOpen
+                ? 'fixed inset-y-0 right-0 z-40 shadow-2xl flex animate-in slide-in-from-right duration-200'
+                : 'hidden lg:flex'
+            } shrink-0 relative`}
+          >
+            <PropertyInspector
+              element={selectedElement}
+              activeSlide={activeSlide}
+              selectedCount={project.selectedElementIds.length}
+              onUpdateElement={updateElement}
+              onUpdateSlide={updateSlideSettings}
+              onDelete={deleteSelectedElements}
+              onDuplicate={duplicateSelectedElements}
+              onReorder={reorderSelectedElement}
+              onAlignElement={alignSelectedElement}
+              onDistributeElements={distributeSelectedElements}
+              onApplySlideTheme={applyThemeToActiveSlide}
+              onInvertSlideTheme={invertActiveSlideTheme}
+              onToggleLock={toggleLockElement}
+              onToggleHide={toggleHideElement}
+            />
+            {isMobileRightOpen && (
+              <button
+                onClick={() => setIsMobileRightOpen(false)}
+                className="absolute top-3 right-3 p-1.5 rounded-lg bg-slate-800 text-slate-300 lg:hidden z-50 hover:text-white"
+                title="Tutup Pengaturan"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         )}
 
         {/* Bi-Directional Code Drawer */}

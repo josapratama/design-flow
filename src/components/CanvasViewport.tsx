@@ -92,7 +92,7 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     currentY: number;
   } | null>(null);
 
-  // Native Non-Passive Wheel Event Listener to prevent Chrome passive event error
+  // Native Non-Passive Wheel & Touch Event Listeners (Prevents passive event error & enables touch pinch-to-zoom)
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -108,9 +108,62 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
       }
     };
 
+    let initialTouchDist = 0;
+    let initialTouchScale = scale;
+    let initialTouchMidX = 0;
+    let initialTouchMidY = 0;
+    let initialTouchPanX = panX;
+    let initialTouchPanY = panY;
+
+    const onTouchStartHandler = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        initialTouchDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+        initialTouchScale = scale;
+        initialTouchMidX = (t1.clientX + t2.clientX) / 2;
+        initialTouchMidY = (t1.clientY + t2.clientY) / 2;
+        initialTouchPanX = panX;
+        initialTouchPanY = panY;
+      }
+    };
+
+    const onTouchMoveHandler = (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const curDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+        if (initialTouchDist > 0) {
+          const ratio = curDist / initialTouchDist;
+          const newScale = Math.min(3.0, Math.max(0.15, Number((initialTouchScale * ratio).toFixed(2))));
+          onScaleChange(newScale);
+
+          const curMidX = (t1.clientX + t2.clientX) / 2;
+          const curMidY = (t1.clientY + t2.clientY) / 2;
+          onPanChange(
+            initialTouchPanX + (curMidX - initialTouchMidX),
+            initialTouchPanY + (curMidY - initialTouchMidY)
+          );
+        }
+      }
+    };
+
+    const onTouchEndHandler = () => {
+      initialTouchDist = 0;
+    };
+
     container.addEventListener('wheel', onWheelHandler, { passive: false });
+    container.addEventListener('touchstart', onTouchStartHandler, { passive: false });
+    container.addEventListener('touchmove', onTouchMoveHandler, { passive: false });
+    container.addEventListener('touchend', onTouchEndHandler);
+
     return () => {
       container.removeEventListener('wheel', onWheelHandler);
+      container.removeEventListener('touchstart', onTouchStartHandler);
+      container.removeEventListener('touchmove', onTouchMoveHandler);
+      container.removeEventListener('touchend', onTouchEndHandler);
     };
   }, [scale, panX, panY, onScaleChange, onPanChange]);
 

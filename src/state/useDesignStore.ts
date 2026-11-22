@@ -661,62 +661,62 @@ export function useDesignStore() {
       pushHistory(project.slides);
 
       let replaceCount = 0;
-      setProject(prev => {
-        const newSlides = prev.slides.map(slide => {
-          if (scope === 'active' && slide.id !== prev.activeSlideId) return slide;
+      const flags = matchCase ? 'g' : 'gi';
+      const escapedFind = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(escapedFind, flags);
 
-          const flags = matchCase ? 'g' : 'gi';
-          const escapedFind = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          const regex = new RegExp(escapedFind, flags);
+      const replaceInField = (val?: string): string | undefined => {
+        if (!val) return val;
+        const matches = val.match(regex);
+        if (matches && matches.length > 0) {
+          replaceCount += matches.length;
+          return val.replace(regex, replaceText);
+        }
+        return val;
+      };
 
-          let slideTitle = slide.title;
-          let slideNotes = slide.notes;
+      const newSlides = project.slides.map(slide => {
+        if (scope === 'active' && slide.id !== project.activeSlideId) return slide;
 
-          const replaceInField = (val?: string): string | undefined => {
+        let slideTitle = slide.title;
+        let slideNotes = slide.notes;
+
+        if (slideTitle) slideTitle = replaceInField(slideTitle) || slideTitle;
+        if (slideNotes) slideNotes = replaceInField(slideNotes);
+
+        const newElements = slide.elements.map(el => {
+          let updated = { ...el };
+          let changed = false;
+
+          const replaceInElField = (val?: string): string | undefined => {
             if (!val) return val;
             const matches = val.match(regex);
             if (matches && matches.length > 0) {
               replaceCount += matches.length;
+              changed = true;
               return val.replace(regex, replaceText);
             }
             return val;
           };
 
-          if (slideTitle) slideTitle = replaceInField(slideTitle) || slideTitle;
-          if (slideNotes) slideNotes = replaceInField(slideNotes);
+          if (updated.content) updated.content = replaceInElField(updated.content);
+          if (updated.subTitle) updated.subTitle = replaceInElField(updated.subTitle);
+          if (updated.badgeText) updated.badgeText = replaceInElField(updated.badgeText);
+          if (updated.placeholder) updated.placeholder = replaceInElField(updated.placeholder);
 
-          const newElements = slide.elements.map(el => {
-            let updated = { ...el };
-            let changed = false;
-
-            const replaceInElField = (val?: string): string | undefined => {
-              if (!val) return val;
-              const matches = val.match(regex);
-              if (matches && matches.length > 0) {
-                replaceCount += matches.length;
-                changed = true;
-                return val.replace(regex, replaceText);
-              }
-              return val;
-            };
-
-            if (updated.content) updated.content = replaceInElField(updated.content);
-            if (updated.subTitle) updated.subTitle = replaceInElField(updated.subTitle);
-            if (updated.badgeText) updated.badgeText = replaceInElField(updated.badgeText);
-            if (updated.placeholder) updated.placeholder = replaceInElField(updated.placeholder);
-
-            return changed ? updated : el;
-          });
-
-          return { ...slide, title: slideTitle, notes: slideNotes, elements: newElements };
+          return changed ? updated : el;
         });
 
-        return { ...prev, slides: newSlides };
+        return { ...slide, title: slideTitle, notes: slideNotes, elements: newElements };
       });
+
+      if (replaceCount > 0) {
+        setProject(prev => ({ ...prev, slides: newSlides }));
+      }
 
       return replaceCount;
     },
-    [project.slides, pushHistory]
+    [project.slides, project.activeSlideId, pushHistory]
   );
 
   // Reset to clean initial default project
