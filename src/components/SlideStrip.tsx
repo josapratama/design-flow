@@ -134,14 +134,24 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
                   </span>
                 )}
               </div>
-              {slide.notes && slide.notes.trim() && (
-                <span
-                  title={`Catatan Pembicara: ${slide.notes.trim()}`}
-                  className="text-indigo-400 p-0.5 rounded hover:bg-slate-800 shrink-0"
-                >
-                  <FileText className="w-3 h-3" />
-                </span>
-              )}
+              <div className="flex items-center gap-1 shrink-0">
+                {slide.transition && slide.transition !== 'none' && slide.transition !== 'fade' && (
+                  <span
+                    title={`Transisi: ${slide.transition}`}
+                    className="px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-mono text-[8px] uppercase font-bold"
+                  >
+                    {slide.transition}
+                  </span>
+                )}
+                {slide.notes && slide.notes.trim() ? (
+                  <span
+                    title={`Catatan Pembicara: ${slide.notes.trim()}`}
+                    className="text-amber-400 p-0.5 rounded hover:bg-slate-800 shrink-0"
+                  >
+                    <FileText className="w-3 h-3" />
+                  </span>
+                ) : null}
+              </div>
             </div>
 
             {/* Scaled Mini Visual Canvas Thumbnail */}

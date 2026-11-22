@@ -71,6 +71,20 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   const [iconFilter, setIconFilter] = useState('');
   const [fontFilterCategory, setFontFilterCategory] = useState<'all' | 'Sans Serif' | 'Serif' | 'Monospace' | 'Display'>('all');
 
+  // Auto-extracted document colors used across active slide
+  const documentColors = React.useMemo(() => {
+    const set = new Set<string>();
+    if (activeSlide.background && activeSlide.background.startsWith('#')) {
+      set.add(activeSlide.background.toLowerCase());
+    }
+    activeSlide.elements.forEach(el => {
+      if (el.fill && el.fill.startsWith('#')) set.add(el.fill.toLowerCase());
+      if (el.color && el.color.startsWith('#')) set.add(el.color.toLowerCase());
+      if (el.stroke && el.stroke.startsWith('#')) set.add(el.stroke.toLowerCase());
+    });
+    return Array.from(set).slice(0, 10);
+  }, [activeSlide]);
+
   const popularIconNames = [
     'Star', 'Heart', 'Shield', 'Check', 'User', 'Search', 'Settings', 'Home',
     'ArrowRight', 'Zap', 'Download', 'Compass', 'Laptop', 'Mail', 'Phone',
@@ -1256,6 +1270,28 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   {element.fill || '#1e293b'}
                 </span>
               </div>
+              {/* Document Colors Palette */}
+              {documentColors.length > 0 && (
+                <div className="pt-1.5">
+                  <span className="text-[9px] text-slate-500 font-medium block mb-1">Warna di Slide Ini:</span>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {documentColors.map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => handleChange('fill', c)}
+                        title={`Pilih warna slide ${c}`}
+                        className={`w-3.5 h-3.5 rounded-full border transition-transform ${
+                          element.fill?.toLowerCase() === c
+                            ? 'scale-125 border-white ring-1 ring-white/50'
+                            : 'border-slate-700 hover:scale-110'
+                        }`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* Quick Swatches for Fill */}
               <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                 {['#6366f1', '#38bdf8', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#ffffff', '#1e293b'].map(sw => (
@@ -1295,6 +1331,28 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   {element.color || '#ffffff'}
                 </span>
               </div>
+              {/* Document Colors Palette for Text */}
+              {documentColors.length > 0 && (
+                <div className="pt-1.5">
+                  <span className="text-[9px] text-slate-500 font-medium block mb-1">Warna di Slide Ini:</span>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {documentColors.map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => handleChange('color', c)}
+                        title={`Pilih warna teks slide ${c}`}
+                        className={`w-3.5 h-3.5 rounded-full border transition-transform ${
+                          element.color?.toLowerCase() === c
+                            ? 'scale-125 border-white ring-1 ring-white/50'
+                            : 'border-slate-700 hover:scale-110'
+                        }`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
               {/* Quick Swatches for Text Color */}
               <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                 {['#ffffff', '#94a3b8', '#6366f1', '#38bdf8', '#34d399', '#f87171', '#fbbf24', '#0f172a'].map(sw => (

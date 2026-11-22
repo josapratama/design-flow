@@ -4,7 +4,8 @@ import { exportToPowerPoint } from '../engine/pptx-exporter';
 import { exportArtboardToImage } from '../engine/canvas-exporter';
 import { exportToReactTailwind } from '../engine/tailwind-exporter';
 import { generateDesignDSL } from '../engine/dsl-generator';
-import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive } from 'lucide-react';
+import { generateStandaloneHtmlPresentation } from '../engine/html-exporter';
+import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive, Globe } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
@@ -23,7 +24,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   artboardRef,
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState<'pptx' | 'image' | 'pdf' | 'code' | 'notes'>('pptx');
+  const [activeTab, setActiveTab] = useState<'pptx' | 'image' | 'pdf' | 'code' | 'notes' | 'html'>('pptx');
   const [isExporting, setIsExporting] = useState(false);
   const [imageScale, setImageScale] = useState<number>(2);
   const [pdfScope, setPdfScope] = useState<'all' | 'active'>('all');
@@ -86,6 +87,19 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     link.click();
     URL.revokeObjectURL(url);
     confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
+  };
+
+  const handleDownloadStandaloneHTML = () => {
+    const htmlString = generateStandaloneHtmlPresentation(project);
+    const blob = new Blob([htmlString], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const title = project.title || 'Presentasi';
+    link.download = `${title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_slideshow.html`;
+    link.click();
+    URL.revokeObjectURL(url);
+    confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
   };
 
   const handleExportPPTX = async () => {
@@ -256,6 +270,18 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           >
             <BookOpen className="w-4 h-4" />
             <span>Naskah & Cadangan</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('html')}
+            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
+              activeTab === 'html'
+                ? 'border-indigo-500 text-indigo-400'
+                : 'border-transparent text-slate-400 hover:text-white'
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            <span>HTML Slideshow</span>
           </button>
         </div>
 
@@ -520,6 +546,34 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   </button>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* TAB 6: STANDALONE OFFLINE HTML SLIDESHOW */}
+          {activeTab === 'html' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-start gap-3">
+                <Sparkles className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
+                <div className="text-xs text-slate-300 leading-relaxed">
+                  <strong className="text-white block mb-0.5">Slideshow HTML Mandiri & Offline (.html)</strong>
+                  Menghasilkan 1 berkas presentasi HTML utuh berukuran ringan tanpa dependensi eksternal. Dapat dibuka langsung di semua web browser (Chrome, Edge, Safari, Firefox) di laptop, tablet, atau proyektor offline tanpa perlu menginstal aplikasi apa pun.
+                </div>
+              </div>
+
+              <div className="text-xs text-slate-400 space-y-1">
+                <p>• Navigasi Presenter Bawaan: Spasi / Panah untuk pindah slide</p>
+                <p>• Fitur Layar Penuh: Tekan <strong>F</strong> untuk Fullscreen, <strong>B</strong> untuk Blank Hitam, <strong>N</strong> untuk Catatan</p>
+                <p>• Skala Responsif Otomatis: Menyesuaikan resolusi layar apa pun secara proporsional</p>
+                <p>• Total slide disertakan: {project.slides.length} slide</p>
+              </div>
+
+              <button
+                onClick={handleDownloadStandaloneHTML}
+                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-[0.98]"
+              >
+                <Download className="w-4 h-4" />
+                <span>Unduh Berkas HTML Slideshow (.html)</span>
+              </button>
             </div>
           )}
         </div>
