@@ -143,9 +143,26 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
   });
+  const [slideAreaBounds, setSlideAreaBounds] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
   const slideAreaRef = useRef<HTMLDivElement>(null);
   const slideContainerRef = useRef<HTMLDivElement>(null);
+
+  // ResizeObserver to measure exact slide viewport space and prevent slide clipping
+  useEffect(() => {
+    const el = slideAreaRef.current;
+    if (!el) return;
+    const updateSize = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        setSlideAreaBounds({ width: rect.width, height: rect.height });
+      }
+    };
+    updateSize();
+    const ro = new ResizeObserver(updateSize);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [showNotes, isFullscreen, isPodiumMode]);
   const penCanvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
   const lastPenPosRef = useRef<{ x: number; y: number } | null>(null);
@@ -689,10 +706,14 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   };
 
   const currentSlide = slides[currentIndex];
-  const isLargeScreen = windowDimensions.width >= 1024;
-  const viewportWidth = windowDimensions.width * (showNotes && isLargeScreen ? 0.72 : 0.95);
-  const viewportHeight = windowDimensions.height * 0.85;
-  const scale = Math.min(viewportWidth / currentSlide.width, viewportHeight / currentSlide.height);
+  // Calculate exact scale based on measured container bounds to prevent any clipping
+  const availableWidth = slideAreaBounds.width > 0
+    ? Math.max(100, slideAreaBounds.width - 48)
+    : Math.max(100, windowDimensions.width * (showNotes ? 0.68 : 0.94) - 48);
+  const availableHeight = slideAreaBounds.height > 0
+    ? Math.max(100, slideAreaBounds.height - 48)
+    : Math.max(100, windowDimensions.height * 0.84 - 48);
+  const scale = Math.max(0.05, Math.min(availableWidth / currentSlide.width, availableHeight / currentSlide.height));
 
   const wordCount = (currentSlide.notes || '').trim().split(/\s+/).filter(Boolean).length;
   const estimatedSpeechMinutes = Math.floor(wordCount / 130);
@@ -1375,55 +1396,65 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               </div>
             )}
 
+            {/* Sized container that occupies exactly the scaled width & height in flexbox, preventing edge clipping */}
             <div
-              key={currentIndex}
-              ref={slideContainerRef}
-              className={`relative shadow-2xl rounded-sm overflow-hidden ${transitionClass}`}
               style={{
-                width: `${currentSlide.width}px`,
-                height: `${currentSlide.height}px`,
-                background: getSlideBackground(currentSlide),
-                transform: `scale(${scale})`,
-                transformOrigin: 'center center',
+                width: `${Math.round(currentSlide.width * scale)}px`,
+                height: `${Math.round(currentSlide.height * scale)}px`,
+                position: 'relative',
+                flexShrink: 0,
               }}
             >
-              {currentSlide.elements
-                .slice()
-                .sort((a, b) => a.zIndex - b.zIndex)
-                .map(el => (
-                  <div
-                    key={el.id}
-                    className="absolute"
-                    style={{
-                      left: `${el.x}px`,
-                      top: `${el.y}px`,
-                      width: `${el.width}px`,
-                      height: `${el.height}px`,
-                      zIndex: el.zIndex,
-                      transform: [
-                        el.rotation ? `rotate(${el.rotation}deg)` : '',
-                        el.flipX ? 'scaleX(-1)' : '',
-                        el.flipY ? 'scaleY(-1)' : '',
-                      ].filter(Boolean).join(' ') || undefined,
-                      opacity: el.opacity !== undefined ? el.opacity : 1,
-                    }}
-                  >
-                    <ElementRenderer element={el} isSelected={false} />
-                  </div>
-                ))}
+              <div
+                key={currentIndex}
+                ref={slideContainerRef}
+                className={`absolute top-0 left-0 shadow-2xl rounded-sm overflow-hidden ${transitionClass}`}
+                style={{
+                  width: `${currentSlide.width}px`,
+                  height: `${currentSlide.height}px`,
+                  background: getSlideBackground(currentSlide),
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'top left',
+                }}
+              >
+                {currentSlide.elements
+                  .slice()
+                  .sort((a, b) => a.zIndex - b.zIndex)
+                  .map(el => (
+                    <div
+                      key={el.id}
+                      className="absolute"
+                      style={{
+                        left: `${el.x}px`,
+                        top: `${el.y}px`,
+                        width: `${el.width}px`,
+                        height: `${el.height}px`,
+                        zIndex: el.zIndex,
+                        transform: [
+                          el.rotation ? `rotate(${el.rotation}deg)` : '',
+                          el.flipX ? 'scaleX(-1)' : '',
+                          el.flipY ? 'scaleY(-1)' : '',
+                        ].filter(Boolean).join(' ') || undefined,
+                        opacity: el.opacity !== undefined ? el.opacity : 1,
+                      }}
+                    >
+                      <ElementRenderer element={el} isSelected={false} />
+                    </div>
+                  ))}
 
-              {/* Live Doodle / Pen Annotation Canvas */}
-              <canvas
-                ref={penCanvasRef}
-                width={currentSlide.width}
-                height={currentSlide.height}
-                className={`absolute inset-0 z-30 transition-opacity ${isPenActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
-                  }`}
-                onPointerDown={handlePenPointerDown}
-                onPointerMove={handlePenPointerMove}
-                onPointerUp={handlePenPointerUp}
-                onPointerLeave={handlePenPointerUp}
-              />
+                {/* Live Doodle / Pen Annotation Canvas */}
+                <canvas
+                  ref={penCanvasRef}
+                  width={currentSlide.width}
+                  height={currentSlide.height}
+                  className={`absolute inset-0 z-30 transition-opacity ${isPenActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
+                    }`}
+                  onPointerDown={handlePenPointerDown}
+                  onPointerMove={handlePenPointerMove}
+                  onPointerUp={handlePenPointerUp}
+                  onPointerLeave={handlePenPointerUp}
+                />
+              </div>
             </div>
 
             {/* Glowing Virtual Laser Pointer with Pulse Ring */}

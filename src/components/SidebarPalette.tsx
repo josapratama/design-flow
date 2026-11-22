@@ -418,79 +418,33 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
 
   return (
     <aside className="w-64 h-full bg-slate-900 border-r border-slate-800 flex flex-col shrink-0 select-none z-10">
-      {/* 6 Category Tabs - Sleek Modern Icon & Label */}
-      <div className="grid grid-cols-6 border-b border-slate-800/80 bg-slate-950/70 p-1 gap-0.5">
-        <button
-          onClick={() => setActiveTab('elements')}
-          title="Tipografi & Teks"
-          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'elements'
-            ? 'bg-indigo-600 text-white shadow-sm font-bold'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-        >
-          <Type className="w-3.5 h-3.5" />
-          <span className="text-[9px] mt-0.5 font-medium">Teks</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('ui')}
-          title="UI Kit & Komponen Antarmuka"
-          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'ui'
-            ? 'bg-indigo-600 text-white shadow-sm font-bold'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-        >
-          <MousePointerClick className="w-3.5 h-3.5" />
-          <span className="text-[9px] mt-0.5 font-medium">UI Kit</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('shapes')}
-          title="Bentuk & Garis Vektor"
-          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'shapes'
-            ? 'bg-indigo-600 text-white shadow-sm font-bold'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-        >
-          <Square className="w-3.5 h-3.5" />
-          <span className="text-[9px] mt-0.5 font-medium">Bentuk</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('media')}
-          title="Gambar & Unggah Foto"
-          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'media'
-            ? 'bg-indigo-600 text-white shadow-sm font-bold'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-        >
-          <Upload className="w-3.5 h-3.5" />
-          <span className="text-[9px] mt-0.5 font-medium">Media</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('blocks')}
-          title="Blok Tata Letak AI Cepat"
-          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'blocks'
-            ? 'bg-indigo-600 text-white shadow-sm font-bold'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-        >
-          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-          <span className="text-[9px] mt-0.5 font-medium">Blok AI</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('layers')}
-          title="Daftar Layer & Susunan Elemen"
-          className={`flex flex-col items-center justify-center py-1.5 rounded-lg transition-all ${activeTab === 'layers'
-            ? 'bg-indigo-600 text-white shadow-sm font-bold'
-            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-            }`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span className="text-[9px] mt-0.5 font-medium">Layer</span>
-        </button>
+      {/* 6 Category Tabs - Sleek Calming Segmented Navigation */}
+      <div className="grid grid-cols-6 border-b border-slate-800/80 bg-slate-950/90 p-1.5 gap-1">
+        {[
+          { id: 'elements', label: 'Teks', icon: Type, title: 'Tipografi & Teks' },
+          { id: 'ui', label: 'UI Kit', icon: MousePointerClick, title: 'Komponen Antarmuka & Wireframe' },
+          { id: 'shapes', label: 'Bentuk', icon: Square, title: 'Bentuk & Garis Vektor' },
+          { id: 'media', label: 'Media', icon: Upload, title: 'Gambar & Unggah Foto' },
+          { id: 'blocks', label: 'Blok AI', icon: Sparkles, title: 'Blok Tata Letak AI Cepat' },
+          { id: 'layers', label: 'Layer', icon: Layers, title: 'Daftar Layer & Susunan Elemen' },
+        ].map(tab => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              title={tab.title}
+              className={`flex flex-col items-center justify-center py-1.5 rounded-lg border transition-all ${isActive
+                ? 'bg-slate-800 border-slate-700/80 text-white shadow-sm font-semibold'
+                : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+                }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              <span className="text-[9px] mt-0.5 font-medium">{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Tab Contents */}
@@ -618,7 +572,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               {(!uiSearch || 'tombol aksi button cta mulai'.includes(uiSearch.toLowerCase())) && (
                 <button
                   onClick={() =>
@@ -632,10 +586,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       })
                     )
                   }
-                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
                 >
-                  <MousePointerClick className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">Tombol Aksi</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 transition-colors shrink-0">
+                    <MousePointerClick className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Tombol</span>
                 </button>
               )}
 
@@ -652,10 +608,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       })
                     )
                   }
-                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
                 >
-                  <TextCursorInput className="w-5 h-5 text-teal-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">Input Teks</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-teal-400 group-hover:border-teal-500/40 transition-colors shrink-0">
+                    <TextCursorInput className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Input Teks</span>
                 </button>
               )}
 
@@ -673,10 +631,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       })
                     )
                   }
-                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
                 >
-                  <BarChart3 className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">Kartu Metrik</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 group-hover:border-cyan-500/40 transition-colors shrink-0">
+                    <BarChart3 className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Metrik</span>
                 </button>
               )}
 
@@ -691,10 +651,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       })
                     )
                   }
-                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
                 >
-                  <Smartphone className="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">Nav Header</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-purple-400 group-hover:border-purple-500/40 transition-colors shrink-0">
+                    <Smartphone className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Navbar</span>
                 </button>
               )}
 
@@ -711,10 +673,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       })
                     )
                   }
-                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
                 >
-                  <UserCheck className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">Avatar Profil</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 transition-colors shrink-0">
+                    <UserCheck className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Avatar</span>
                 </button>
               )}
 
@@ -731,10 +695,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       })
                     )
                   }
-                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
                 >
-                  <Tag className="w-5 h-5 text-pink-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">Badge Pill</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-pink-400 group-hover:border-pink-500/40 transition-colors shrink-0">
+                    <Tag className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Badge Pill</span>
                 </button>
               )}
 
@@ -749,10 +715,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       })
                     )
                   }
-                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
                 >
-                  <ToggleLeft className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">Switch Toggle</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-emerald-400 group-hover:border-emerald-500/40 transition-colors shrink-0">
+                    <ToggleLeft className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Toggle</span>
                 </button>
               )}
 
@@ -766,10 +734,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       })
                     )
                   }
-                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
                 >
-                  <Sparkles className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">Ikon Vektor</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-400 group-hover:border-amber-500/40 transition-colors shrink-0">
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Ikon</span>
                 </button>
               )}
 
@@ -788,10 +758,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       })
                     )
                   }
-                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
                 >
-                  <BarChart3 className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">Grafik / Chart</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 transition-colors shrink-0">
+                    <BarChart3 className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Grafik</span>
                 </button>
               )}
 
@@ -809,10 +781,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       })
                     )
                   }
-                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
                 >
-                  <Table className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-slate-200 font-medium">Tabel Data</span>
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 group-hover:border-cyan-500/40 transition-colors shrink-0">
+                    <Table className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Tabel Data</span>
                 </button>
               )}
             </div>
@@ -825,7 +799,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
             <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
               Bentuk Vektor Dasar
             </span>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               <button
                 onClick={() =>
                   onAddElement(
@@ -836,10 +810,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                     })
                   )
                 }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
               >
-                <Square className="w-6 h-6 text-indigo-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Kotak / Card</span>
+                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 transition-colors shrink-0">
+                  <Square className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Kotak / Card</span>
               </button>
 
               <button
@@ -851,10 +827,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                     })
                   )
                 }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
               >
-                <Circle className="w-6 h-6 text-pink-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Lingkaran</span>
+                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-pink-400 transition-colors shrink-0">
+                  <Circle className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Lingkaran</span>
               </button>
 
               <button
@@ -865,10 +843,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                     })
                   )
                 }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
               >
-                <Minus className="w-6 h-6 text-slate-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Garis Dividers</span>
+                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-slate-200 transition-colors shrink-0">
+                  <Minus className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Garis</span>
               </button>
 
               <button
@@ -879,10 +859,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                     })
                   )
                 }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
               >
-                <Triangle className="w-6 h-6 text-indigo-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Segitiga</span>
+                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 transition-colors shrink-0">
+                  <Triangle className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Segitiga</span>
               </button>
 
               <button
@@ -893,10 +875,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                     })
                   )
                 }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
               >
-                <Star className="w-6 h-6 text-amber-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Bintang</span>
+                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-400 transition-colors shrink-0">
+                  <Star className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Bintang</span>
               </button>
 
               <button
@@ -907,10 +891,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                     })
                   )
                 }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
               >
-                <MoveRight className="w-6 h-6 text-cyan-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Panah Arah</span>
+                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 transition-colors shrink-0">
+                  <MoveRight className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Panah Arah</span>
               </button>
 
               <button
@@ -921,10 +907,12 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                     })
                   )
                 }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
               >
-                <Hexagon className="w-6 h-6 text-purple-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Segi Enam</span>
+                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-purple-400 transition-colors shrink-0">
+                  <Hexagon className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Hexagon</span>
               </button>
             </div>
           </div>

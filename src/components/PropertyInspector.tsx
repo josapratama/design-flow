@@ -1956,12 +1956,12 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
           <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] text-slate-500">Warna Isi (Fill)</label>
+                <label className="text-[10px] text-slate-500 font-medium">Warna Isi (Fill)</label>
                 <button
                   type="button"
                   onClick={() => handleEyeDropper('fill')}
                   title="Ambil warna dari layar (Pipet Eyedropper)"
-                  className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded"
+                  className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded transition-colors"
                 >
                   <Pipette className="w-3 h-3" />
                 </button>
@@ -1969,67 +1969,35 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
                 <input
                   type="color"
-                  value={element.fill || '#1e293b'}
+                  value={element.fill && element.fill.startsWith('#') ? element.fill : '#1e293b'}
                   onChange={e => handleChange('fill', e.target.value)}
-                  className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                  className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
                 />
-                <span className="text-[11px] font-mono text-slate-300">
-                  {element.fill || '#1e293b'}
+                <span className="text-[11px] font-mono text-slate-300 truncate">
+                  {element.fill || 'transparent'}
                 </span>
               </div>
-              {/* Document Colors Palette */}
-              {documentColors.length > 0 && (
-                <div className="pt-1.5">
-                  <span className="text-[9px] text-slate-500 font-medium block mb-1">Warna di Slide Ini:</span>
-                  <div className="flex items-center gap-1 flex-wrap">
-                    {documentColors.map(c => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => handleChange('fill', c)}
-                        title={`Pilih warna slide ${c}`}
-                        className={`w-3.5 h-3.5 rounded-full border transition-transform ${element.fill?.toLowerCase() === c
-                          ? 'scale-125 border-white ring-1 ring-white/50'
-                          : 'border-slate-700 hover:scale-110'
-                          }`}
-                        style={{ backgroundColor: c }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-              {/* Quick Swatches for Fill */}
+              {/* Swatch Cepat Fill */}
               <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                {['#6366f1', '#38bdf8', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#ffffff', '#1e293b'].map(sw => (
+                {['#4f46e5', '#0284c7', '#059669', '#e11d48', '#d97706', '#1e293b', 'transparent'].map(sw => (
                   <button
                     key={sw}
                     type="button"
                     onClick={() => handleChange('fill', sw)}
-                    title={`Pilih warna ${sw}`}
-                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${element.fill === sw ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent hover:scale-110'
-                      }`}
-                    style={{ backgroundColor: sw }}
+                    title={sw === 'transparent' ? 'Transparan (Tanpa Isi)' : `Pilih warna ${sw}`}
+                    className={`w-4 h-4 rounded-md border transition-all ${
+                      element.fill === sw
+                        ? 'border-indigo-400 scale-110 shadow-sm ring-1 ring-indigo-400/40'
+                        : 'border-slate-700/80 hover:border-slate-500 hover:scale-105'
+                    }`}
+                    style={{
+                      backgroundColor: sw === 'transparent' ? 'transparent' : sw,
+                      backgroundImage: sw === 'transparent' ? 'linear-gradient(45deg, #334155 25%, transparent 25%), linear-gradient(-45deg, #334155 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #334155 75%), linear-gradient(-45deg, transparent 75%, #334155 75%)' : undefined,
+                      backgroundSize: '6px 6px',
+                    }}
                   />
                 ))}
               </div>
-              {/* Recent Colors for Fill */}
-              {recentColors.length > 0 && (
-                <div className="pt-1.5">
-                  <span className="text-[9px] text-slate-500 font-medium block mb-1">Riwayat Terakhir:</span>
-                  <div className="flex items-center gap-1 flex-wrap">
-                    {recentColors.map(c => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => handleChange('fill', c)}
-                        title={`Gunakan riwayat ${c}`}
-                        className="w-3.5 h-3.5 rounded-full border border-slate-700 hover:scale-110 transition-transform"
-                        style={{ backgroundColor: c }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {(() => {
@@ -2041,21 +2009,19 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               return (
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-1.5">
-                      <label className="text-[10px] text-slate-500">Warna Teks</label>
+                    <div className="flex items-center gap-1">
+                      <label className="text-[10px] text-slate-500 font-medium">Warna Teks</label>
                       <span
-                        className={`text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold ${contrast.level === 'AAA' || contrast.level === 'AA'
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                          : contrast.level === 'AA Large'
-                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                            : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                        className={`text-[8px] px-1 py-0.2 rounded border font-mono ${contrast.level === 'AAA' || contrast.level === 'AA'
+                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                          : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                           }`}
                         title={`Kontras WCAG: ${contrast.ratio}:1 (${contrast.label})`}
                       >
-                        {contrast.ratio}:1 {contrast.level}
+                        {contrast.level}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1">
                       {!contrast.isGood && (
                         <button
                           type="button"
@@ -2070,7 +2036,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                         type="button"
                         onClick={() => handleEyeDropper('color')}
                         title="Ambil warna dari layar (Pipet Eyedropper)"
-                        className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded"
+                        className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded transition-colors"
                       >
                         <Pipette className="w-3 h-3" />
                       </button>
@@ -2081,89 +2047,84 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                       type="color"
                       value={element.color || '#ffffff'}
                       onChange={e => handleChange('color', e.target.value)}
-                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
                     />
-                    <span className="text-[11px] font-mono text-slate-300">
+                    <span className="text-[11px] font-mono text-slate-300 truncate">
                       {element.color || '#ffffff'}
                     </span>
                   </div>
-                  {/* Document Colors Palette for Text */}
-                  {documentColors.length > 0 && (
-                    <div className="pt-1.5">
-                      <span className="text-[9px] text-slate-500 font-medium block mb-1">Warna di Slide Ini:</span>
-                      <div className="flex items-center gap-1 flex-wrap">
-                        {documentColors.map(c => (
-                          <button
-                            key={c}
-                            type="button"
-                            onClick={() => handleChange('color', c)}
-                            title={`Pilih warna teks slide ${c}`}
-                            className={`w-3.5 h-3.5 rounded-full border transition-transform ${element.color?.toLowerCase() === c
-                              ? 'scale-125 border-white ring-1 ring-white/50'
-                              : 'border-slate-700 hover:scale-110'
-                              }`}
-                            style={{ backgroundColor: c }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {/* Quick Swatches for Text Color */}
+                  {/* Swatch Cepat Teks */}
                   <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                    {['#ffffff', '#94a3b8', '#6366f1', '#38bdf8', '#34d399', '#f87171', '#fbbf24', '#0f172a'].map(sw => (
+                    {['#ffffff', '#f8fafc', '#cbd5e1', '#94a3b8', '#6366f1', '#38bdf8', '#34d399'].map(sw => (
                       <button
                         key={sw}
                         type="button"
                         onClick={() => handleChange('color', sw)}
                         title={`Pilih warna teks ${sw}`}
-                        className={`w-3.5 h-3.5 rounded-full border transition-transform ${element.color === sw ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent hover:scale-110'
-                          }`}
+                        className={`w-4 h-4 rounded-md border transition-all ${
+                          element.color === sw
+                            ? 'border-indigo-400 scale-110 shadow-sm ring-1 ring-indigo-400/40'
+                            : 'border-slate-700/80 hover:border-slate-500 hover:scale-105'
+                        }`}
                         style={{ backgroundColor: sw }}
                       />
                     ))}
                   </div>
-                  {/* Recent Colors for Text */}
-                  {recentColors.length > 0 && (
-                    <div className="pt-1.5">
-                      <span className="text-[9px] text-slate-500 font-medium block mb-1">Riwayat Terakhir:</span>
-                      <div className="flex items-center gap-1 flex-wrap">
-                        {recentColors.map(c => (
-                          <button
-                            key={c}
-                            type="button"
-                            onClick={() => handleChange('color', c)}
-                            title={`Gunakan riwayat ${c}`}
-                            className="w-3.5 h-3.5 rounded-full border border-slate-700 hover:scale-110 transition-transform"
-                            style={{ backgroundColor: c }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
               );
             })()}
           </div>
 
-          {/* Preset Gradien Elemen Modern */}
-          <div className="pt-2 border-t border-slate-800/80 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1.5">
+          {/* Baris Tunggal: Warna di Slide Ini & Riwayat */}
+          {documentColors.length > 0 && (
+            <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
+              <span className="text-[9px] text-slate-500 font-medium shrink-0">Warna Slide:</span>
+              <div className="flex items-center gap-1 flex-wrap justify-end">
+                {documentColors.slice(0, 8).map(c => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => {
+                      if (element.type === 'heading' || element.type === 'text' || element.type === 'quote') {
+                        handleChange('color', c);
+                      } else {
+                        handleChange('fill', c);
+                      }
+                    }}
+                    title={`Terapkan warna dokumen ${c}`}
+                    className="w-3.5 h-3.5 rounded-full border border-slate-700/80 hover:scale-110 hover:border-white transition-transform"
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Preset Gradien Elemen Modern (Collapsible Ringkas) */}
+          <details className="group border border-slate-800/80 rounded-xl bg-slate-950/40 overflow-hidden">
+            <summary className="px-2.5 py-1.5 cursor-pointer flex items-center justify-between text-[10px] font-medium text-slate-400 hover:text-slate-200 select-none">
+              <span className="flex items-center gap-1.5">
                 <Sparkles className="w-3 h-3 text-indigo-400" />
                 <span>Preset Gradien Elemen</span>
               </span>
-              {element.fill && element.fill.includes('gradient') && (
-                <button
-                  type="button"
-                  onClick={() => handleChange('fill', '#1e293b')}
-                  className="text-[9px] text-slate-400 hover:text-rose-400 underline"
-                  title="Kembalikan ke warna solid standar"
-                >
-                  Reset Solid
-                </button>
-              )}
-            </div>
-            <div className="grid grid-cols-4 gap-1.5">
+              <div className="flex items-center gap-1.5">
+                {element.fill && element.fill.includes('gradient') && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleChange('fill', '#1e293b');
+                    }}
+                    className="text-[9px] text-rose-400 hover:underline mr-1"
+                    title="Kembalikan ke warna solid standar"
+                  >
+                    Reset
+                  </button>
+                )}
+                <span className="text-slate-500 text-[10px] group-open:rotate-180 transition-transform">▼</span>
+              </div>
+            </summary>
+            <div className="p-2 pt-1 border-t border-slate-800/60 grid grid-cols-4 gap-1.5">
               {[
                 { name: 'Midnight Violet', bg: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)' },
                 { name: 'Electric Indigo', bg: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' },
@@ -2179,30 +2140,28 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   type="button"
                   onClick={() => handleChange('fill', g.bg)}
                   title={g.name}
-                  className={`h-6 rounded-md border transition-all ${
-                    element.fill === g.bg ? 'border-indigo-400 scale-105 ring-2 ring-indigo-400/50' : 'border-slate-800 hover:border-slate-600 hover:scale-105'
+                  className={`h-5 rounded border transition-all ${
+                    element.fill === g.bg ? 'border-indigo-400 scale-105 ring-1 ring-indigo-400/50' : 'border-slate-800 hover:border-slate-600 hover:scale-105'
                   }`}
                   style={{ background: g.bg }}
                 />
               ))}
             </div>
-          </div>
+          </details>
 
-          {/* Palet Harmonisasi Warna */}
+          {/* Palet Harmonisasi Warna (Collapsible Ringkas) */}
           {colorHarmonies.length > 0 && (
-            <div className="pt-2 border-t border-slate-800/80 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1.5">
+            <details className="group border border-slate-800/80 rounded-xl bg-slate-950/40 overflow-hidden">
+              <summary className="px-2.5 py-1.5 cursor-pointer flex items-center justify-between text-[10px] font-medium text-slate-400 hover:text-slate-200 select-none">
+                <span className="flex items-center gap-1.5">
                   <Sparkles className="w-3 h-3 text-amber-400" />
-                  Harmoni Warna Teoretis
+                  <span>Harmoni Warna Teoretis</span>
                 </span>
-                <span className="text-[9px] text-slate-500 font-mono">
-                  Basis: {activeColorForHarmonies}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
+                <span className="text-slate-500 text-[10px] group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="p-2 pt-1 border-t border-slate-800/60 grid grid-cols-2 gap-1.5">
                 {colorHarmonies.map((grp) => (
-                  <div key={grp.type} className="p-1.5 rounded-lg bg-slate-950/60 border border-slate-800">
+                  <div key={grp.type} className="p-1 rounded bg-slate-950/80 border border-slate-800/80">
                     <div className="text-[9px] text-slate-400 truncate mb-1" title={grp.name}>
                       {grp.name.split(' ')[0]}
                     </div>
@@ -2220,7 +2179,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                             showToast(`Warna diterapkan: ${c}`);
                           }}
                           title={`Gunakan warna ${c}`}
-                          className="flex-1 h-5 rounded-md border border-slate-700/60 hover:scale-105 transition-transform shadow-sm"
+                          className="flex-1 h-4 rounded border border-slate-700/60 hover:scale-105 transition-transform"
                           style={{ backgroundColor: c }}
                         />
                       ))}
@@ -2228,7 +2187,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   </div>
                 ))}
               </div>
-            </div>
+            </details>
           )}
 
           {/* Opasitas Slider */}
@@ -2250,206 +2209,231 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             />
           </div>
 
-          {/* Sudut Lengkung (Border Radius) */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-[10px] text-slate-500">
-              <span>Sudut Lengkung (Border Radius)</span>
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  min={0}
-                  max={9999}
-                  value={element.borderRadius !== undefined ? element.borderRadius : 0}
-                  onChange={e => handleChange('borderRadius', Math.max(0, parseInt(e.target.value, 10) || 0))}
-                  className="w-12 bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-slate-200 text-right font-mono text-[10px] outline-none focus:border-indigo-500"
-                />
-                <span className="font-mono text-slate-400">px</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              {[0, 6, 12, 20, 9999].map(r => (
-                <button
-                  key={r}
-                  onClick={() => handleChange('borderRadius', r)}
-                  className={`flex-1 py-1 rounded text-[10px] font-mono border transition-colors ${(element.borderRadius || 0) === r
-                    ? 'bg-indigo-600 border-indigo-500 text-white font-bold shadow'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                >
-                  {r === 9999 ? 'Pill' : `${r}px`}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Garis Tepi (Border / Stroke) */}
-          <div className="space-y-2 pt-2 border-t border-slate-800">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                Garis Tepi (Border / Stroke)
-              </label>
-              {element.stroke && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleChange('stroke', undefined);
-                    handleChange('strokeWidth', 0);
-                  }}
-                  className="text-[9px] text-rose-400 hover:underline"
-                >
-                  Hapus Border
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] text-slate-500">Warna Garis</span>
-                  <button
-                    type="button"
-                    onClick={() => handleEyeDropper('stroke')}
-                    title="Ambil warna dari layar (Pipet Eyedropper)"
-                    className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded"
-                  >
-                    <Pipette className="w-3 h-3" />
-                  </button>
+          {/* Sudut Lengkung, Garis Tepi & Bayangan - Netral & Ringkas */}
+          {(() => {
+            const isPureText = ['heading', 'text', 'quote'].includes(element.type);
+            const borderControls = (
+              <div className="space-y-3">
+                {/* Sudut Lengkung (Border Radius) */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400">
+                    <span>Sudut Lengkung (Radius)</span>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        min={0}
+                        max={9999}
+                        value={element.borderRadius !== undefined ? element.borderRadius : 0}
+                        onChange={e => handleChange('borderRadius', Math.max(0, parseInt(e.target.value, 10) || 0))}
+                        className="w-12 bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-slate-200 text-right font-mono text-[10px] outline-none focus:border-indigo-500"
+                      />
+                      <span className="font-mono text-slate-500">px</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {[0, 6, 12, 20, 9999].map(r => (
+                      <button
+                        key={r}
+                        onClick={() => handleChange('borderRadius', r)}
+                        className={`flex-1 py-1 rounded-md text-[10px] font-mono border transition-all ${(element.borderRadius || 0) === r
+                          ? 'bg-slate-700 border-slate-500 text-white font-semibold shadow-sm'
+                          : 'bg-slate-950/70 border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-900'
+                          }`}
+                      >
+                        {r === 9999 ? 'Pill' : `${r}px`}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 focus-within:border-indigo-500 rounded-lg px-2 py-1">
-                  <input
-                    type="color"
-                    value={element.stroke && element.stroke.startsWith('#') ? element.stroke : '#6366f1'}
-                    onChange={e => {
-                      handleChange('stroke', e.target.value);
-                      if (!element.strokeWidth) handleChange('strokeWidth', 2);
-                    }}
-                    className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
-                  />
-                  <input
-                    type="text"
-                    value={element.stroke || ''}
-                    placeholder="#6366F1"
-                    maxLength={25}
-                    onChange={e => {
-                      const val = e.target.value;
-                      handleChange('stroke', val ? val : undefined);
-                      if (val && !element.strokeWidth) handleChange('strokeWidth', 2);
-                    }}
-                    className="w-full bg-transparent text-[11px] font-mono text-slate-200 outline-none uppercase placeholder:normal-case placeholder:text-slate-600"
-                  />
+
+                {/* Garis Tepi (Border / Stroke) */}
+                <div className="space-y-2 pt-2 border-t border-slate-800/70">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] text-slate-400 font-medium">
+                      Garis Tepi (Border)
+                    </label>
+                    {element.stroke && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleChange('stroke', undefined);
+                          handleChange('strokeWidth', 0);
+                        }}
+                        className="text-[9px] text-rose-400 hover:underline"
+                      >
+                        Hapus Border
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] text-slate-500">Warna Garis</span>
+                        <button
+                          type="button"
+                          onClick={() => handleEyeDropper('stroke')}
+                          title="Ambil warna dari layar"
+                          className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded transition-colors"
+                        >
+                          <Pipette className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 focus-within:border-indigo-500 rounded-lg px-2 py-1">
+                        <input
+                          type="color"
+                          value={element.stroke && element.stroke.startsWith('#') ? element.stroke : '#6366f1'}
+                          onChange={e => {
+                            handleChange('stroke', e.target.value);
+                            if (!element.strokeWidth) handleChange('strokeWidth', 2);
+                          }}
+                          className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
+                        />
+                        <input
+                          type="text"
+                          value={element.stroke || ''}
+                          placeholder="#6366F1"
+                          maxLength={25}
+                          onChange={e => {
+                            const val = e.target.value;
+                            handleChange('stroke', val ? val : undefined);
+                            if (val && !element.strokeWidth) handleChange('strokeWidth', 2);
+                          }}
+                          className="w-full bg-transparent text-[11px] font-mono text-slate-200 outline-none uppercase placeholder:normal-case placeholder:text-slate-600"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] text-slate-500 block mb-1">Gaya Garis</span>
+                      <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg p-0.5">
+                        {[
+                          { id: 'solid', label: 'Solid' },
+                          { id: 'dashed', label: 'Putus' },
+                          { id: 'dotted', label: 'Titik' },
+                        ].map(dash => (
+                          <button
+                            key={dash.id}
+                            type="button"
+                            onClick={() => {
+                              handleChange('strokeDash', dash.id as any);
+                              if (!element.stroke) handleChange('stroke', '#6366f1');
+                              if (!element.strokeWidth) handleChange('strokeWidth', 2);
+                            }}
+                            className={`flex-1 py-1 rounded text-[10px] transition-all ${(element.strokeDash || 'solid') === dash.id && element.stroke
+                              ? 'bg-slate-700 text-white font-medium shadow-sm'
+                              : 'text-slate-400 hover:text-white'
+                              }`}
+                          >
+                            {dash.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ketebalan Garis */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-slate-500">Ketebalan</span>
+                      <span className="font-mono text-slate-300 font-medium">
+                        {element.stroke ? `${element.strokeWidth || 1}px` : '0px'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-5 gap-1">
+                      {[0, 1, 2, 3, 4].map(w => (
+                        <button
+                          key={w}
+                          type="button"
+                          onClick={() => {
+                            if (w === 0) {
+                              handleChange('stroke', undefined);
+                              handleChange('strokeWidth', 0);
+                            } else {
+                              if (!element.stroke) handleChange('stroke', '#6366f1');
+                              handleChange('strokeWidth', w);
+                            }
+                          }}
+                          className={`py-1 rounded-md text-center text-[10px] font-mono border transition-all ${(w === 0 && !element.stroke) || (element.stroke && (element.strokeWidth || 1) === w)
+                            ? 'bg-slate-700 border-slate-500 text-white font-semibold shadow-sm'
+                            : 'bg-slate-950/70 border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-900'
+                            }`}
+                        >
+                          {w === 0 ? '0px' : `${w}px`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Efek Bayangan (Shadow) */}
+                <div className="space-y-2 pt-2 border-t border-slate-800/70">
+                  <label className="text-[10px] text-slate-400 font-medium block">Efek Bayangan (Shadow)</label>
+                  <div className="grid grid-cols-6 gap-1">
+                    {['none', 'sm', 'md', 'lg', 'xl', '2xl'].map(s => (
+                      <button
+                        key={s}
+                        onClick={() => handleChange('shadow', s)}
+                        className={`py-1 rounded-md text-[10px] uppercase font-medium border transition-all ${(element.shadow || 'none') === s
+                          ? 'bg-slate-700 border-slate-500 text-white shadow-sm font-semibold'
+                          : 'bg-slate-950/70 border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-900'
+                          }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Neon Glow Presets - Minimalist Dots */}
+                  <div className="pt-1 flex items-center justify-between">
+                    <span className="text-[9px] text-slate-500 font-medium">Pendaran (Glow):</span>
+                    <div className="flex items-center gap-1.5">
+                      {[
+                        { id: 'glow-indigo', name: 'Indigo', color: 'bg-indigo-500' },
+                        { id: 'glow-cyan', name: 'Cyan', color: 'bg-cyan-400' },
+                        { id: 'glow-emerald', name: 'Emerald', color: 'bg-emerald-400' },
+                        { id: 'glow-rose', name: 'Rose', color: 'bg-rose-500' },
+                      ].map(glow => {
+                        const isSelected = element.shadow === glow.id;
+                        return (
+                          <button
+                            key={glow.id}
+                            type="button"
+                            onClick={() => handleChange('shadow', isSelected ? 'none' : glow.id)}
+                            title={`Efek glow ${glow.name}`}
+                            className={`p-1.5 rounded-lg border transition-all flex items-center gap-1 text-[9px] ${
+                              isSelected
+                                ? 'bg-slate-800 border-slate-600 text-white ring-1 ring-white/20'
+                                : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                            }`}
+                          >
+                            <span className={`w-2 h-2 rounded-full ${glow.color} shrink-0`} />
+                            <span>{glow.name}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
+            );
 
-              <div>
-                <span className="text-[10px] text-slate-500 block mb-1">Gaya Garis</span>
-                <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg p-0.5">
-                  {[
-                    { id: 'solid', label: 'Solid' },
-                    { id: 'dashed', label: 'Putus' },
-                    { id: 'dotted', label: 'Titik' },
-                  ].map(dash => (
-                    <button
-                      key={dash.id}
-                      type="button"
-                      onClick={() => {
-                        handleChange('strokeDash', dash.id as any);
-                        if (!element.stroke) handleChange('stroke', '#6366f1');
-                        if (!element.strokeWidth) handleChange('strokeWidth', 2);
-                      }}
-                      className={`flex-1 py-1 rounded text-[10px] transition-colors ${(element.strokeDash || 'solid') === dash.id && element.stroke
-                        ? 'bg-indigo-600 text-white font-semibold'
-                        : 'text-slate-400 hover:text-white'
-                        }`}
-                    >
-                      {dash.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+            if (isPureText) {
+              return (
+                <details className="group border border-slate-800/80 rounded-xl bg-slate-950/40 overflow-hidden">
+                  <summary className="px-2.5 py-1.5 cursor-pointer flex items-center justify-between text-[10px] font-medium text-slate-400 hover:text-slate-200 select-none">
+                    <span>Border & Bayangan (Opsional)</span>
+                    <span className="text-slate-500 text-[10px] group-open:rotate-180 transition-transform">▼</span>
+                  </summary>
+                  <div className="p-2.5 pt-1 border-t border-slate-800/60">
+                    {borderControls}
+                  </div>
+                </details>
+              );
+            }
 
-            {/* Ketebalan Garis */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-[10px]">
-                <span className="text-slate-500">Ketebalan Garis</span>
-                <span className="font-mono text-indigo-400 font-semibold">
-                  {element.stroke ? `${element.strokeWidth || 1}px` : '0px'}
-                </span>
-              </div>
-              <div className="grid grid-cols-5 gap-1">
-                {[0, 1, 2, 3, 4].map(w => (
-                  <button
-                    key={w}
-                    type="button"
-                    onClick={() => {
-                      if (w === 0) {
-                        handleChange('stroke', undefined);
-                        handleChange('strokeWidth', 0);
-                      } else {
-                        if (!element.stroke) handleChange('stroke', '#6366f1');
-                        handleChange('strokeWidth', w);
-                      }
-                    }}
-                    className={`py-1 rounded text-center text-[10px] font-mono border transition-all ${(w === 0 && !element.stroke) || (element.stroke && (element.strokeWidth || 1) === w)
-                      ? 'bg-indigo-600 border-indigo-500 text-white font-bold shadow'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                      }`}
-                  >
-                    {w === 0 ? '0px' : `${w}px`}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Efek Bayangan (Shadow) */}
-          <div className="space-y-2">
-            <label className="text-[10px] text-slate-500 block">Efek Bayangan (Shadow)</label>
-            <div className="grid grid-cols-6 gap-1">
-              {['none', 'sm', 'md', 'lg', 'xl', '2xl'].map(s => (
-                <button
-                  key={s}
-                  onClick={() => handleChange('shadow', s)}
-                  className={`py-1 rounded text-[10px] uppercase font-semibold border transition-colors ${(element.shadow || 'none') === s
-                    ? 'bg-indigo-600 border-indigo-500 text-white'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-
-            {/* Neon Glow Presets */}
-            <div className="pt-1 space-y-1">
-              <span className="text-[9px] font-semibold text-slate-500 uppercase tracking-wider block">
-                Efek Pendaran Neon (Glow)
-              </span>
-              <div className="grid grid-cols-4 gap-1.5">
-                {[
-                  { id: 'glow-indigo', name: 'Indigo', color: 'bg-indigo-500', border: 'border-indigo-500/60' },
-                  { id: 'glow-cyan', name: 'Cyan', color: 'bg-cyan-400', border: 'border-cyan-500/60' },
-                  { id: 'glow-emerald', name: 'Emerald', color: 'bg-emerald-400', border: 'border-emerald-500/60' },
-                  { id: 'glow-rose', name: 'Rose', color: 'bg-rose-500', border: 'border-rose-500/60' },
-                ].map(glow => {
-                  const isSelected = element.shadow === glow.id;
-                  return (
-                    <button
-                      key={glow.id}
-                      onClick={() => handleChange('shadow', isSelected ? 'none' : glow.id)}
-                      className={`flex items-center justify-center gap-1.5 py-1 px-1.5 rounded-lg border text-[10px] font-medium transition-all ${isSelected
-                        ? `${glow.border} bg-slate-800 text-white shadow-sm ring-1 ring-white/20`
-                        : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                        }`}
-                    >
-                      <span className={`w-2 h-2 rounded-full ${glow.color} shadow-sm shrink-0`} />
-                      <span className="truncate">{glow.name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+            return borderControls;
+          })()}
 
           {/* Susunan Layer */}
           <div className="space-y-2 pt-2 border-t border-slate-800">
