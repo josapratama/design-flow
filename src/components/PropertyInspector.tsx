@@ -895,9 +895,22 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs text-slate-300">
         {/* Bilah Perataan Cepat (Smart Alignment Tools) */}
         <div className="space-y-2">
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            Perataan ke Kanvas (Align)
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Perataan (Align)
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                onAlignElement('center');
+                onAlignElement('middle');
+              }}
+              title="Pusatkan Elemen Tepat di Tengah Kanvas (Horizontal & Vertikal)"
+              className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 hover:underline"
+            >
+              <span>Pusatkan H+V</span>
+            </button>
+          </div>
           <div className="grid grid-cols-6 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
             <button
               onClick={() => onAlignElement('left')}
@@ -2239,14 +2252,27 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
           {/* Sudut Lengkung (Border Radius) */}
           <div className="space-y-1.5">
-            <label className="text-[10px] text-slate-500 block">Sudut Lengkung (Border Radius)</label>
+            <div className="flex items-center justify-between text-[10px] text-slate-500">
+              <span>Sudut Lengkung (Border Radius)</span>
+              <div className="flex items-center gap-1">
+                <input
+                  type="number"
+                  min={0}
+                  max={9999}
+                  value={element.borderRadius !== undefined ? element.borderRadius : 0}
+                  onChange={e => handleChange('borderRadius', Math.max(0, parseInt(e.target.value, 10) || 0))}
+                  className="w-12 bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-slate-200 text-right font-mono text-[10px] outline-none focus:border-indigo-500"
+                />
+                <span className="font-mono text-slate-400">px</span>
+              </div>
+            </div>
             <div className="flex items-center gap-1">
               {[0, 6, 12, 20, 9999].map(r => (
                 <button
                   key={r}
                   onClick={() => handleChange('borderRadius', r)}
                   className={`flex-1 py-1 rounded text-[10px] font-mono border transition-colors ${(element.borderRadius || 0) === r
-                    ? 'bg-indigo-600 border-indigo-500 text-white'
+                    ? 'bg-indigo-600 border-indigo-500 text-white font-bold shadow'
                     : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
                     }`}
                 >
@@ -2289,7 +2315,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     <Pipette className="w-3 h-3" />
                   </button>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
+                <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 focus-within:border-indigo-500 rounded-lg px-2 py-1">
                   <input
                     type="color"
                     value={element.stroke && element.stroke.startsWith('#') ? element.stroke : '#6366f1'}
@@ -2297,11 +2323,20 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                       handleChange('stroke', e.target.value);
                       if (!element.strokeWidth) handleChange('strokeWidth', 2);
                     }}
-                    className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                    className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
                   />
-                  <span className="text-[11px] font-mono text-slate-300 truncate">
-                    {element.stroke || 'Tanpa Border'}
-                  </span>
+                  <input
+                    type="text"
+                    value={element.stroke || ''}
+                    placeholder="#6366F1"
+                    maxLength={25}
+                    onChange={e => {
+                      const val = e.target.value;
+                      handleChange('stroke', val ? val : undefined);
+                      if (val && !element.strokeWidth) handleChange('strokeWidth', 2);
+                    }}
+                    className="w-full bg-transparent text-[11px] font-mono text-slate-200 outline-none uppercase placeholder:normal-case placeholder:text-slate-600"
+                  />
                 </div>
               </div>
 

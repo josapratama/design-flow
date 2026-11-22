@@ -515,6 +515,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         undoPenStroke();
       } else if (e.key.toLowerCase() === 'n') {
         setShowNotes(prev => !prev);
+      } else if (e.key.toLowerCase() === 'g') {
+        setShowSlideNavigator(prev => !prev);
       } else if (e.key.toLowerCase() === 'f') {
         toggleFullscreen();
       } else if (e.key.toLowerCase() === 'm') {
@@ -1773,6 +1775,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 <div className="flex justify-between items-center text-slate-300">
                   <span>Lompat ke Slide X</span>
                   <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">0-9 + Enter</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Laci Kisi & Cari Slide</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">G</kbd>
                 </div>
               </div>
 

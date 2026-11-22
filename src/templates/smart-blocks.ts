@@ -1864,4 +1864,184 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+  {
+    id: 'milestone-timeline-vertical',
+    name: 'Roadmap Milestone Vertikal (4 Fase)',
+    description: 'Rangkaian 4 fase peta jalan proyek vertikal dengan garis kontinu, node status berwarna, dan kartu uraian capaian',
+    icon: 'GitBranch',
+    category: 'all',
+    generateElements: (startX = 160, startY = 160) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+
+      const phases = [
+        {
+          phase: 'FASE 01',
+          time: 'Kuartal 1',
+          title: 'Fondasi Sistem & Desain Arsitektur',
+          desc: 'Riset kebutuhan pengguna, penyusunan arsitektur sistem modular, dan pembentukan fondasi komponen inti.',
+          status: 'SELESAI',
+          accent: '#10b981',
+          badgeBg: 'rgba(16, 185, 129, 0.2)',
+          badgeText: '#6ee7b7',
+        },
+        {
+          phase: 'FASE 02',
+          time: 'Kuartal 2',
+          title: 'Pengembangan Inti & Rilis MVP',
+          desc: 'Pengembangan modul utama, peluncuran versi pengujian internal, dan validasi kinerja bersama early adopters.',
+          status: 'SELESAI',
+          accent: '#10b981',
+          badgeBg: 'rgba(16, 185, 129, 0.2)',
+          badgeText: '#6ee7b7',
+        },
+        {
+          phase: 'FASE 03',
+          time: 'Kuartal 3',
+          title: 'Penskalaan & Integrasi Multi-Platform',
+          desc: 'Peningkatan kapasitas infrastruktur cloud, sinkronisasi waktu-nyata, dan integrasi API pihak ketiga.',
+          status: 'SEDANG BERJALAN',
+          accent: '#6366f1',
+          badgeBg: 'rgba(99, 102, 241, 0.25)',
+          badgeText: '#a5b4fc',
+        },
+        {
+          phase: 'FASE 04',
+          time: 'Kuartal 4',
+          title: 'Ekspansi Ekosistem & Adopsi Global',
+          desc: 'Peluncuran fitur otomasi cerdas, perluasan jaringan mitra strategis, dan peluncuran pasar publik.',
+          status: 'DIRENCANAKAN',
+          accent: '#f59e0b',
+          badgeBg: 'rgba(245, 158, 11, 0.2)',
+          badgeText: '#fcd34d',
+        },
+      ];
+
+      const itemGap = 110;
+      const totalH = (phases.length - 1) * itemGap;
+
+      // Continuous connecting vertical line
+      elements.push({
+        id: `el_${now}_vtime_line`,
+        type: 'line',
+        name: 'Garis Vertikal Penghubung',
+        x: startX + 18,
+        y: startY + 20,
+        width: 4,
+        height: totalH,
+        zIndex: 1,
+        stroke: 'rgba(99, 102, 241, 0.35)',
+        strokeWidth: 4,
+      });
+
+      phases.forEach((p, idx) => {
+        const yPos = startY + (idx * itemGap);
+
+        // Glowing node circle
+        elements.push({
+          id: `el_${now}_vtime_node_${idx}`,
+          type: 'circle',
+          name: `Node ${p.phase}`,
+          x: startX + 8,
+          y: yPos + 10,
+          width: 24,
+          height: 24,
+          zIndex: 3,
+          fill: p.accent,
+          stroke: '#0f172a',
+          strokeWidth: 3,
+          shadow: p.status === 'SEDANG BERJALAN' ? 'glow-indigo' : 'md',
+        });
+
+        // Stage Card Container
+        elements.push({
+          id: `el_${now}_vtime_card_${idx}`,
+          type: 'card',
+          name: `Kartu ${p.phase}`,
+          x: startX + 54,
+          y: yPos,
+          width: 780,
+          height: 94,
+          zIndex: 2,
+          fill: p.status === 'SEDANG BERJALAN' ? 'linear-gradient(135deg, rgba(30, 27, 75, 0.7) 0%, rgba(15, 23, 42, 0.9) 100%)' : 'rgba(15, 23, 42, 0.8)',
+          stroke: p.status === 'SEDANG BERJALAN' ? 'rgba(99, 102, 241, 0.5)' : 'rgba(255, 255, 255, 0.08)',
+          strokeWidth: p.status === 'SEDANG BERJALAN' ? 1.5 : 1,
+          borderRadius: 16,
+          shadow: 'md',
+        });
+
+        // Phase & Time Badge
+        elements.push({
+          id: `el_${now}_vtime_badge_${idx}`,
+          type: 'badge-shape',
+          name: `Status Badge ${p.phase}`,
+          x: startX + 74,
+          y: yPos + 16,
+          width: 140,
+          height: 26,
+          zIndex: 3,
+          content: `${p.phase} • ${p.time}`,
+          fill: 'rgba(255, 255, 255, 0.06)',
+          stroke: 'rgba(255, 255, 255, 0.15)',
+          color: '#cbd5e1',
+          fontSize: 10,
+          fontWeight: 'bold',
+          borderRadius: 6,
+        });
+
+        // Status Pill
+        elements.push({
+          id: `el_${now}_vtime_status_${idx}`,
+          type: 'badge-shape',
+          name: `Pill Status ${p.phase}`,
+          x: startX + 224,
+          y: yPos + 16,
+          width: 130,
+          height: 26,
+          zIndex: 3,
+          content: p.status,
+          fill: p.badgeBg,
+          stroke: p.accent,
+          color: p.badgeText,
+          fontSize: 10,
+          fontWeight: 'extrabold',
+          borderRadius: 6,
+        });
+
+        // Title
+        elements.push({
+          id: `el_${now}_vtime_title_${idx}`,
+          type: 'heading',
+          name: `Judul ${p.phase}`,
+          x: startX + 74,
+          y: yPos + 48,
+          width: 320,
+          height: 32,
+          zIndex: 3,
+          content: p.title,
+          fontSize: 15,
+          fontWeight: 'bold',
+          color: '#ffffff',
+        });
+
+        // Description
+        elements.push({
+          id: `el_${now}_vtime_desc_${idx}`,
+          type: 'text',
+          name: `Deskripsi ${p.phase}`,
+          x: startX + 410,
+          y: yPos + 22,
+          width: 400,
+          height: 58,
+          zIndex: 3,
+          content: p.desc,
+          fontSize: 12,
+          lineHeight: 1.5,
+          color: '#94a3b8',
+        });
+      });
+
+      return elements;
+    },
+  },
 ];
