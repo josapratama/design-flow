@@ -662,4 +662,130 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+  // 9. MATRIKS ANALISIS SWOT (4 KUADRAN STRATEGIS)
+  {
+    id: 'swot-analysis-matrix',
+    name: 'Matriks Analisis SWOT (4 Kuadran)',
+    description: 'Tata letak 4 kartu kuadran strategis: Strengths (Kekuatan), Weaknesses (Kelemahan), Opportunities (Peluang), dan Threats (Ancaman).',
+    icon: 'Grid',
+    category: 'all',
+    generateElements: (startX = 120, startY = 200) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+      const cardW = 480;
+      const cardH = 280;
+      const gapX = 30;
+      const gapY = 24;
+
+      const quadrants = [
+        {
+          key: 'S',
+          title: 'STRENGTHS (KEKUATAN)',
+          badgeColor: '#059669',
+          badgeBg: '#064e3b',
+          badgeText: '#34d399',
+          cardBg: '#0b1d19',
+          cardBorder: '#059669',
+          col: 0,
+          row: 0,
+          content: '• Keunggulan arsitektur model inferensi ultra cepat (< 12ms)\n• Dataset proprietary berlabel akurasi tinggi (99.4%)\n• Efisiensi biaya infrastruktur 40% lebih rendah dibanding kompetitor',
+        },
+        {
+          key: 'W',
+          title: 'WEAKNESSES (KELEMAHAN)',
+          badgeColor: '#e11d48',
+          badgeBg: '#4c0519',
+          badgeText: '#fda4af',
+          cardBg: '#1c131a',
+          cardBorder: '#e11d48',
+          col: 1,
+          row: 0,
+          content: '• Ketergantungan awal pada konektivitas cloud bandwidth tinggi\n• Edukasi adopsi pengguna baru masih memerlukan panduan onboarding\n• Variasi format input legacy masih dalam tahap standardisasi',
+        },
+        {
+          key: 'O',
+          title: 'OPPORTUNITIES (PELUANG)',
+          badgeColor: '#0284c7',
+          badgeBg: '#082f49',
+          badgeText: '#38bdf8',
+          cardBg: '#0c1a29',
+          cardBorder: '#0284c7',
+          col: 0,
+          row: 1,
+          content: '• Lonjakan adopsi digitalisasi dokumen di sektor enterprise & publik\n• Integrasi API langsung ke ekosistem ERP dan alur kerja analitik tim\n• Ekspansi ke perangkat edge mobile melalui model kuantisasi ringan',
+        },
+        {
+          key: 'T',
+          title: 'THREATS (ANCAMAN)',
+          badgeColor: '#d97706',
+          badgeBg: '#451a03',
+          badgeText: '#fcd34d',
+          cardBg: '#1f160d',
+          cardBorder: '#d97706',
+          col: 1,
+          row: 1,
+          content: '• Regulasi kepatuhan privasi data & residensi regional yang dinamis\n• Akselerasi model open-source alternatif dengan dukungan komunitas luas\n• Potensi fluktuasi biaya penyedia GPU komputasi global',
+        },
+      ];
+
+      quadrants.forEach((q, idx) => {
+        const xPos = startX + q.col * (cardW + gapX);
+        const yPos = startY + q.row * (cardH + gapY);
+
+        // Card Container
+        elements.push({
+          id: `el_${now}_swot_card_${idx}`,
+          type: 'card',
+          name: `Kuadran ${q.key} - ${q.title}`,
+          x: xPos,
+          y: yPos,
+          width: cardW,
+          height: cardH,
+          zIndex: 1,
+          fill: q.cardBg,
+          stroke: q.cardBorder,
+          strokeWidth: 1.5,
+          borderRadius: 20,
+          shadow: 'md',
+        });
+
+        // Quadrant Pill Badge
+        elements.push({
+          id: `el_${now}_swot_badge_${idx}`,
+          type: 'button',
+          name: `Badge ${q.key}`,
+          x: xPos + 24,
+          y: yPos + 20,
+          width: 240,
+          height: 32,
+          zIndex: 2,
+          content: q.title,
+          fill: q.badgeBg,
+          stroke: q.cardBorder,
+          color: q.badgeText,
+          borderRadius: 9999,
+          fontSize: 11,
+          fontWeight: 'bold',
+        });
+
+        // Content Text
+        elements.push({
+          id: `el_${now}_swot_txt_${idx}`,
+          type: 'text',
+          name: `Poin ${q.key}`,
+          x: xPos + 24,
+          y: yPos + 64,
+          width: cardW - 48,
+          height: cardH - 80,
+          zIndex: 2,
+          content: q.content,
+          fontSize: 14,
+          lineHeight: 1.6,
+          color: '#e2e8f0',
+        });
+      });
+
+      return elements;
+    },
+  },
 ];

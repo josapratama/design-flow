@@ -41,6 +41,7 @@ import {
   Link,
   Plus,
   ExternalLink,
+  X,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -70,6 +71,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
   onAddElements,
 }) => {
   const [activeTab, setActiveTab] = useState<'elements' | 'ui' | 'shapes' | 'media' | 'blocks' | 'layers'>('elements');
+  const [uiSearch, setUiSearch] = useState('');
   const [layerSearch, setLayerSearch] = useState('');
   const [mediaCategory, setMediaCategory] = useState<'all' | 'tech' | 'business' | 'arch' | 'nature' | 'people' | 'abstract'>('all');
   const [stockSearchQuery, setStockSearchQuery] = useState('');
@@ -594,186 +596,225 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         {/* TAB 2: UI KIT */}
         {activeTab === 'ui' && (
           <div className="space-y-3">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
               Komponen UI & Wireframe
             </span>
+            {/* Search Input for UI Kit */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={uiSearch}
+                onChange={e => setUiSearch(e.target.value)}
+                placeholder="Cari tombol, input, tabel..."
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              />
+              {uiSearch && (
+                <button
+                  onClick={() => setUiSearch('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
             <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('button', 'Tombol Aksi', 160, 48, {
-                      content: 'Mulai Sekarang',
-                      fill: '#4f46e5',
-                      color: '#ffffff',
-                      borderRadius: 10,
-                      shadow: 'md',
-                    })
-                  )
-                }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
-              >
-                <MousePointerClick className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Tombol Aksi</span>
-              </button>
+              {(!uiSearch || 'tombol aksi button cta mulai'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('button', 'Tombol Aksi', 160, 48, {
+                        content: 'Mulai Sekarang',
+                        fill: '#4f46e5',
+                        color: '#ffffff',
+                        borderRadius: 10,
+                        shadow: 'md',
+                      })
+                    )
+                  }
+                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                >
+                  <MousePointerClick className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-slate-200 font-medium">Tombol Aksi</span>
+                </button>
+              )}
 
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('input', 'Kolom Input', 240, 48, {
-                      placeholder: 'Masukkan kata kunci pencarian...',
-                      fill: '#0f172a',
-                      stroke: '#334155',
-                      color: '#94a3b8',
-                      borderRadius: 10,
-                    })
-                  )
-                }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
-              >
-                <TextCursorInput className="w-5 h-5 text-teal-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Input Teks</span>
-              </button>
+              {(!uiSearch || 'kolom input teks form search text cari'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('input', 'Kolom Input', 240, 48, {
+                        placeholder: 'Masukkan kata kunci pencarian...',
+                        fill: '#0f172a',
+                        stroke: '#334155',
+                        color: '#94a3b8',
+                        borderRadius: 10,
+                      })
+                    )
+                  }
+                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                >
+                  <TextCursorInput className="w-5 h-5 text-teal-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-slate-200 font-medium">Input Teks</span>
+                </button>
+              )}
 
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('metric-card', 'Stat Card', 220, 110, {
-                      content: '98.4%',
-                      subTitle: 'Tingkat Akurasi Evaluasi',
-                      fill: '#1e293b',
-                      color: '#38bdf8',
-                      borderRadius: 14,
-                      shadow: 'lg',
-                    })
-                  )
-                }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
-              >
-                <BarChart3 className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Kartu Metrik</span>
-              </button>
+              {(!uiSearch || 'kartu metrik stat card angka kpi akurasi'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('metric-card', 'Stat Card', 220, 110, {
+                        content: '98.4%',
+                        subTitle: 'Tingkat Akurasi Evaluasi',
+                        fill: '#1e293b',
+                        color: '#38bdf8',
+                        borderRadius: 14,
+                        shadow: 'lg',
+                      })
+                    )
+                  }
+                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                >
+                  <BarChart3 className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-slate-200 font-medium">Kartu Metrik</span>
+                </button>
+              )}
 
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('navbar', 'App Navbar', 393, 56, {
-                      content: 'DesignFlow Mobile',
-                      fill: '#090d16',
-                      color: '#ffffff',
-                    })
-                  )
-                }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
-              >
-                <Smartphone className="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Nav Header</span>
-              </button>
+              {(!uiSearch || 'nav header navbar mobile navigation aplikasi'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('navbar', 'App Navbar', 393, 56, {
+                        content: 'DesignFlow Mobile',
+                        fill: '#090d16',
+                        color: '#ffffff',
+                      })
+                    )
+                  }
+                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                >
+                  <Smartphone className="w-5 h-5 text-purple-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-slate-200 font-medium">Nav Header</span>
+                </button>
+              )}
 
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('avatar', 'Avatar User', 64, 64, {
-                      content: 'DF',
-                      stroke: '#6366f1',
-                      fill: '#1e1b4b',
-                      color: '#c7d2fe',
-                      shadow: 'md',
-                    })
-                  )
-                }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
-              >
-                <UserCheck className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Avatar Profil</span>
-              </button>
+              {(!uiSearch || 'avatar profil user usercheck akun pengguna'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('avatar', 'Avatar User', 64, 64, {
+                        content: 'DF',
+                        stroke: '#6366f1',
+                        fill: '#1e1b4b',
+                        color: '#c7d2fe',
+                        shadow: 'md',
+                      })
+                    )
+                  }
+                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                >
+                  <UserCheck className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-slate-200 font-medium">Avatar Profil</span>
+                </button>
+              )}
 
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('badge-shape', 'Badge Pill', 140, 36, {
-                      content: 'VERIFIED',
-                      fill: 'rgba(99, 102, 241, 0.2)',
-                      color: '#818cf8',
-                      iconName: 'Shield',
-                      borderRadius: 9999,
-                    })
-                  )
-                }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
-              >
-                <Tag className="w-5 h-5 text-pink-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Badge Pill</span>
-              </button>
+              {(!uiSearch || 'badge pill tag label verified status'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('badge-shape', 'Badge Pill', 140, 36, {
+                        content: 'VERIFIED',
+                        fill: 'rgba(99, 102, 241, 0.2)',
+                        color: '#818cf8',
+                        iconName: 'Shield',
+                        borderRadius: 9999,
+                      })
+                    )
+                  }
+                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                >
+                  <Tag className="w-5 h-5 text-pink-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-slate-200 font-medium">Badge Pill</span>
+                </button>
+              )}
 
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('toggle', 'Switch Toggle', 52, 30, {
-                      content: 'on',
-                      fill: '#10b981',
-                      shadow: 'sm',
-                    })
-                  )
-                }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
-              >
-                <ToggleLeft className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Switch Toggle</span>
-              </button>
+              {(!uiSearch || 'switch toggle saklar on off cek'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('toggle', 'Switch Toggle', 52, 30, {
+                        content: 'on',
+                        fill: '#10b981',
+                        shadow: 'sm',
+                      })
+                    )
+                  }
+                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                >
+                  <ToggleLeft className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-slate-200 font-medium">Switch Toggle</span>
+                </button>
+              )}
 
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('icon', 'Ikon Vektor', 64, 64, {
-                      iconName: 'Sparkles',
-                      color: '#f59e0b',
-                    })
-                  )
-                }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
-              >
-                <Sparkles className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Ikon Vektor</span>
-              </button>
+              {(!uiSearch || 'ikon vektor sparkles icon simbol'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('icon', 'Ikon Vektor', 64, 64, {
+                        iconName: 'Sparkles',
+                        color: '#f59e0b',
+                      })
+                    )
+                  }
+                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                >
+                  <Sparkles className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-slate-200 font-medium">Ikon Vektor</span>
+                </button>
+              )}
 
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('chart', 'Grafik Analisis', 360, 220, {
-                      content: 'Pertumbuhan Kinerja',
-                      subTitle: 'Evaluasi metrik kuartal Q1-Q4',
-                      chartType: 'bar',
-                      fill: '#6366f1',
-                      color: '#38bdf8',
-                      borderRadius: 16,
-                      shadow: 'lg',
-                    })
-                  )
-                }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
-              >
-                <BarChart3 className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Grafik / Chart</span>
-              </button>
+              {(!uiSearch || 'grafik chart diagram bar analisis performa tren'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('chart', 'Grafik Analisis', 360, 220, {
+                        content: 'Pertumbuhan Kinerja',
+                        subTitle: 'Evaluasi metrik kuartal Q1-Q4',
+                        chartType: 'bar',
+                        fill: '#6366f1',
+                        color: '#38bdf8',
+                        borderRadius: 16,
+                        shadow: 'lg',
+                      })
+                    )
+                  }
+                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                >
+                  <BarChart3 className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-slate-200 font-medium">Grafik / Chart</span>
+                </button>
+              )}
 
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('table', 'Tabel Data', 480, 220, {
-                      content: 'Indikator | Target | Realisasi | Status\nAkurasi Model | 95.0% | 99.4% | Tercapai\nLatensi Inferensi | < 20ms | 11.8ms | Optimal\nThroughput | 2.0x | 3.4x | Melampaui',
-                      fill: '#0f172a',
-                      stroke: '#334155',
-                      strokeWidth: 1,
-                      borderRadius: 12,
-                      shadow: 'md',
-                    })
-                  )
-                }
-                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
-              >
-                <Table className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
-                <span className="text-slate-200 font-medium">Tabel Data</span>
-              </button>
+              {(!uiSearch || 'tabel table data matriks grid baris kolom'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('table', 'Tabel Data', 480, 220, {
+                        content: 'Indikator | Target | Realisasi | Status\nAkurasi Model | 95.0% | 99.4% | Tercapai\nLatensi Inferensi | < 20ms | 11.8ms | Optimal\nThroughput | 2.0x | 3.4x | Melampaui',
+                        fill: '#0f172a',
+                        stroke: '#334155',
+                        strokeWidth: 1,
+                        borderRadius: 12,
+                        shadow: 'md',
+                      })
+                    )
+                  }
+                  className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+                >
+                  <Table className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-slate-200 font-medium">Tabel Data</span>
+                </button>
+              )}
             </div>
           </div>
         )}

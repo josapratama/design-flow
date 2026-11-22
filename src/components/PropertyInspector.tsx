@@ -94,6 +94,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   const [fontFilterCategory, setFontFilterCategory] = useState<'all' | 'Sans Serif' | 'Serif' | 'Monospace' | 'Display'>('all');
   const [extractedPalette, setExtractedPalette] = useState<ExtractedPalette | null>(null);
   const [isExtractingPalette, setIsExtractingPalette] = useState(false);
+  const [isRatioLocked, setIsRatioLocked] = useState(false);
 
   // Auto-extracted document colors used across active slide
   const documentColors = React.useMemo(() => {
@@ -1053,23 +1054,57 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
               />
             </div>
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Lebar (W)</label>
-              <input
-                type="number"
-                value={element.width}
-                onChange={e => handleChange('width', Math.max(10, Number(e.target.value)))}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Tinggi (H)</label>
-              <input
-                type="number"
-                value={element.height}
-                onChange={e => handleChange('height', Math.max(10, Number(e.target.value)))}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
-              />
+            <div className="col-span-2 grid grid-cols-5 gap-1.5 items-end">
+              <div className="col-span-2">
+                <label className="text-[10px] text-slate-500 block mb-1">Lebar (W)</label>
+                <input
+                  type="number"
+                  value={element.width}
+                  onChange={e => {
+                    const newW = Math.max(10, Number(e.target.value));
+                    if (isRatioLocked && element.height > 0) {
+                      const ratio = element.width / element.height;
+                      onUpdateElement(element.id, { width: newW, height: Math.max(10, Math.round(newW / ratio)) });
+                    } else {
+                      handleChange('width', newW);
+                    }
+                  }}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
+                />
+              </div>
+
+              <div className="col-span-1 flex justify-center pb-1">
+                <button
+                  type="button"
+                  onClick={() => setIsRatioLocked(!isRatioLocked)}
+                  title={isRatioLocked ? 'Kunci Rasio Aktif (Klik untuk Buka)' : 'Kunci Rasio Aspek W:H'}
+                  className={`p-1.5 rounded-lg border transition-colors ${
+                    isRatioLocked
+                      ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
+                      : 'bg-slate-950 border-slate-800 text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  {isRatioLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+
+              <div className="col-span-2">
+                <label className="text-[10px] text-slate-500 block mb-1">Tinggi (H)</label>
+                <input
+                  type="number"
+                  value={element.height}
+                  onChange={e => {
+                    const newH = Math.max(10, Number(e.target.value));
+                    if (isRatioLocked && element.width > 0) {
+                      const ratio = element.width / element.height;
+                      onUpdateElement(element.id, { height: newH, width: Math.max(10, Math.round(newH * ratio)) });
+                    } else {
+                      handleChange('height', newH);
+                    }
+                  }}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
+                />
+              </div>
             </div>
           </div>
 

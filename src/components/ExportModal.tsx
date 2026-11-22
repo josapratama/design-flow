@@ -5,7 +5,7 @@ import { exportArtboardToImage, copyArtboardToClipboard } from '../engine/canvas
 import { exportToReactTailwind, exportProjectToReactDeck } from '../engine/tailwind-exporter';
 import { generateDesignDSL } from '../engine/dsl-generator';
 import { generateStandaloneHtmlPresentation } from '../engine/html-exporter';
-import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive, Globe, Copy } from 'lucide-react';
+import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive, Globe, Copy, Printer } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toPng, toSvg } from 'html-to-image';
 import jsPDF from 'jspdf';
@@ -111,6 +111,74 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     navigator.clipboard.writeText(generateOutlineMarkdown());
     setCopiedOutline(true);
     setTimeout(() => setCopiedOutline(false), 2000);
+  };
+
+  const handlePrintHandout = () => {
+    const title = project.title || 'Naskah Presentasi';
+    const totalWords = project.slides.reduce((acc, s) => acc + (s.notes || '').trim().split(/\s+/).filter(Boolean).length, 0);
+    const estSec = Math.round((totalWords / 130) * 60);
+    const estMin = Math.floor(estSec / 60);
+
+    const printHtml = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>${title} - Handout Naskah Presenter</title>
+          <style>
+            @media print {
+              @page { margin: 1.5cm; }
+              body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1e293b; line-height: 1.5; font-size: 13px; }
+              .page-break { page-break-after: always; }
+              .no-print { display: none; }
+            }
+            body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #1e293b; max-width: 800px; margin: 0 auto; padding: 24px; line-height: 1.6; }
+            .header-banner { border-bottom: 2px solid #4f46e5; padding-bottom: 12px; margin-bottom: 20px; }
+            .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #e0e7ff; color: #3730a3; font-weight: 600; font-size: 11px; }
+            .slide-card { border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px; margin-bottom: 20px; background: #f8fafc; }
+            .slide-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px; }
+            .slide-title { font-size: 15px; font-weight: bold; color: #0f172a; }
+            .slide-notes { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; font-size: 13px; color: #334155; white-space: pre-wrap; min-height: 50px; }
+            .notes-empty { color: #94a3b8; font-style: italic; }
+            .handwritten-area { border: 1px dashed #cbd5e1; border-radius: 6px; padding: 10px; margin-top: 10px; color: #94a3b8; font-size: 11px; height: 35px; }
+          </style>
+        </head>
+        <body>
+          <div class="header-banner">
+            <h1 style="margin: 0 0 4px 0; font-size: 22px; color: #1e1b4b;">${title}</h1>
+            <div style="font-size: 12px; color: #64748b;">
+              Handout Pembicara & Naskah Sidang • ${project.slides.length} Slide • Total ~${totalWords} Kata (~${estMin}m ${estSec % 60}d estimasi bicara)
+            </div>
+          </div>
+          ${project.slides.map((s, idx) => `
+            <div class="slide-card">
+              <div class="slide-header">
+                <span class="slide-title">Slide ${idx + 1}: ${s.title}</span>
+                <span class="badge">${(s.notes || '').trim().split(/\s+/).filter(Boolean).length} kata</span>
+              </div>
+              <div class="slide-notes ${!s.notes?.trim() ? 'notes-empty' : ''}">
+                ${s.notes?.trim() ? s.notes.trim() : 'Tidak ada catatan pembicara untuk slide ini.'}
+              </div>
+              <div class="handwritten-area">Catatan Tambahan Saat Presentasi / Tanya Jawab:</div>
+            </div>
+          `).join('')}
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    const printWin = window.open('', '_blank', 'width=900,height=800');
+    if (printWin) {
+      printWin.document.open();
+      printWin.document.write(printHtml);
+      printWin.document.close();
+    } else {
+      alert('Izinkan pop-up peramban untuk mencetak handout presentasi.');
+    }
   };
 
   const handleDownloadSpeakerNotes = () => {
@@ -733,6 +801,15 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                       <span>{copiedOutline ? 'Tersalin' : 'Salin'}</span>
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={handlePrintHandout}
+                    className="w-full py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                    title="Cetak atau simpan handout naskah presentasi sebagai PDF siap cetak"
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    <span>Cetak Lembar Naskah (Print)</span>
+                  </button>
                 </div>
 
                 {/* Declarative DSL (.dflow) */}

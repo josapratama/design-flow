@@ -247,25 +247,56 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
               if (!textarea) return;
               const start = textarea.selectionStart;
               const end = textarea.selectionEnd;
-              if (e.shiftKey) {
-                // Outdent 2 spaces if present at beginning of line
+
+              if (start !== end) {
+                // Multi-line indent / outdent
                 const before = code.substring(0, start);
-                const lastNewline = before.lastIndexOf('\n');
-                const lineStart = lastNewline === -1 ? 0 : lastNewline + 1;
-                if (code.substring(lineStart, lineStart + 2) === '  ') {
-                  const newCode = code.substring(0, lineStart) + code.substring(lineStart + 2);
-                  setCode(newCode);
+                const lineStart = before.lastIndexOf('\n') === -1 ? 0 : before.lastIndexOf('\n') + 1;
+                const after = code.substring(end);
+                const selectedBlock = code.substring(lineStart, end);
+                const lines = selectedBlock.split('\n');
+
+                if (e.shiftKey) {
+                  // Outdent each line
+                  const updatedLines = lines.map(line => line.startsWith('  ') ? line.substring(2) : line.startsWith(' ') ? line.substring(1) : line);
+                  const newBlock = updatedLines.join('\n');
+                  const diff = selectedBlock.length - newBlock.length;
+                  setCode(code.substring(0, lineStart) + newBlock + after);
                   setTimeout(() => {
-                    textarea.selectionStart = Math.max(lineStart, start - 2);
-                    textarea.selectionEnd = Math.max(lineStart, end - 2);
+                    textarea.selectionStart = start;
+                    textarea.selectionEnd = Math.max(start, end - diff);
+                  }, 0);
+                } else {
+                  // Indent each line
+                  const updatedLines = lines.map(line => '  ' + line);
+                  const newBlock = updatedLines.join('\n');
+                  const diff = newBlock.length - selectedBlock.length;
+                  setCode(code.substring(0, lineStart) + newBlock + after);
+                  setTimeout(() => {
+                    textarea.selectionStart = start + 2;
+                    textarea.selectionEnd = end + diff;
                   }, 0);
                 }
               } else {
-                const newCode = code.substring(0, start) + '  ' + code.substring(end);
-                setCode(newCode);
-                setTimeout(() => {
-                  textarea.selectionStart = textarea.selectionEnd = start + 2;
-                }, 0);
+                // Single cursor indent / outdent
+                if (e.shiftKey) {
+                  const before = code.substring(0, start);
+                  const lastNewline = before.lastIndexOf('\n');
+                  const lineStart = lastNewline === -1 ? 0 : lastNewline + 1;
+                  if (code.substring(lineStart, lineStart + 2) === '  ') {
+                    const newCode = code.substring(0, lineStart) + code.substring(lineStart + 2);
+                    setCode(newCode);
+                    setTimeout(() => {
+                      textarea.selectionStart = textarea.selectionEnd = Math.max(lineStart, start - 2);
+                    }, 0);
+                  }
+                } else {
+                  const newCode = code.substring(0, start) + '  ' + code.substring(end);
+                  setCode(newCode);
+                  setTimeout(() => {
+                    textarea.selectionStart = textarea.selectionEnd = start + 2;
+                  }, 0);
+                }
               }
               return;
             }
