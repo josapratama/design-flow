@@ -997,4 +997,260 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+
+  // 13. KARTU PROFIL TIM (3 KOLOM)
+  {
+    id: 'team-profiles-3-cols',
+    name: 'Profil Anggota Tim (3 Kolom)',
+    description: '3 kartu anggota tim inti lengkap dengan foto avatar, peran kepemimpinan, dan lencana keahlian.',
+    icon: 'Users',
+    category: 'all',
+    generateElements: (startX = 240, startY = 320) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+      const cardW = 440;
+      const cardH = 340;
+      const gap = 30;
+
+      const members = [
+        {
+          name: 'Adrian Wijaya, M.Sc.',
+          role: 'Chief Technology Officer',
+          tag: 'AI & Cloud Infrastructure',
+          bio: '10+ tahun memimpin tim arsitektur distributed computing dan model NLP multimodal.',
+          initials: 'AW',
+          avatarBg: '#4f46e5',
+        },
+        {
+          name: 'Nadia Salsabila, B.Des.',
+          role: 'Head of Product & Design',
+          tag: 'Design System & UX Strategy',
+          bio: 'Praktisi human-centered design dengan portofolio produk SaaS terkemuka di Asia Tenggara.',
+          initials: 'NS',
+          avatarBg: '#0891b2',
+        },
+        {
+          name: 'Dimas Ardiansyah',
+          role: 'Lead Fullstack Architect',
+          tag: 'React 19 & WebAssembly',
+          bio: 'Spesialis optimalisasi performa rendering kanvas grafis dan interoperabilitas kode deklaratif.',
+          initials: 'DA',
+          avatarBg: '#059669',
+        },
+      ];
+
+      members.forEach((m, idx) => {
+        const xPos = startX + idx * (cardW + gap);
+
+        // Container Card
+        elements.push({
+          id: `el_${now}_team_card_${idx}`,
+          type: 'card',
+          name: `Kartu ${m.name}`,
+          x: xPos,
+          y: startY,
+          width: cardW,
+          height: cardH,
+          zIndex: 1,
+          fill: '#131b2e',
+          stroke: '#1e293b',
+          strokeWidth: 1.5,
+          borderRadius: 20,
+          shadow: 'lg',
+        });
+
+        // Avatar
+        elements.push({
+          id: `el_${now}_team_avt_${idx}`,
+          type: 'avatar',
+          name: `Avatar ${m.name}`,
+          x: xPos + 24,
+          y: startY + 24,
+          width: 60,
+          height: 60,
+          zIndex: 2,
+          fill: m.avatarBg,
+          content: m.initials,
+          color: '#ffffff',
+          borderRadius: 9999,
+        });
+
+        // Name & Role Header
+        elements.push({
+          id: `el_${now}_team_hdr_${idx}`,
+          type: 'text',
+          name: `Header ${m.name}`,
+          x: xPos + 96,
+          y: startY + 24,
+          width: cardW - 120,
+          height: 60,
+          zIndex: 2,
+          content: `${m.name}\n${m.role}`,
+          fontSize: 15,
+          lineHeight: 1.4,
+          color: '#ffffff',
+          fontWeight: 'bold',
+        });
+
+        // Pill Tag Badge
+        elements.push({
+          id: `el_${now}_team_pill_${idx}`,
+          type: 'button',
+          name: `Tag ${m.name}`,
+          x: xPos + 24,
+          y: startY + 100,
+          width: 220,
+          height: 28,
+          zIndex: 2,
+          content: m.tag,
+          fill: 'rgba(99, 102, 241, 0.15)',
+          stroke: '#4f46e5',
+          color: '#a5b4fc',
+          borderRadius: 9999,
+          fontSize: 10,
+          fontWeight: 'semibold',
+        });
+
+        // Bio
+        elements.push({
+          id: `el_${now}_team_bio_${idx}`,
+          type: 'text',
+          name: `Bio ${m.name}`,
+          x: xPos + 24,
+          y: startY + 144,
+          width: cardW - 48,
+          height: 160,
+          zIndex: 2,
+          content: m.bio,
+          fontSize: 14,
+          lineHeight: 1.6,
+          color: '#cbd5e1',
+        });
+      });
+
+      return elements;
+    },
+  },
+
+  // 14. MATRIKS PERBANDINGAN FITUR (VERSUS MATRIX)
+  {
+    id: 'versus-comparison-matrix',
+    name: 'Matriks Perbandingan (Versus / Solusi)',
+    description: '2 kartu pembanding berdampingan: Cara Konvensional (Silang) vs Solusi DesignFlow (Centang).',
+    icon: 'Split',
+    category: 'all',
+    generateElements: (startX = 240, startY = 280) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+      const cardW = 680;
+      const cardH = 460;
+      const gap = 40;
+
+      // Card 1: Cara Lama / Konvensional (Red accent)
+      elements.push({
+        id: `el_${now}_vs_card_old`,
+        type: 'card',
+        name: 'Kartu Cara Konvensional',
+        x: startX,
+        y: startY,
+        width: cardW,
+        height: cardH,
+        zIndex: 1,
+        fill: '#181119',
+        stroke: '#e11d48',
+        strokeWidth: 2,
+        borderRadius: 22,
+        shadow: 'xl',
+      });
+
+      elements.push({
+        id: `el_${now}_vs_title_old`,
+        type: 'heading',
+        name: 'Judul Cara Lama',
+        x: startX + 30,
+        y: startY + 30,
+        width: cardW - 60,
+        height: 48,
+        zIndex: 2,
+        content: '✕ Cara Konvensional',
+        fontSize: 24,
+        color: '#f43f5e',
+        fontWeight: 'bold',
+      });
+
+      elements.push({
+        id: `el_${now}_vs_text_old`,
+        type: 'text',
+        name: 'Daftar Masalah Lama',
+        x: startX + 30,
+        y: startY + 95,
+        width: cardW - 60,
+        height: cardH - 120,
+        zIndex: 2,
+        content:
+          '✕ Desain slide manual memakan waktu berjam-jam\n\n' +
+          '✕ Sulit mengubah format slide ke kode web aplikasi yang nyata\n\n' +
+          '✕ File presentasi ukuran raksasa dan rentan korup format\n\n' +
+          '✕ Bergantung pada koneksi internet cloud pihak ketiga yang tidak aman\n\n' +
+          '✕ Tampilan panggung presenter monoton tanpa kendali teleprompter pintar',
+        fontSize: 16,
+        lineHeight: 1.6,
+        color: '#cbd5e1',
+      });
+
+      // Card 2: Solusi Modern DesignFlow (Indigo & Emerald accent highlight)
+      elements.push({
+        id: `el_${now}_vs_card_new`,
+        type: 'card',
+        name: 'Kartu Solusi DesignFlow',
+        x: startX + cardW + gap,
+        y: startY,
+        width: cardW,
+        height: cardH,
+        zIndex: 1,
+        fill: '#0f172a',
+        stroke: '#10b981',
+        strokeWidth: 2.5,
+        borderRadius: 22,
+        shadow: 'glow-emerald',
+      });
+
+      elements.push({
+        id: `el_${now}_vs_title_new`,
+        type: 'heading',
+        name: 'Judul Solusi Modern',
+        x: startX + cardW + gap + 30,
+        y: startY + 30,
+        width: cardW - 60,
+        height: 48,
+        zIndex: 2,
+        content: '✓ Dengan DesignFlow Studio',
+        fontSize: 24,
+        color: '#34d399',
+        fontWeight: 'bold',
+      });
+
+      elements.push({
+        id: `el_${now}_vs_text_new`,
+        type: 'text',
+        name: 'Daftar Keunggulan Modern',
+        x: startX + cardW + gap + 30,
+        y: startY + 95,
+        width: cardW - 60,
+        height: cardH - 120,
+        zIndex: 2,
+        content:
+          '✓ Sinkronisasi visual & kode DSL deklaratif instan dua arah\n\n' +
+          '✓ Ekspor langsung ke React 19 + Tailwind CSS produksi siap pakai\n\n' +
+          '✓ 100% Penyimpanan lokal offline IndexedDB super cepat & privat\n\n' +
+          '✓ Pustaka Smart Blocks & Palet Harmonisasi Warna Terpadu\n\n' +
+          '✓ Mode Presenter Canggih dengan Teleprompter, Laser, & Layar Audiens Ganda',
+        fontSize: 16,
+        lineHeight: 1.6,
+        color: '#ffffff',
+      });
+
+      return elements;
+    },
+  },
 ];

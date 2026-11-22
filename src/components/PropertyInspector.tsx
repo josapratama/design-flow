@@ -35,6 +35,10 @@ import {
   Check,
   Code,
   CopyCheck,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -1452,9 +1456,32 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         {/* URL Gambar (Jika tipe image) */}
         {element.type === 'image' && (
           <div className="space-y-2">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Sumber Gambar
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Sumber Gambar
+              </span>
+              <label className="text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 cursor-pointer flex items-center gap-1 hover:underline">
+                <Upload className="w-3 h-3" />
+                <span>Upload File</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = ev => {
+                      if (ev.target?.result) {
+                        handleChange('imageUrl', ev.target.result as string);
+                        showToast('Gambar berhasil dimuat!');
+                      }
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </label>
+            </div>
             <input
               type="text"
               value={element.imageUrl || ''}
@@ -1462,6 +1489,27 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               placeholder="https://... atau data:image/..."
               className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-200 outline-none focus:border-indigo-500 text-xs font-mono truncate"
             />
+            {/* Quick Unsplash category presets */}
+            <div className="space-y-1 pt-1">
+              <span className="text-[9px] text-slate-500 block">Preset Gambar Tema Cepat:</span>
+              <div className="grid grid-cols-4 gap-1">
+                {[
+                  { label: 'Teknologi', url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80' },
+                  { label: 'Kantor', url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80' },
+                  { label: 'Alam', url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80' },
+                  { label: 'Abstrak', url: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800&auto=format&fit=crop&q=80' },
+                ].map(cat => (
+                  <button
+                    key={cat.label}
+                    type="button"
+                    onClick={() => handleChange('imageUrl', cat.url)}
+                    className="py-1 px-1 bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 rounded text-[9px] text-slate-300 hover:text-white transition-colors"
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -1694,32 +1742,87 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
                   {/* Text Alignment, Kerning & Line Height */}
                   <div className="space-y-2 pt-2 border-t border-slate-800/80">
-                    {/* Perataan Teks (Alignment) */}
+                    {/* Perataan & Gaya Teks (Alignment, Bold, Italic, Underline, Strikethrough) */}
                     <div className="flex items-center justify-between">
-                      <label className="text-[10px] text-slate-500">Perataan Teks</label>
-                      <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
-                        {[
-                          { id: 'left', label: 'Kiri', icon: AlignLeft },
-                          { id: 'center', label: 'Tengah', icon: AlignCenter },
-                          { id: 'right', label: 'Kanan', icon: AlignRight },
-                        ].map(item => {
-                          const Icon = item.icon;
-                          const isActive = (element.textAlign || 'left') === item.id;
-                          return (
-                            <button
-                              key={item.id}
-                              type="button"
-                              onClick={() => handleChange('textAlign', item.id)}
-                              title={`Rata ${item.label}`}
-                              className={`p-1.5 rounded transition-colors ${isActive
+                      <label className="text-[10px] text-slate-500">Gaya & Rata</label>
+                      <div className="flex items-center gap-1.5">
+                        {/* Text Styles (B, I, U, S) */}
+                        <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
+                          <button
+                            type="button"
+                            onClick={() => handleChange('fontWeight', element.fontWeight === 'bold' ? 'normal' : 'bold')}
+                            title="Tebal (Bold)"
+                            className={`p-1.5 rounded transition-colors ${
+                              element.fontWeight === 'bold' || element.fontWeight === 'extrabold'
                                 ? 'bg-indigo-600 text-white shadow'
                                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                                }`}
-                            >
-                              <Icon className="w-3.5 h-3.5" />
-                            </button>
-                          );
-                        })}
+                            }`}
+                          >
+                            <Bold className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleChange('fontStyle', element.fontStyle === 'italic' ? 'normal' : 'italic')}
+                            title="Miring (Italic)"
+                            className={`p-1.5 rounded transition-colors ${
+                              element.fontStyle === 'italic'
+                                ? 'bg-indigo-600 text-white shadow'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                            }`}
+                          >
+                            <Italic className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleChange('textDecoration', element.textDecoration === 'underline' ? 'none' : 'underline')}
+                            title="Garis Bawah (Underline)"
+                            className={`p-1.5 rounded transition-colors ${
+                              element.textDecoration === 'underline'
+                                ? 'bg-indigo-600 text-white shadow'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                            }`}
+                          >
+                            <Underline className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleChange('textDecoration', element.textDecoration === 'line-through' ? 'none' : 'line-through')}
+                            title="Coret (Strikethrough)"
+                            className={`p-1.5 rounded transition-colors ${
+                              element.textDecoration === 'line-through'
+                                ? 'bg-indigo-600 text-white shadow'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                            }`}
+                          >
+                            <Strikethrough className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Alignment */}
+                        <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
+                          {[
+                            { id: 'left', label: 'Kiri', icon: AlignLeft },
+                            { id: 'center', label: 'Tengah', icon: AlignCenter },
+                            { id: 'right', label: 'Kanan', icon: AlignRight },
+                          ].map(item => {
+                            const Icon = item.icon;
+                            const isActive = (element.textAlign || 'left') === item.id;
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => handleChange('textAlign', item.id)}
+                                title={`Rata ${item.label}`}
+                                className={`p-1.5 rounded transition-colors ${isActive
+                                  ? 'bg-indigo-600 text-white shadow'
+                                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                                  }`}
+                              >
+                                <Icon className="w-3.5 h-3.5" />
+                              </button>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
 

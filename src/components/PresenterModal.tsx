@@ -87,12 +87,13 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const resetIdleTimer = useCallback(() => {
     setIsControlsIdle(false);
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    if (isPodiumMode) return;
     idleTimerRef.current = setTimeout(() => {
       if (!showPresenterOptions && !showReactionMenu && !showSlideNavigator && !showHelpOverlay) {
         setIsControlsIdle(true);
       }
     }, 3000);
-  }, [showPresenterOptions, showReactionMenu, showSlideNavigator, showHelpOverlay]);
+  }, [isPodiumMode, showPresenterOptions, showReactionMenu, showSlideNavigator, showHelpOverlay]);
 
   useEffect(() => {
     const handleActivity = () => resetIdleTimer();

@@ -229,6 +229,8 @@ export function renderElementJSX(el: DesignElement): string {
   if (el.opacity !== undefined && el.opacity < 1) baseStyle.opacity = el.opacity;
   if (el.letterSpacing !== undefined && el.letterSpacing !== 0) baseStyle.letterSpacing = `${el.letterSpacing}px`;
   if (el.lineHeight !== undefined) baseStyle.lineHeight = el.lineHeight;
+  if (el.fontStyle) baseStyle.fontStyle = el.fontStyle;
+  if (el.textDecoration && el.textDecoration !== 'none') baseStyle.textDecoration = el.textDecoration;
 
   // Custom typography (Google Fonts)
   if (el.fontFamily && !['sans', 'serif', 'mono'].includes(el.fontFamily)) {

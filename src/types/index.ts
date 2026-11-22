@@ -82,6 +82,8 @@ export interface DesignElement {
   content?: string;
   fontSize?: number;
   fontWeight?: 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold';
+  fontStyle?: 'normal' | 'italic';
+  textDecoration?: 'none' | 'underline' | 'line-through';
   fontFamily?: 'sans' | 'serif' | 'mono' | string;
   textAlign?: 'left' | 'center' | 'right' | 'justify';
   color?: string;
