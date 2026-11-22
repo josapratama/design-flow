@@ -1739,4 +1739,129 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+  {
+    id: 'hero-header-cover',
+    name: 'Cover Presentasi / Hero Header Modern',
+    description: 'Header pembuka slide presentasi lengkap: eyebrow badge neon, headline besar, lead text, 2 tombol CTA, dan rating proof',
+    icon: 'Sparkles',
+    category: 'all',
+    generateElements: (startX = 120, startY = 160) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+
+      // 1. Eyebrow Badge Pill
+      elements.push({
+        id: `el_${now}_hero_badge`,
+        type: 'badge-shape',
+        name: 'Hero Eyebrow Pill',
+        x: startX,
+        y: startY,
+        width: 220,
+        height: 36,
+        zIndex: 2,
+        content: '✨ INOVASI DIGITAL 2026',
+        fill: 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%)',
+        stroke: '#818cf8',
+        strokeWidth: 1.5,
+        color: '#c7d2fe',
+        fontSize: 12,
+        fontWeight: 'bold',
+        letterSpacing: 1,
+        borderRadius: 20,
+      });
+
+      // 2. Main Large Headline
+      elements.push({
+        id: `el_${now}_hero_title`,
+        type: 'heading',
+        name: 'Hero Display Title',
+        x: startX,
+        y: startY + 54,
+        width: 880,
+        height: 120,
+        zIndex: 2,
+        content: 'Membangun Solusi Masa Depan dengan Presisi & Kecepatan',
+        fontSize: 46,
+        fontWeight: 'extrabold',
+        color: '#ffffff',
+        lineHeight: 1.2,
+        shadow: 'glow-indigo',
+      });
+
+      // 3. Lead Paragraph Subtitle
+      elements.push({
+        id: `el_${now}_hero_lead`,
+        type: 'text',
+        name: 'Hero Lead Text',
+        x: startX,
+        y: startY + 185,
+        width: 780,
+        height: 85,
+        zIndex: 2,
+        content: 'Platform terintegrasi yang memberdayakan tim desain dan rekayasa untuk berkolaborasi tanpa batas, mempercepat peluncuran produk, dan mencapai dampak maksimal.',
+        fontSize: 18,
+        lineHeight: 1.6,
+        color: '#94a3b8',
+      });
+
+      // 4. Primary CTA Button (Gradient)
+      elements.push({
+        id: `el_${now}_hero_btn_primary`,
+        type: 'button',
+        name: 'Tombol Aksi Utama',
+        x: startX,
+        y: startY + 285,
+        width: 210,
+        height: 52,
+        zIndex: 2,
+        content: 'Mulai Sekarang Gratis →',
+        fill: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+        color: '#ffffff',
+        fontSize: 15,
+        fontWeight: 'bold',
+        borderRadius: 14,
+        shadow: 'glow-indigo',
+      });
+
+      // 5. Secondary CTA Button (Glassmorphic)
+      elements.push({
+        id: `el_${now}_hero_btn_sec`,
+        type: 'button',
+        name: 'Tombol Aksi Sekunder',
+        x: startX + 226,
+        y: startY + 285,
+        width: 180,
+        height: 52,
+        zIndex: 2,
+        content: 'Jadwalkan Demo',
+        fill: 'rgba(255, 255, 255, 0.05)',
+        stroke: 'rgba(255, 255, 255, 0.2)',
+        strokeWidth: 1.5,
+        color: '#e2e8f0',
+        fontSize: 15,
+        fontWeight: 'semibold',
+        borderRadius: 14,
+      });
+
+      // 6. Social Proof / Trust Badge
+      elements.push({
+        id: `el_${now}_hero_proof_card`,
+        type: 'card',
+        name: 'Social Proof Card',
+        x: startX,
+        y: startY + 360,
+        width: 440,
+        height: 48,
+        zIndex: 2,
+        fill: 'rgba(15, 23, 42, 0.7)',
+        stroke: 'rgba(255, 255, 255, 0.08)',
+        borderRadius: 14,
+        content: '⭐⭐⭐⭐⭐ 4.9/5 dari 2.500+ Tim Profesional Terkemuka',
+        fontSize: 12,
+        color: '#cbd5e1',
+      });
+
+      return elements;
+    },
+  },
 ];

@@ -239,7 +239,7 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
                         top: `${el.y}px`,
                         width: `${el.width}px`,
                         height: `${el.height}px`,
-                        backgroundColor:
+                        background:
                           el.fill ||
                           (el.type === 'heading'
                             ? '#ffffff'

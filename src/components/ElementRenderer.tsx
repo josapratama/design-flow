@@ -107,7 +107,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
           className={`w-full h-full relative rounded-full overflow-hidden select-none border-2 ${shadowClass}`}
           style={{
             borderColor: stroke || '#6366f1',
-            backgroundColor: fill || '#1e293b',
+            background: fill || '#1e293b',
           }}
         >
           {imageUrl ? (
@@ -134,7 +134,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
         <div
           className={`w-full h-full inline-flex items-center justify-center px-3 py-1 font-semibold rounded-full select-none ${fontClass} ${shadowClass}`}
           style={{
-            backgroundColor: fill || 'rgba(99, 102, 241, 0.2)',
+            background: fill || 'rgba(99, 102, 241, 0.2)',
             color: color || '#818cf8',
             border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : '1px solid rgba(99, 102, 241, 0.4)',
             fontSize: `${fontSize || 12}px`,
@@ -499,7 +499,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
           className={`w-full h-full flex items-center justify-center font-medium transition-all select-none cursor-pointer ${shadowClass}`}
           style={{
             fontFamily: resolvedFontFamily,
-            backgroundColor: fill || '#6366f1',
+            background: fill || '#6366f1',
             border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : 'none',
             borderRadius: `${borderRadius !== undefined ? borderRadius : 12}px`,
             color: color || '#ffffff',
@@ -537,7 +537,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
         <div
           className={`w-full h-full p-6 flex flex-col justify-between border select-none ${shadowClass}`}
           style={{
-            backgroundColor: fill || '#1e293b',
+            background: fill || '#1e293b',
             borderColor: stroke || '#334155',
             borderRadius: `${borderRadius !== undefined ? borderRadius : 18}px`,
           }}
@@ -565,7 +565,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
       return (
         <div
           className="w-full h-full px-6 flex items-center justify-between bg-slate-900/95 border-b border-slate-800 select-none"
-          style={{ backgroundColor: fill || '#0f172a' }}
+          style={{ background: fill || '#0f172a' }}
         >
           <div className="flex items-center space-x-2 font-bold text-base text-indigo-400">
             <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs">
@@ -586,7 +586,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
       return (
         <div
           className="w-full h-full px-6 flex items-center justify-around bg-slate-900/95 border-t border-slate-800 text-slate-400 select-none"
-          style={{ backgroundColor: fill || '#0f172a' }}
+          style={{ background: fill || '#0f172a' }}
         >
           <div className="flex flex-col items-center gap-1 text-indigo-400">
             <Icons.Home className="w-5 h-5" />
@@ -612,7 +612,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
         <div
           className={`w-full h-full rounded-full select-none ${shadowClass}`}
           style={{
-            backgroundColor: fill || '#3b82f6',
+            background: fill || '#3b82f6',
             border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : 'none',
           }}
         />
@@ -641,7 +641,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
         <div
           className={`w-full h-full p-4 overflow-hidden select-none border transition-all ${glassClass} ${shadowClass}`}
           style={{
-            backgroundColor: fill || '#1e293b',
+            background: fill || '#1e293b',
             border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : '1px solid rgba(255,255,255,0.06)',
             borderRadius: `${borderRadius !== undefined ? borderRadius : 16}px`,
             color: color || '#f8fafc',

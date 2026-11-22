@@ -3,6 +3,7 @@ import { DesignElement, Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
 import { TransformHandles } from './TransformHandles';
 import { getSlideBackground } from '../utils/slideStyle';
+import { getFontFamilyStyle } from '../utils/fontLoader';
 
 interface ArtboardRendererProps {
   slide: Slide;
@@ -122,7 +123,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
             if (element.hidden) return null;
             const isSelected = selectedElementIds.includes(element.id);
             const isEditing = editingElementId === element.id;
-            const isTextual = ['heading', 'text', 'quote', 'button'].includes(element.type);
+            const isTextual = ['heading', 'text', 'quote', 'button', 'card', 'badge-shape', 'metric-card'].includes(element.type);
 
             return (
               <div
@@ -185,6 +186,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                     }}
                     className="w-full h-full bg-slate-900/90 border-2 border-indigo-400 rounded p-1 outline-none resize-none shadow-2xl font-inherit"
                     style={{
+                      fontFamily: getFontFamilyStyle(element.fontFamily),
                       color: element.color || '#ffffff',
                       fontSize: `${element.fontSize || 24}px`,
                       fontWeight:
@@ -196,6 +198,8 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                               ? 600
                               : 400,
                       textAlign: element.textAlign || 'left',
+                      textTransform: element.textTransform || undefined,
+                      letterSpacing: element.letterSpacing !== undefined ? `${element.letterSpacing}px` : undefined,
                       lineHeight: 1.25,
                     }}
                   />
