@@ -26,6 +26,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
     fontWeight,
     color,
     textAlign,
+    letterSpacing,
+    lineHeight,
     subTitle,
     iconName,
     placeholder,
@@ -451,7 +453,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
                     ? 600
                     : 400,
             textAlign: textAlign || 'left',
-            lineHeight: 1.25,
+            letterSpacing: letterSpacing !== undefined ? `${letterSpacing}px` : undefined,
+            lineHeight: lineHeight !== undefined ? lineHeight : (type === 'heading' ? 1.2 : 1.35),
             whiteSpace: 'pre-wrap',
           }}
         >
@@ -469,7 +472,8 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
             fontSize: `${fontSize || 22}px`,
             fontStyle: 'italic',
             textAlign: textAlign || 'left',
-            lineHeight: 1.35,
+            letterSpacing: letterSpacing !== undefined ? `${letterSpacing}px` : undefined,
+            lineHeight: lineHeight !== undefined ? lineHeight : 1.35,
           }}
         >
           <div className="whitespace-pre-wrap">“{content || 'Kutipan inspiratif atau testimonial pelanggan.'}”</div>
@@ -493,6 +497,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
             color: color || '#ffffff',
             fontSize: `${fontSize || 16}px`,
             fontWeight: fontWeight === 'bold' ? 700 : 600,
+            letterSpacing: letterSpacing !== undefined ? `${letterSpacing}px` : undefined,
           }}
         >
           {IconComponent && <IconComponent className="w-4 h-4 mr-2" />}

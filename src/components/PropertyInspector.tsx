@@ -1230,9 +1230,38 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                   {element.type === 'quote' ? 'Isi Kutipan / Petikan' : 'Konten Teks'}
                 </span>
-                <span className="text-[10px] font-mono text-indigo-400 font-medium">
-                  {(element.content || '').trim().split(/\s+/).filter(Boolean).length} kata • {(element.content || '').length} karakter
-                </span>
+                <div className="flex items-center gap-1.5">
+                  {/* Case Transformer */}
+                  <div className="flex items-center bg-slate-900 border border-slate-800 rounded p-0.5" title="Ubah Format Huruf (Kapitalisasi)">
+                    <button
+                      type="button"
+                      onClick={() => handleChange('content', (element.content || '').toUpperCase())}
+                      title="Ubah ke UPPERCASE (SEMUA BESAR)"
+                      className="px-1.5 py-0.5 text-[9px] font-mono font-bold text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded transition-colors"
+                    >
+                      TT
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('content', (element.content || '').toLowerCase())}
+                      title="Ubah ke lowercase (semua kecil)"
+                      className="px-1.5 py-0.5 text-[9px] font-mono lowercase text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded transition-colors"
+                    >
+                      tt
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('content', (element.content || '').replace(/\b\w+/g, t => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase()))}
+                      title="Ubah ke Title Case (Kapital Setiap Kata)"
+                      className="px-1.5 py-0.5 text-[9px] font-mono text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded transition-colors"
+                    >
+                      Tt
+                    </button>
+                  </div>
+                  <span className="text-[10px] font-mono text-indigo-400 font-medium">
+                    {(element.content || '').trim().split(/\s+/).filter(Boolean).length} kata • {(element.content || '').length} kar
+                  </span>
+                </div>
               </div>
               <textarea
                 rows={3}
@@ -1417,6 +1446,102 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                       style={{ fontFamily: getFontFamilyStyle(element.fontFamily) }}
                     >
                       Ag The quick brown fox jumps 123
+                    </div>
+                  </div>
+
+                  {/* Text Alignment, Kerning & Line Height */}
+                  <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                    {/* Perataan Teks (Alignment) */}
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] text-slate-500">Perataan Teks</label>
+                      <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
+                        {[
+                          { id: 'left', label: 'Kiri', icon: AlignLeft },
+                          { id: 'center', label: 'Tengah', icon: AlignCenter },
+                          { id: 'right', label: 'Kanan', icon: AlignRight },
+                        ].map(item => {
+                          const Icon = item.icon;
+                          const isActive = (element.textAlign || 'left') === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => handleChange('textAlign', item.id)}
+                              title={`Rata ${item.label}`}
+                              className={`p-1.5 rounded transition-colors ${
+                                isActive
+                                  ? 'bg-indigo-600 text-white shadow'
+                                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                              }`}
+                            >
+                              <Icon className="w-3.5 h-3.5" />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Letter Spacing / Kerning */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-500">Jarak Huruf (Kerning)</span>
+                        <span className="font-mono text-indigo-400 font-semibold">
+                          {element.letterSpacing !== undefined ? `${element.letterSpacing}px` : '0px'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="range"
+                          min="-2"
+                          max="8"
+                          step="0.5"
+                          value={element.letterSpacing !== undefined ? element.letterSpacing : 0}
+                          onChange={e => handleChange('letterSpacing', parseFloat(e.target.value))}
+                          className="w-full accent-indigo-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                        />
+                      </div>
+                      <div className="grid grid-cols-5 gap-1 pt-0.5">
+                        {[-1, 0, 1, 2, 4].map(val => (
+                          <button
+                            key={val}
+                            type="button"
+                            onClick={() => handleChange('letterSpacing', val)}
+                            className={`py-0.5 rounded text-center text-[9px] font-mono border transition-all ${
+                              (element.letterSpacing || 0) === val
+                                ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300 font-bold'
+                                : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            {val > 0 ? `+${val}` : `${val}`}px
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Line Height / Spasi Antar Baris */}
+                    <div className="space-y-1 pt-1">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-slate-500">Tinggi Baris (Line Height)</span>
+                        <span className="font-mono text-indigo-400 font-semibold">
+                          {element.lineHeight !== undefined ? `${element.lineHeight}` : '1.35'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-1">
+                        {[1.1, 1.25, 1.5, 1.8].map(lh => (
+                          <button
+                            key={lh}
+                            type="button"
+                            onClick={() => handleChange('lineHeight', lh)}
+                            className={`py-1 rounded text-center text-[10px] font-mono border transition-all ${
+                              (element.lineHeight || (element.type === 'heading' ? 1.2 : 1.35)) === lh
+                                ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300 font-bold'
+                                : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            {lh}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -216,11 +216,11 @@ function parseElementProperty(line: string, el: Partial<DesignElement>) {
   }
 
   const numProps: (keyof DesignElement)[] = [
-    'zIndex', 'rotation', 'opacity', 'fontSize', 'strokeWidth', 'borderRadius'
+    'zIndex', 'rotation', 'opacity', 'fontSize', 'strokeWidth', 'borderRadius', 'letterSpacing', 'lineHeight'
   ];
 
   for (const prop of numProps) {
-    const match = line.match(new RegExp(`${prop}:\\s*([0-9.]+)`));
+    const match = line.match(new RegExp(`${prop}:\\s*(-?[0-9.]+)`));
     if (match) {
       (el as any)[prop] = parseFloat(match[1]);
       return;
