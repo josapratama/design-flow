@@ -26,6 +26,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
     fontWeight,
     fontStyle,
     textDecoration,
+    textTransform,
     color,
     textAlign,
     letterSpacing,
@@ -456,6 +457,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
                     : 400,
             fontStyle: fontStyle || undefined,
             textDecoration: textDecoration || undefined,
+            textTransform: textTransform || undefined,
             textAlign: textAlign || 'left',
             letterSpacing: letterSpacing !== undefined ? `${letterSpacing}px` : undefined,
             lineHeight: lineHeight !== undefined ? lineHeight : (type === 'heading' ? 1.2 : 1.35),
@@ -476,6 +478,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
             fontSize: `${fontSize || 22}px`,
             fontStyle: fontStyle || 'italic',
             textDecoration: textDecoration || undefined,
+            textTransform: textTransform || undefined,
             textAlign: textAlign || 'left',
             letterSpacing: letterSpacing !== undefined ? `${letterSpacing}px` : undefined,
             lineHeight: lineHeight !== undefined ? lineHeight : 1.35,
@@ -504,6 +507,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
             fontWeight: fontWeight === 'bold' ? 700 : 600,
             fontStyle: fontStyle || undefined,
             textDecoration: textDecoration || undefined,
+            textTransform: textTransform || undefined,
             letterSpacing: letterSpacing !== undefined ? `${letterSpacing}px` : undefined,
           }}
         >

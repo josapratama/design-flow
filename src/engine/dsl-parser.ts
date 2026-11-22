@@ -204,7 +204,7 @@ function parseElementProperty(line: string, el: Partial<DesignElement>) {
   const strProps: (keyof DesignElement)[] = [
     'content', 'color', 'fill', 'stroke', 'variant', 'placeholder', 
     'iconName', 'subTitle', 'badgeText', 'shadow', 'strokeDash', 
-    'fontWeight', 'textAlign', 'imageUrl', 'groupId', 'fontFamily', 'chartType'
+    'fontWeight', 'fontStyle', 'textDecoration', 'textTransform', 'textAlign', 'imageUrl', 'groupId', 'fontFamily', 'chartType'
   ];
 
   for (const prop of strProps) {

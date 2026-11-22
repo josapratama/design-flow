@@ -1383,4 +1383,360 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+  {
+    id: 'bento-grid-4-cards',
+    name: 'Bento Grid Showcase (4-Card Apple Style)',
+    description: 'Layout bento asimetris modern: 1 kartu hero pilar utama + 3 kartu modular interaktif dengan metrik dan fitur',
+    category: 'all',
+    icon: 'LayoutGrid',
+    generateElements: (originX = 120, originY = 240) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+
+      const totalW = 1100;
+      const totalH = 480;
+      const gap = 20;
+
+      // Left Column (Hero Card): width 530, height 480
+      const heroW = 530;
+      const heroH = totalH;
+
+      // 1. Hero Card Background
+      elements.push({
+        id: `el_${now}_bento_hero_bg`,
+        type: 'card',
+        name: 'Hero Bento Card',
+        x: originX,
+        y: originY,
+        width: heroW,
+        height: heroH,
+        zIndex: 1,
+        fill: 'linear-gradient(145deg, #1e1b4b 0%, #0f172a 100%)',
+        stroke: 'rgba(99, 102, 241, 0.4)',
+        strokeWidth: 1.5,
+        borderRadius: 24,
+        shadow: '2xl',
+      });
+
+      // Hero Badge
+      elements.push({
+        id: `el_${now}_bento_hero_badge`,
+        type: 'badge-shape',
+        name: 'Hero Badge',
+        x: originX + 28,
+        y: originY + 28,
+        width: 140,
+        height: 32,
+        zIndex: 2,
+        content: 'CORE ENGINE V2',
+        fill: 'rgba(99, 102, 241, 0.25)',
+        stroke: '#818cf8',
+        color: '#c7d2fe',
+        fontSize: 11,
+        fontWeight: 'bold',
+        borderRadius: 8,
+      });
+
+      // Hero Title
+      elements.push({
+        id: `el_${now}_bento_hero_title`,
+        type: 'heading',
+        name: 'Hero Title',
+        x: originX + 28,
+        y: originY + 76,
+        width: heroW - 56,
+        height: 80,
+        zIndex: 2,
+        content: 'Arsitektur Modular Generasi Berikutnya',
+        fontSize: 28,
+        fontWeight: 'extrabold',
+        color: '#ffffff',
+        lineHeight: 1.25,
+      });
+
+      // Hero Description
+      elements.push({
+        id: `el_${now}_bento_hero_desc`,
+        type: 'text',
+        name: 'Hero Description',
+        x: originX + 28,
+        y: originY + 168,
+        width: heroW - 56,
+        height: 110,
+        zIndex: 2,
+        content: 'Platform terintegrasi yang menyatukan alur kerja desain modern, rendering instan, dan kolaborasi tanpa hambatan dengan presisi tingkat piksel.',
+        fontSize: 15,
+        lineHeight: 1.6,
+        color: '#94a3b8',
+      });
+
+      // Hero Stat Inner Card
+      elements.push({
+        id: `el_${now}_bento_hero_stat`,
+        type: 'card',
+        name: 'Hero Stat Inner Card',
+        x: originX + 28,
+        y: originY + 295,
+        width: heroW - 56,
+        height: 85,
+        zIndex: 2,
+        fill: 'rgba(0, 0, 0, 0.35)',
+        stroke: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 16,
+      });
+
+      elements.push({
+        id: `el_${now}_bento_hero_stat_num`,
+        type: 'heading',
+        name: 'Hero Stat Number',
+        x: originX + 48,
+        y: originY + 305,
+        width: 180,
+        height: 40,
+        zIndex: 3,
+        content: '99.99%',
+        fontSize: 26,
+        fontWeight: 'extrabold',
+        color: '#38bdf8',
+      });
+
+      elements.push({
+        id: `el_${now}_bento_hero_stat_lbl`,
+        type: 'text',
+        name: 'Hero Stat Label',
+        x: originX + 48,
+        y: originY + 348,
+        width: 220,
+        height: 24,
+        zIndex: 3,
+        content: 'Uptime SLA Ketersediaan Sistem',
+        fontSize: 11,
+        color: '#94a3b8',
+      });
+
+      // Hero CTA Button
+      elements.push({
+        id: `el_${now}_bento_hero_btn`,
+        type: 'button',
+        name: 'Hero CTA Button',
+        x: originX + 28,
+        y: originY + 400,
+        width: heroW - 56,
+        height: 48,
+        zIndex: 2,
+        content: 'Eksplorasi Ekosistem →',
+        fill: '#6366f1',
+        color: '#ffffff',
+        borderRadius: 14,
+        fontSize: 14,
+        fontWeight: 'semibold',
+        shadow: 'glow-indigo',
+      });
+
+      // Right Column
+      const rightX = originX + heroW + gap;
+      const rightW = totalW - heroW - gap;
+      const topH = 225;
+      const bottomH = totalH - topH - gap;
+
+      // Card 2: Top Wide Card (Enterprise Security)
+      elements.push({
+        id: `el_${now}_bento_sec_bg`,
+        type: 'card',
+        name: 'Security Card',
+        x: rightX,
+        y: originY,
+        width: rightW,
+        height: topH,
+        zIndex: 1,
+        fill: 'linear-gradient(135deg, #021a12 0%, #0f172a 100%)',
+        stroke: 'rgba(16, 185, 129, 0.4)',
+        strokeWidth: 1.5,
+        borderRadius: 24,
+        shadow: 'xl',
+      });
+
+      elements.push({
+        id: `el_${now}_bento_sec_badge`,
+        type: 'badge-shape',
+        name: 'Security Badge',
+        x: rightX + 24,
+        y: originY + 22,
+        width: 140,
+        height: 28,
+        zIndex: 2,
+        content: 'SOC-2 COMPLIANT',
+        fill: 'rgba(16, 185, 129, 0.2)',
+        stroke: '#34d399',
+        color: '#6ee7b7',
+        fontSize: 10,
+        fontWeight: 'bold',
+        borderRadius: 8,
+      });
+
+      elements.push({
+        id: `el_${now}_bento_sec_title`,
+        type: 'heading',
+        name: 'Security Title',
+        x: rightX + 24,
+        y: originY + 62,
+        width: rightW - 48,
+        height: 40,
+        zIndex: 2,
+        content: 'Keamanan Tingkat Enterprise',
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#ffffff',
+      });
+
+      elements.push({
+        id: `el_${now}_bento_sec_desc`,
+        type: 'text',
+        name: 'Security Description',
+        x: rightX + 24,
+        y: originY + 110,
+        width: rightW - 48,
+        height: 80,
+        zIndex: 2,
+        content: 'Enkripsi end-to-end 256-bit standar industri perbankan dengan audit trail real-time dan isolasi data terlindungi.',
+        fontSize: 13,
+        lineHeight: 1.5,
+        color: '#94a3b8',
+      });
+
+      // Bottom Row: 2 Split Cards
+      const subCardW = (rightW - gap) / 2;
+      const bottomY = originY + topH + gap;
+
+      // Card 3: Bottom Left (Live Sync / Collaboration)
+      elements.push({
+        id: `el_${now}_bento_collab_bg`,
+        type: 'card',
+        name: 'Collaboration Card',
+        x: rightX,
+        y: bottomY,
+        width: subCardW,
+        height: bottomH,
+        zIndex: 1,
+        fill: 'linear-gradient(135deg, #180512 0%, #0f172a 100%)',
+        stroke: 'rgba(244, 63, 94, 0.35)',
+        strokeWidth: 1.5,
+        borderRadius: 24,
+        shadow: 'lg',
+      });
+
+      elements.push({
+        id: `el_${now}_bento_collab_badge`,
+        type: 'badge-shape',
+        name: 'Collab Badge',
+        x: rightX + 20,
+        y: bottomY + 20,
+        width: 105,
+        height: 26,
+        zIndex: 2,
+        content: '⚡ REAL-TIME',
+        fill: 'rgba(244, 63, 94, 0.2)',
+        stroke: '#fb7185',
+        color: '#fecdd3',
+        fontSize: 10,
+        fontWeight: 'bold',
+        borderRadius: 8,
+      });
+
+      elements.push({
+        id: `el_${now}_bento_collab_title`,
+        type: 'heading',
+        name: 'Collab Title',
+        x: rightX + 20,
+        y: bottomY + 58,
+        width: subCardW - 40,
+        height: 35,
+        zIndex: 2,
+        content: 'Sinkronisasi Cepat',
+        fontSize: 17,
+        fontWeight: 'bold',
+        color: '#ffffff',
+      });
+
+      elements.push({
+        id: `el_${now}_bento_collab_desc`,
+        type: 'text',
+        name: 'Collab Desc',
+        x: rightX + 20,
+        y: bottomY + 100,
+        width: subCardW - 40,
+        height: 95,
+        zIndex: 2,
+        content: 'Kolaborasi multi-tim bebas konflik dengan latensi ultra rendah di bawah 30 milidetik.',
+        fontSize: 12,
+        lineHeight: 1.5,
+        color: '#94a3b8',
+      });
+
+      // Card 4: Bottom Right (Productivity Boost Metric)
+      const card4X = rightX + subCardW + gap;
+      elements.push({
+        id: `el_${now}_bento_metric_bg`,
+        type: 'card',
+        name: 'Metric Card',
+        x: card4X,
+        y: bottomY,
+        width: subCardW,
+        height: bottomH,
+        zIndex: 1,
+        fill: 'linear-gradient(135deg, #0e0b1f 0%, #0f172a 100%)',
+        stroke: 'rgba(168, 85, 247, 0.35)',
+        strokeWidth: 1.5,
+        borderRadius: 24,
+        shadow: 'lg',
+      });
+
+      elements.push({
+        id: `el_${now}_bento_metric_num`,
+        type: 'heading',
+        name: 'Metric Number',
+        x: card4X + 20,
+        y: bottomY + 25,
+        width: subCardW - 40,
+        height: 48,
+        zIndex: 2,
+        content: '+140%',
+        fontSize: 34,
+        fontWeight: 'extrabold',
+        color: '#c084fc',
+      });
+
+      elements.push({
+        id: `el_${now}_bento_metric_title`,
+        type: 'heading',
+        name: 'Metric Title',
+        x: card4X + 20,
+        y: bottomY + 80,
+        width: subCardW - 40,
+        height: 28,
+        zIndex: 2,
+        content: 'Efisiensi Waktu Tim',
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#ffffff',
+      });
+
+      elements.push({
+        id: `el_${now}_bento_metric_desc`,
+        type: 'text',
+        name: 'Metric Desc',
+        x: card4X + 20,
+        y: bottomY + 115,
+        width: subCardW - 40,
+        height: 80,
+        zIndex: 2,
+        content: 'Diukur berdasarkan hasil survei implementasi pada 1.500+ organisasi produktif.',
+        fontSize: 12,
+        lineHeight: 1.45,
+        color: '#94a3b8',
+      });
+
+      return elements;
+    },
+  },
 ];

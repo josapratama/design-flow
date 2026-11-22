@@ -24,6 +24,7 @@ import {
   HelpCircle,
   PartyPopper,
   LayoutGrid,
+  Search,
   SlidersHorizontal,
   Smile,
   Check,
@@ -66,10 +67,12 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [penColor, setPenColor] = useState('#f43f5e');
   const [penWidth, setPenWidth] = useState<number>(4);
   const [showSlideNavigator, setShowSlideNavigator] = useState(false);
+  const [navSearch, setNavSearch] = useState('');
   const [isSoundMuted, setIsSoundMuted] = useState(!soundEffects.isSoundEnabled());
   const [laserPos, setLaserPos] = useState({ x: -100, y: -100 });
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState(5);
+  const [autoPlayRemaining, setAutoPlayRemaining] = useState(5);
   const [transitionEffect, setTransitionEffect] = useState<'fade' | 'slide' | 'zoom'>('fade');
   const [notesFontSize, setNotesFontSize] = useState<'sm' | 'base' | 'lg' | 'xl'>('base');
   const [jumpBuffer, setJumpBuffer] = useState<string>('');
@@ -134,26 +137,6 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
   });
-
-  const [isAutoScrollNotes, setIsAutoScrollNotes] = useState(false);
-  const podiumScrollRef = useRef<HTMLDivElement>(null);
-  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
-
-  useEffect(() => {
-    if (!isAutoScrollNotes || !isPodiumMode) return;
-    const interval = setInterval(() => {
-      if (podiumScrollRef.current) {
-        podiumScrollRef.current.scrollTop += 1;
-      }
-    }, 45);
-    return () => clearInterval(interval);
-  }, [isAutoScrollNotes, isPodiumMode]);
-
-  useEffect(() => {
-    if (podiumScrollRef.current) {
-      podiumScrollRef.current.scrollTop = 0;
-    }
-  }, [currentIndex]);
 
   const slideAreaRef = useRef<HTMLDivElement>(null);
   const slideContainerRef = useRef<HTMLDivElement>(null);
@@ -365,13 +348,24 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     lastPenPosRef.current = null;
   };
 
-  // Auto-play interval
+  // Reset auto-play countdown whenever slide or auto-play interval changes
+  useEffect(() => {
+    setAutoPlayRemaining(autoPlayInterval);
+  }, [currentIndex, autoPlayInterval, isAutoPlay]);
+
+  // Auto-play interval with countdown
   useEffect(() => {
     let timer: any;
     if (isAutoPlay) {
       timer = setInterval(() => {
-        goToNext();
-      }, autoPlayInterval * 1000);
+        setAutoPlayRemaining(prev => {
+          if (prev <= 1) {
+            goToNext();
+            return autoPlayInterval;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
     return () => clearInterval(timer);
   }, [isAutoPlay, autoPlayInterval, slides.length, currentIndex]);
@@ -673,13 +667,11 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         : 'animate-in fade-in duration-200';
 
   return (
-    <div className={`fixed inset-0 z-50 bg-slate-950 flex flex-col select-none text-slate-100 ${
-      isControlsIdle && !isLaserActive && !isPenActive ? 'cursor-none' : ''
-    }`}>
-      {/* Presenter Top Bar - Clean, Minimalist & Responsive */}
-      <header className={`h-14 border-b border-slate-800/80 px-3 sm:px-6 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl shrink-0 z-30 transition-opacity duration-300 ${
-        isControlsIdle && !isLaserActive && !isPenActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
+    <div className={`fixed inset-0 z-50 bg-slate-950 flex flex-col select-none text-slate-100 ${isControlsIdle && !isLaserActive && !isPenActive ? 'cursor-none' : ''
       }`}>
+      {/* Presenter Top Bar - Clean, Minimalist & Responsive */}
+      <header className={`h-14 border-b border-slate-800/80 px-3 sm:px-6 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl shrink-0 z-30 transition-opacity duration-300 ${isControlsIdle && !isLaserActive && !isPenActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
+        }`}>
         {/* Left Section: Live Status & Clean Timer */}
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <div className="flex items-center gap-2 shrink-0">
@@ -700,13 +692,12 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
             return (
               <div
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-mono border transition-all ${
-                  isTimeOver
-                    ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse font-bold'
-                    : isTimeWarning
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-mono border transition-all ${isTimeOver
+                  ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse font-bold'
+                  : isTimeWarning
                     ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-semibold'
                     : 'bg-slate-950 border-slate-800 text-slate-200'
-                }`}
+                  }`}
               >
                 <button
                   onClick={() => setIsTimerRunning(!isTimerRunning)}
@@ -733,6 +724,17 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               </div>
             );
           })()}
+
+          {/* Auto-Play Live Countdown Badge */}
+          {isAutoPlay && (
+            <div
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-mono border bg-indigo-500/15 border-indigo-500/40 text-indigo-300"
+              title={`Auto-play aktif: berganti setiap ${autoPlayInterval} detik (tersisa ${autoPlayRemaining} detik)`}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping" />
+              <span>Auto ({autoPlayRemaining}s)</span>
+            </div>
+          )}
         </div>
 
         {/* Right Section: Essential Presenter Tools & Options Popover */}
@@ -745,11 +747,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 if (!isLaserActive) setIsPenActive(false);
               }}
               title="Laser Pointer (Tekan 'L')"
-              className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
-                isLaserActive
-                  ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-md shadow-rose-500/20'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
+              className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${isLaserActive
+                ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-md shadow-rose-500/20'
+                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
             >
               <CircleDot className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Laser</span>
@@ -781,11 +782,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 if (!isPenActive) setIsLaserActive(false);
               }}
               title="Anotasi Pena Coretan (Tekan 'P')"
-              className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
-                isPenActive
-                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
+              className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${isPenActive
+                ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
+                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
             >
               <Pen className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Pena</span>
@@ -834,11 +834,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               }
             }}
             title="Sorot Panggung / Virtual Spotlight Focus (Tekan 'S')"
-            className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
-              isSpotlightActive
-                ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-md shadow-amber-500/20'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
+            className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${isSpotlightActive
+              ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-md shadow-amber-500/20'
+              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
           >
             <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Spotlight</span>
@@ -858,11 +857,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           <button
             onClick={() => setShowNotes(!showNotes)}
             title="Tampilkan / Sembunyikan Catatan Pembicara (N)"
-            className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
-              showNotes
-                ? 'bg-indigo-600/15 border-indigo-500/40 text-indigo-300'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-            }`}
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${showNotes
+              ? 'bg-indigo-600/15 border-indigo-500/40 text-indigo-300'
+              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+              }`}
           >
             <span className="hidden sm:inline">{showNotes ? 'Sembunyikan Catatan' : 'Lihat Catatan'}</span>
             <span className="sm:hidden">Notes</span>
@@ -872,11 +870,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           <button
             onClick={() => setIsPodiumMode(!isPodiumMode)}
             title="Mode Teleprompter & Podium Panggung (Teks Catatan Besar)"
-            className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${
-              isPodiumMode
-                ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/30'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${isPodiumMode
+              ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/30'
+              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
           >
             <Tv className="w-3.5 h-3.5 text-indigo-400" />
             <span className="hidden sm:inline">Podium</span>
@@ -887,11 +884,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             <button
               onClick={() => setShowPresenterOptions(!showPresenterOptions)}
               title="Pengaturan & Opsi Presentasi"
-              className={`p-1.5 rounded-xl border transition-colors ${
-                showPresenterOptions || isAutoPlay || blankMode !== 'none' || !isSoundMuted
-                  ? 'bg-slate-800 text-indigo-300 border-slate-700'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
+              className={`p-1.5 rounded-xl border transition-colors ${showPresenterOptions || isAutoPlay || blankMode !== 'none' || !isSoundMuted
+                ? 'bg-slate-800 text-indigo-300 border-slate-700'
+                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
             >
               <SlidersHorizontal className="w-4 h-4" />
             </button>
@@ -939,9 +935,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => setIsAutoPlay(!isAutoPlay)}
-                      className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                        isAutoPlay ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'
-                      }`}
+                      className={`px-2 py-0.5 rounded text-[11px] font-semibold ${isAutoPlay ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'
+                        }`}
                     >
                       {isAutoPlay ? 'ON' : 'OFF'}
                     </button>
@@ -964,9 +959,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                   <span className="text-xs text-slate-300">Efek Suara Geser (M)</span>
                   <button
                     onClick={toggleSound}
-                    className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                      !isSoundMuted ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
-                    }`}
+                    className={`px-2 py-0.5 rounded text-[11px] font-semibold ${!isSoundMuted ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
+                      }`}
                   >
                     {!isSoundMuted ? 'Aktif' : 'Mati'}
                   </button>
@@ -979,18 +973,16 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                     <button
                       onClick={() => setBlankMode(prev => (prev === 'black' ? 'none' : 'black'))}
                       title="Layar Hitam (B)"
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        blankMode === 'black' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
-                      }`}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${blankMode === 'black' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
+                        }`}
                     >
                       Hitam (B)
                     </button>
                     <button
                       onClick={() => setBlankMode(prev => (prev === 'white' ? 'none' : 'white'))}
                       title="Layar Putih (W)"
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                        blankMode === 'white' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
-                      }`}
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${blankMode === 'white' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
+                        }`}
                     >
                       Putih (W)
                     </button>
@@ -1034,14 +1026,6 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         </div>
       </header>
 
-      {/* 2.5px Presentation Deck Progress Line */}
-      <div className="h-[2.5px] w-full bg-slate-900/80 overflow-hidden relative z-30 shrink-0">
-        <div
-          className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 transition-all duration-300 shadow-[0_0_8px_rgba(99,102,241,0.6)]"
-          style={{ width: `${Math.round(((currentIndex + 1) / slides.length) * 100)}%` }}
-        />
-      </div>
-
       {/* Main Slide Display + Notes Area */}
       {isPodiumMode ? (
         <div className="flex-1 flex flex-col bg-slate-950 text-white overflow-hidden p-4 sm:p-6 animate-in fade-in duration-150">
@@ -1066,11 +1050,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 </span>
                 {targetMinutes > 0 && (
                   <span
-                    className={`text-xs font-mono px-2 py-0.5 rounded-lg border font-bold ${
-                      secondsElapsed > targetMinutes * 60
-                        ? 'bg-rose-500/20 text-rose-300 border-rose-500/50 animate-pulse'
-                        : 'bg-slate-800 text-slate-400 border-slate-700'
-                    }`}
+                    className={`text-xs font-mono px-2 py-0.5 rounded-lg border font-bold ${secondsElapsed > targetMinutes * 60
+                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/50 animate-pulse'
+                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                      }`}
                   >
                     Target {targetMinutes}m
                   </span>
@@ -1132,17 +1115,6 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                     </button>
                   </div>
                   <button
-                    onClick={() => setIsAutoScrollNotes(!isAutoScrollNotes)}
-                    title={isAutoScrollNotes ? 'Jeda Auto-Scroll Naskah Teleprompter' : 'Mulai Auto-Scroll Naskah Teleprompter'}
-                    className={`px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 border transition-colors ${
-                      isAutoScrollNotes
-                        ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30 animate-pulse'
-                        : 'bg-slate-950 border-slate-800 text-slate-300 hover:text-white'
-                    }`}
-                  >
-                    <span>{isAutoScrollNotes ? '⏸ Jeda Scroll' : '▶ Auto-Scroll'}</span>
-                  </button>
-                  <button
                     onClick={downloadSpeakerNotes}
                     title="Unduh Naskah (.md)"
                     className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg border border-slate-800"
@@ -1152,21 +1124,20 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 </div>
               </div>
 
-              {/* Editable Large Typography Textarea with Auto-Scroll ref */}
-              <div ref={podiumScrollRef} className="flex-1 mt-3 overflow-y-auto">
+              {/* Editable Large Typography Textarea */}
+              <div className="flex-1 mt-3 overflow-y-auto">
                 <textarea
                   value={currentSlide.notes || ''}
                   onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
                   placeholder="Ketik poin penting, panduan berbicara, atau naskah presentasi untuk slide ini..."
-                  className={`w-full h-full bg-transparent border-none focus:outline-none text-slate-100 placeholder-slate-600 leading-relaxed resize-none font-sans ${
-                    notesFontSize === 'sm'
-                      ? 'text-base'
-                      : notesFontSize === 'base'
-                        ? 'text-xl'
-                        : notesFontSize === 'lg'
-                          ? 'text-2xl font-medium'
-                          : 'text-3xl font-semibold'
-                  }`}
+                  className={`w-full h-full bg-transparent border-none focus:outline-none text-slate-100 placeholder-slate-600 leading-relaxed resize-none font-sans ${notesFontSize === 'sm'
+                    ? 'text-base'
+                    : notesFontSize === 'base'
+                      ? 'text-xl'
+                      : notesFontSize === 'lg'
+                        ? 'text-2xl font-medium'
+                        : 'text-3xl font-semibold'
+                    }`}
                 />
               </div>
 
@@ -1262,9 +1233,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setBlankMode(prev => (prev === 'black' ? 'none' : 'black'))}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${
-                  blankMode === 'black' ? 'bg-purple-600 border-purple-500 text-white' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                }`}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${blankMode === 'black' ? 'bg-purple-600 border-purple-500 text-white' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
               >
                 Layar Hitam (B)
               </button>
@@ -1288,451 +1258,465 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           </div>
         </div>
       ) : (
-      <div className="flex-1 flex overflow-hidden">
-        {/* Slide Canvas Area */}
-        <div
-          ref={slideAreaRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          onTouchStart={e => {
-            if (isPenActive) return;
-            const touch = e.touches[0];
-            if (touch) {
-              touchStartRef.current = { x: touch.clientX, y: touch.clientY };
-            }
-          }}
-          onTouchEnd={e => {
-            if (isPenActive || !touchStartRef.current) return;
-            const touch = e.changedTouches[0];
-            if (touch) {
-              const diffX = touch.clientX - touchStartRef.current.x;
-              const diffY = touch.clientY - touchStartRef.current.y;
-              if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
-                if (diffX < 0) {
-                  goToNext();
-                } else {
-                  goToPrev();
-                }
-              }
-            }
-            touchStartRef.current = null;
-          }}
-          className={`flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden ${isLaserActive ? 'cursor-none' : 'cursor-default'
-            }`}
-        >
-          {/* Virtual Spotlight Mode (Stage Light focus) */}
-          {isSpotlightActive && (
-            <div
-              className="absolute inset-0 pointer-events-none z-45 transition-opacity duration-75"
-              style={{
-                background: `radial-gradient(circle 140px at ${laserPos.x}px ${laserPos.y}px, transparent 0%, rgba(0,0,0,0.80) 100%)`,
-              }}
-            />
-          )}
-
-          {/* Blank Screen Overlay (Black or White) for Audience Focus */}
-          {blankMode === 'black' && (
-            <div
-              onClick={() => setBlankMode('none')}
-              className="absolute inset-0 bg-black z-40 flex flex-col items-center justify-center cursor-pointer select-none animate-in fade-in duration-150"
-            >
-              <div className="text-slate-500 text-xs font-mono px-3.5 py-1.5 rounded-full border border-slate-800/80 bg-slate-950/80 shadow-lg">
-                Mode Layar Hitam (Fokus Audiens) • Tekan <kbd className="text-slate-300 font-bold">B</kbd> atau klik untuk lanjut
-              </div>
-            </div>
-          )}
-
-          {blankMode === 'white' && (
-            <div
-              onClick={() => setBlankMode('none')}
-              className="absolute inset-0 bg-white z-40 flex flex-col items-center justify-center cursor-pointer select-none animate-in fade-in duration-150"
-            >
-              <div className="text-slate-700 text-xs font-mono px-3.5 py-1.5 rounded-full border border-slate-300 bg-white/90 shadow-lg">
-                Mode Layar Putih (Diskusi / Proyektor) • Tekan <kbd className="text-slate-900 font-bold">W</kbd> atau klik untuk lanjut
-              </div>
-            </div>
-          )}
-
+        <div className="flex-1 flex overflow-hidden">
+          {/* Slide Canvas Area */}
           <div
-            key={currentIndex}
-            ref={slideContainerRef}
-            className={`relative shadow-2xl rounded-sm overflow-hidden ${transitionClass}`}
-            style={{
-              width: `${currentSlide.width}px`,
-              height: `${currentSlide.height}px`,
-              background: getSlideBackground(currentSlide),
-              transform: `scale(${scale})`,
-              transformOrigin: 'center center',
-            }}
+            ref={slideAreaRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+            className={`flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden ${isLaserActive ? 'cursor-none' : 'cursor-default'
+              }`}
           >
-            {currentSlide.elements
-              .slice()
-              .sort((a, b) => a.zIndex - b.zIndex)
-              .map(el => (
+            {/* Virtual Spotlight Mode (Stage Light focus) */}
+            {isSpotlightActive && (
               <div
-                key={el.id}
-                className="absolute"
+                className="absolute inset-0 pointer-events-none z-45 transition-opacity duration-75"
                 style={{
-                  left: `${el.x}px`,
-                  top: `${el.y}px`,
-                  width: `${el.width}px`,
-                  height: `${el.height}px`,
-                  zIndex: el.zIndex,
-                  transform: [
-                    el.rotation ? `rotate(${el.rotation}deg)` : '',
-                    el.flipX ? 'scaleX(-1)' : '',
-                    el.flipY ? 'scaleY(-1)' : '',
-                  ].filter(Boolean).join(' ') || undefined,
-                  opacity: el.opacity !== undefined ? el.opacity : 1,
+                  background: `radial-gradient(circle 140px at ${laserPos.x}px ${laserPos.y}px, transparent 0%, rgba(0,0,0,0.80) 100%)`,
+                }}
+              />
+            )}
+
+            {/* Blank Screen Overlay (Black or White) for Audience Focus */}
+            {blankMode === 'black' && (
+              <div
+                onClick={() => setBlankMode('none')}
+                className="absolute inset-0 bg-black z-40 flex flex-col items-center justify-center cursor-pointer select-none animate-in fade-in duration-150"
+              >
+                <div className="text-slate-500 text-xs font-mono px-3.5 py-1.5 rounded-full border border-slate-800/80 bg-slate-950/80 shadow-lg">
+                  Mode Layar Hitam (Fokus Audiens) • Tekan <kbd className="text-slate-300 font-bold">B</kbd> atau klik untuk lanjut
+                </div>
+              </div>
+            )}
+
+            {blankMode === 'white' && (
+              <div
+                onClick={() => setBlankMode('none')}
+                className="absolute inset-0 bg-white z-40 flex flex-col items-center justify-center cursor-pointer select-none animate-in fade-in duration-150"
+              >
+                <div className="text-slate-700 text-xs font-mono px-3.5 py-1.5 rounded-full border border-slate-300 bg-white/90 shadow-lg">
+                  Mode Layar Putih (Diskusi / Proyektor) • Tekan <kbd className="text-slate-900 font-bold">W</kbd> atau klik untuk lanjut
+                </div>
+              </div>
+            )}
+
+            <div
+              key={currentIndex}
+              ref={slideContainerRef}
+              className={`relative shadow-2xl rounded-sm overflow-hidden ${transitionClass}`}
+              style={{
+                width: `${currentSlide.width}px`,
+                height: `${currentSlide.height}px`,
+                background: getSlideBackground(currentSlide),
+                transform: `scale(${scale})`,
+                transformOrigin: 'center center',
+              }}
+            >
+              {currentSlide.elements
+                .slice()
+                .sort((a, b) => a.zIndex - b.zIndex)
+                .map(el => (
+                  <div
+                    key={el.id}
+                    className="absolute"
+                    style={{
+                      left: `${el.x}px`,
+                      top: `${el.y}px`,
+                      width: `${el.width}px`,
+                      height: `${el.height}px`,
+                      zIndex: el.zIndex,
+                      transform: [
+                        el.rotation ? `rotate(${el.rotation}deg)` : '',
+                        el.flipX ? 'scaleX(-1)' : '',
+                        el.flipY ? 'scaleY(-1)' : '',
+                      ].filter(Boolean).join(' ') || undefined,
+                      opacity: el.opacity !== undefined ? el.opacity : 1,
+                    }}
+                  >
+                    <ElementRenderer element={el} isSelected={false} />
+                  </div>
+                ))}
+
+              {/* Live Doodle / Pen Annotation Canvas */}
+              <canvas
+                ref={penCanvasRef}
+                width={currentSlide.width}
+                height={currentSlide.height}
+                className={`absolute inset-0 z-30 transition-opacity ${isPenActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
+                  }`}
+                onPointerDown={handlePenPointerDown}
+                onPointerMove={handlePenPointerMove}
+                onPointerUp={handlePenPointerUp}
+                onPointerLeave={handlePenPointerUp}
+              />
+            </div>
+
+            {/* Glowing Virtual Laser Pointer with Pulse Ring */}
+            {isLaserActive && (
+              <div
+                className="absolute pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2"
+                style={{
+                  left: `${laserPos.x}px`,
+                  top: `${laserPos.y}px`,
                 }}
               >
-                <ElementRenderer element={el} isSelected={false} />
+                <div className="relative flex items-center justify-center">
+                  <span
+                    className="absolute w-8 h-8 rounded-full animate-ping opacity-35"
+                    style={{ backgroundColor: laserColor }}
+                  />
+                  <span
+                    className="w-4 h-4 rounded-full shadow-lg"
+                    style={{
+                      backgroundColor: laserColor,
+                      boxShadow: `0 0 18px 6px ${laserColor}, 0 0 6px #fff`,
+                    }}
+                  />
+                </div>
               </div>
-            ))}
+            )}
 
-            {/* Live Doodle / Pen Annotation Canvas */}
-            <canvas
-              ref={penCanvasRef}
-              width={currentSlide.width}
-              height={currentSlide.height}
-              className={`absolute inset-0 z-30 transition-opacity ${isPenActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
-                }`}
-              onPointerDown={handlePenPointerDown}
-              onPointerMove={handlePenPointerMove}
-              onPointerUp={handlePenPointerUp}
-              onPointerLeave={handlePenPointerUp}
-            />
-          </div>
-
-          {/* Glowing Virtual Laser Pointer with Pulse Ring */}
-          {isLaserActive && (
-            <div
-              className="absolute pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2"
-              style={{
-                left: `${laserPos.x}px`,
-                top: `${laserPos.y}px`,
-              }}
-            >
-              <div className="relative flex items-center justify-center">
-                <span
-                  className="absolute w-8 h-8 rounded-full animate-ping opacity-35"
-                  style={{ backgroundColor: laserColor }}
-                />
-                <span
-                  className="w-4 h-4 rounded-full shadow-lg"
-                  style={{
-                    backgroundColor: laserColor,
-                    boxShadow: `0 0 18px 6px ${laserColor}, 0 0 6px #fff`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Quick Slide Number Jump HUD Overlay */}
-          {jumpBuffer && (
-            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 bg-slate-900/95 border-2 border-indigo-500 text-white rounded-2xl shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in zoom-in-95 duration-100">
-              <span className="text-xs text-indigo-300 font-medium">Lompat ke Slide:</span>
-              <span className="font-mono font-extrabold text-xl tracking-wider text-white bg-indigo-600/40 px-3 py-0.5 rounded-lg border border-indigo-500/50">
-                {jumpBuffer}
-              </span>
-              <span className="text-[10px] text-slate-400 font-mono">(Tekan Enter)</span>
-            </div>
-          )}
-
-          {/* Quick Slide Navigator Drawer */}
-          {showSlideNavigator && (
-            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-[92%] max-w-4xl z-50 bg-slate-900/95 border border-slate-700/80 rounded-2xl p-3 shadow-2xl backdrop-blur-md flex flex-col gap-2 animate-in slide-in-from-bottom-4 duration-150">
-              <div className="flex items-center justify-between text-xs px-1">
-                <span className="font-bold text-slate-200 flex items-center gap-1.5">
-                  <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Lompat Cepat ke Slide</span>
+            {/* Quick Slide Number Jump HUD Overlay */}
+            {jumpBuffer && (
+              <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 bg-slate-900/95 border-2 border-indigo-500 text-white rounded-2xl shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in zoom-in-95 duration-100">
+                <span className="text-xs text-indigo-300 font-medium">Lompat ke Slide:</span>
+                <span className="font-mono font-extrabold text-xl tracking-wider text-white bg-indigo-600/40 px-3 py-0.5 rounded-lg border border-indigo-500/50">
+                  {jumpBuffer}
                 </span>
-                <span className="text-[11px] text-slate-400">Pilih slide untuk langsung berpindah</span>
+                <span className="text-[10px] text-slate-400 font-mono">(Tekan Enter)</span>
               </div>
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-                {slides.map((s, idx) => {
-                  const isCur = idx === currentIndex;
+            )}
+
+            {/* Quick Slide Navigator Drawer */}
+            {showSlideNavigator && (() => {
+              const filteredNavSlides = slides
+                .map((s, idx) => ({ slide: s, originalIndex: idx }))
+                .filter(({ slide: s, originalIndex: idx }) => {
+                  if (!navSearch.trim()) return true;
+                  const q = navSearch.toLowerCase().trim();
                   return (
-                    <button
-                      key={s.id}
-                      onClick={() => {
-                        goToSlide(idx);
-                        setShowSlideNavigator(false);
-                      }}
-                      className={`flex flex-col items-start p-2 rounded-xl border text-left shrink-0 transition-all w-36 ${
-                        isCur
-                          ? 'bg-indigo-600/25 border-indigo-500 ring-2 ring-indigo-500/40 text-white'
-                          : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/80'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between w-full mb-1">
-                        <span
-                          className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded ${
-                            isCur ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'
-                          }`}
-                        >
-                          {idx + 1}
-                        </span>
-                        {s.notes && s.notes.trim() && (
-                          <span className="text-[9px] text-amber-400 font-mono">📝 Notes</span>
-                        )}
-                      </div>
-                      <span className="text-xs font-semibold truncate w-full">
-                        {s.title}
-                      </span>
-                      <span className="text-[10px] text-slate-500">
-                        {s.elements.length} elemen
-                      </span>
-                    </button>
+                    s.title.toLowerCase().includes(q) ||
+                    (s.notes && s.notes.toLowerCase().includes(q)) ||
+                    `slide ${idx + 1}`.includes(q)
                   );
-                })}
-              </div>
-            </div>
-          )}
+                });
 
-          {/* Floating Navigation Controls Capsule - Clean & Uncluttered */}
-          <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 p-1.5 bg-slate-900/90 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-xl z-30 transition-opacity duration-300 ${
-            isControlsIdle && !isLaserActive && !isPenActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
-          }`}>
-            <button
-              onClick={goToPrev}
-              disabled={currentIndex === 0}
-              title="Slide Sebelumnya (← / Panah Kiri)"
-              className="p-1.5 hover:bg-slate-800 disabled:opacity-25 rounded-xl text-slate-300 hover:text-white transition-colors"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setShowSlideNavigator(prev => !prev)}
-              title="Buka Kisi Miniatur Slide untuk Melompat Cepat"
-              className={`text-xs font-mono font-medium px-2.5 py-1 rounded-xl transition-colors flex items-center gap-1.5 ${
-                showSlideNavigator
-                  ? 'bg-indigo-600 text-white font-bold shadow'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
-              <span>{currentIndex + 1} / {slides.length}</span>
-            </button>
-            <button
-              onClick={goToNext}
-              disabled={currentIndex === slides.length - 1}
-              title="Slide Selanjutnya (Spasi / Panah Kanan)"
-              className="p-1.5 hover:bg-slate-800 disabled:opacity-25 rounded-xl text-slate-300 hover:text-white transition-colors"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-
-            <div className="h-4 w-[1px] bg-slate-800 mx-0.5" />
-
-            {/* Confetti Celebration Button */}
-            <button
-              onClick={triggerCelebration}
-              title="Tembakkan Selebrasi Confetti"
-              className="p-1.5 hover:bg-slate-800 rounded-xl text-amber-400 hover:text-amber-300 transition-colors"
-            >
-              <PartyPopper className="w-4 h-4" />
-            </button>
-
-            {/* Audience Reaction Button with Popover */}
-            <div ref={reactionMenuRef} className="relative">
-              <button
-                onClick={() => setShowReactionMenu(!showReactionMenu)}
-                title="Kirim Reaksi Emotikon Audiens"
-                className={`p-1.5 rounded-xl transition-colors ${
-                  showReactionMenu ? 'bg-slate-800 text-indigo-300' : 'hover:bg-slate-800 text-slate-400 hover:text-white'
-                }`}
-              >
-                <Smile className="w-4 h-4" />
-              </button>
-
-              {showReactionMenu && (
-                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-1.5 z-40 flex items-center gap-1 animate-in fade-in zoom-in-95 duration-100 backdrop-blur-xl">
-                  {['👏', '❤️', '🔥', '💡', '🚀'].map(emoji => (
-                    <button
-                      key={emoji}
-                      onClick={() => {
-                        triggerFloatingReaction(emoji);
-                        channelRef.current?.postMessage({ type: 'REACTION', emoji });
-                        setShowReactionMenu(false);
-                      }}
-                      title={`Reaksi ${emoji}`}
-                      className="w-7 h-7 flex items-center justify-center text-sm hover:scale-125 transition-transform rounded-xl hover:bg-slate-800"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Keyboard Shortcuts Helper Modal Button */}
-            <button
-              onClick={() => setShowHelpOverlay(true)}
-              title="Buka Panduan Pintasan Tombol (? / H)"
-              className="p-1.5 hover:bg-slate-800 rounded-xl text-indigo-400 hover:text-indigo-300 transition-colors"
-            >
-              <HelpCircle className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Presenter Speaker Notes Sidebar (Live Editable & Responsive Drawer on mobile) */}
-        {showNotes && (
-          <aside className="w-72 sm:w-80 border-l border-slate-800/80 bg-slate-900/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col justify-between shrink-0 fixed lg:static right-0 top-14 bottom-0 z-30 shadow-2xl lg:shadow-none animate-in slide-in-from-right duration-150">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">
-                      Catatan Pembicara
-                    </span>
-                    {speechEstimateBadge && (
-                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                        {speechEstimateBadge}
-                      </span>
-                    )}
-                  </div>
-                  <h4 className="text-sm font-semibold text-slate-200 mt-1">{currentSlide.title}</h4>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setIsPodiumMode(true)}
-                    title="Buka Mode Teleprompter & Podium (Layar Naskah Panggung)"
-                    className="p-1 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg text-xs flex items-center gap-1 border border-slate-800 hover:border-indigo-500/40 transition-colors"
-                  >
-                    <Tv className="w-3.5 h-3.5 text-indigo-400" />
-                    <span className="text-[10px] font-mono">Podium</span>
-                  </button>
-                  <button
-                    onClick={downloadSpeakerNotes}
-                    title="Unduh seluruh naskah pembicara sebagai file Markdown (.md)"
-                    className="p-1 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg text-xs flex items-center gap-1 border border-slate-800 hover:border-indigo-500/40 transition-colors"
-                  >
-                    <FileDown className="w-3.5 h-3.5 text-indigo-400" />
-                    <span className="text-[10px] font-mono">Unduh .md</span>
-                  </button>
-                  <button
-                    onClick={() => setShowNotes(false)}
-                    title="Tutup Catatan"
-                    className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg lg:hidden"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Live Editable Textarea */}
-              <div className="space-y-1">
-                <div className="text-[10px] text-slate-500 flex items-center justify-between">
-                  <span>Dapat diedit langsung saat presentasi:</span>
-                  <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5">
-                    <button
-                      onClick={() => {
-                        if (notesFontSize === 'xl') setNotesFontSize('lg');
-                        else if (notesFontSize === 'lg') setNotesFontSize('base');
-                        else if (notesFontSize === 'base') setNotesFontSize('sm');
-                      }}
-                      title="Perkecil Ukuran Font Catatan (A-)"
-                      className="text-[10px] text-slate-400 hover:text-white px-0.5"
-                    >
-                      A-
-                    </button>
-                    <span className="text-[9px] text-slate-500 font-mono uppercase">{notesFontSize}</span>
-                    <button
-                      onClick={() => {
-                        if (notesFontSize === 'sm') setNotesFontSize('base');
-                        else if (notesFontSize === 'base') setNotesFontSize('lg');
-                        else if (notesFontSize === 'lg') setNotesFontSize('xl');
-                      }}
-                      title="Perbesar Ukuran Font Catatan (A+)"
-                      className="text-[10px] text-slate-400 hover:text-white px-0.5 font-bold"
-                    >
-                      A+
-                    </button>
-                  </div>
-                </div>
-                <textarea
-                  value={currentSlide.notes || ''}
-                  onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
-                  placeholder="Ketik poin penting, panduan berbicara, atau naskah presentasi untuk slide ini..."
-                  className={`w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl p-3 text-slate-200 outline-none leading-relaxed min-h-[170px] resize-none font-sans ${notesFontSize === 'sm'
-                    ? 'text-xs'
-                    : notesFontSize === 'base'
-                      ? 'text-sm'
-                      : notesFontSize === 'lg'
-                        ? 'text-base'
-                        : 'text-lg font-medium'
-                    }`}
-                />
-              </div>
-            </div>
-
-            {/* Next Slide Preview thumbnail (Interactive Mini Canvas Preview) */}
-            {currentIndex < slides.length - 1 && (() => {
-              const nextSlide = slides[currentIndex + 1];
-              const miniScale = Math.min(270 / nextSlide.width, 140 / nextSlide.height);
               return (
-                <div className="pt-3 border-t border-slate-800 space-y-1.5 shrink-0">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="font-semibold text-slate-500 uppercase tracking-wider">
-                      Slide Selanjutnya ({currentIndex + 2}/{slides.length})
-                    </span>
-                    <span className="text-indigo-400 font-mono text-[9px]">Klik untuk Maju →</span>
+                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-[92%] max-w-4xl z-50 bg-slate-900/95 border border-slate-700/80 rounded-2xl p-3 shadow-2xl backdrop-blur-md flex flex-col gap-2.5 animate-in slide-in-from-bottom-4 duration-150">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs px-1">
+                    <div className="flex items-center gap-1.5 font-bold text-slate-200">
+                      <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Lompat Cepat ke Slide</span>
+                      <span className="text-[10px] font-mono text-slate-400 font-normal">
+                        ({filteredNavSlides.length} dari {slides.length} slide)
+                      </span>
+                    </div>
+                    <div className="relative w-full sm:w-64">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        value={navSearch}
+                        onChange={e => setNavSearch(e.target.value)}
+                        placeholder="Cari judul atau catatan..."
+                        className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-7 py-1 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-indigo-500 font-medium"
+                      />
+                      {navSearch && (
+                        <button
+                          type="button"
+                          onClick={() => setNavSearch('')}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
                   </div>
-                  <button
-                    onClick={goToNext}
-                    title="Klik untuk berpindah ke slide berikutnya"
-                    className="w-full text-left group bg-slate-950/80 hover:bg-slate-950 border border-slate-800 hover:border-indigo-500/70 rounded-xl p-2 transition-all shadow hover:shadow-indigo-500/10"
-                  >
-                    {/* Visual scaled miniature */}
-                    <div className="w-full h-24 bg-slate-950 rounded-lg border border-slate-800/80 overflow-hidden relative mb-2 flex items-center justify-center">
-                      <div
-                        style={{
-                          width: `${nextSlide.width}px`,
-                          height: `${nextSlide.height}px`,
-                          background: getSlideBackground(nextSlide),
-                          transform: `scale(${miniScale})`,
-                          transformOrigin: 'center center',
-                        }}
-                        className="relative pointer-events-none select-none"
-                      >
-                        {nextSlide.elements.map(el => (
-                          <div
-                            key={el.id}
-                            className="absolute"
-                            style={{
-                              left: `${el.x}px`,
-                              top: `${el.y}px`,
-                              width: `${el.width}px`,
-                              height: `${el.height}px`,
-                              zIndex: el.zIndex,
-                            }}
-                          >
-                            <ElementRenderer element={el} isSelected={false} />
-                          </div>
-                        ))}
-                      </div>
-                      <div className="absolute inset-0 bg-transparent group-hover:bg-indigo-500/5 transition-colors" />
-                    </div>
 
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-300 group-hover:text-white">
-                      <span className="truncate pr-1">{nextSlide.title}</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                  {filteredNavSlides.length === 0 ? (
+                    <div className="text-center py-6 text-xs text-slate-400">
+                      Tidak ada slide yang cocok dengan kata kunci "{navSearch}".
                     </div>
-                    {nextSlide.notes && nextSlide.notes.trim() && (
-                      <p className="text-[10px] text-slate-400 font-mono italic truncate mt-0.5 line-clamp-1 text-slate-500">
-                        "{nextSlide.notes.trim()}"
-                      </p>
-                    )}
-                  </button>
+                  ) : (
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                      {filteredNavSlides.map(({ slide: s, originalIndex: idx }) => {
+                        const isCur = idx === currentIndex;
+                        return (
+                          <button
+                            key={s.id}
+                            onClick={() => {
+                              goToSlide(idx);
+                              setShowSlideNavigator(false);
+                            }}
+                            className={`flex flex-col items-start p-2 rounded-xl border text-left shrink-0 transition-all w-36 ${isCur
+                              ? 'bg-indigo-600/25 border-indigo-500 ring-2 ring-indigo-500/40 text-white'
+                              : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/80'
+                              }`}
+                          >
+                            <div className="flex items-center justify-between w-full mb-1">
+                              <span
+                                className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded ${isCur ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'
+                                  }`}
+                              >
+                                {idx + 1}
+                              </span>
+                              {s.notes && s.notes.trim() && (
+                                <span className="text-[9px] text-amber-400 font-mono">📝 Notes</span>
+                              )}
+                            </div>
+                            <span className="text-xs font-semibold truncate w-full">
+                              {s.title}
+                            </span>
+                            <span className="text-[10px] text-slate-500">
+                              {s.elements.length} elemen
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })()}
-          </aside>
-        )}
-      </div>
+
+            {/* Floating Navigation Controls Capsule - Clean & Uncluttered */}
+            <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 p-1.5 bg-slate-900/90 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-xl z-30 transition-opacity duration-300 ${isControlsIdle && !isLaserActive && !isPenActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
+              }`}>
+              <button
+                onClick={goToPrev}
+                disabled={currentIndex === 0}
+                title="Slide Sebelumnya (← / Panah Kiri)"
+                className="p-1.5 hover:bg-slate-800 disabled:opacity-25 rounded-xl text-slate-300 hover:text-white transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setShowSlideNavigator(prev => !prev)}
+                title="Buka Kisi Miniatur Slide untuk Melompat Cepat"
+                className={`text-xs font-mono font-medium px-2.5 py-1 rounded-xl transition-colors flex items-center gap-1.5 ${showSlideNavigator
+                  ? 'bg-indigo-600 text-white font-bold shadow'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
+                <span>{currentIndex + 1} / {slides.length}</span>
+              </button>
+              <button
+                onClick={goToNext}
+                disabled={currentIndex === slides.length - 1}
+                title="Slide Selanjutnya (Spasi / Panah Kanan)"
+                className="p-1.5 hover:bg-slate-800 disabled:opacity-25 rounded-xl text-slate-300 hover:text-white transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              <div className="h-4 w-[1px] bg-slate-800 mx-0.5" />
+
+              {/* Confetti Celebration Button */}
+              <button
+                onClick={triggerCelebration}
+                title="Tembakkan Selebrasi Confetti"
+                className="p-1.5 hover:bg-slate-800 rounded-xl text-amber-400 hover:text-amber-300 transition-colors"
+              >
+                <PartyPopper className="w-4 h-4" />
+              </button>
+
+              {/* Audience Reaction Button with Popover */}
+              <div ref={reactionMenuRef} className="relative">
+                <button
+                  onClick={() => setShowReactionMenu(!showReactionMenu)}
+                  title="Kirim Reaksi Emotikon Audiens"
+                  className={`p-1.5 rounded-xl transition-colors ${showReactionMenu ? 'bg-slate-800 text-indigo-300' : 'hover:bg-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                >
+                  <Smile className="w-4 h-4" />
+                </button>
+
+                {showReactionMenu && (
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-1.5 z-40 flex items-center gap-1 animate-in fade-in zoom-in-95 duration-100 backdrop-blur-xl">
+                    {['👏', '❤️', '🔥', '💡', '🚀'].map(emoji => (
+                      <button
+                        key={emoji}
+                        onClick={() => {
+                          triggerFloatingReaction(emoji);
+                          channelRef.current?.postMessage({ type: 'REACTION', emoji });
+                          setShowReactionMenu(false);
+                        }}
+                        title={`Reaksi ${emoji}`}
+                        className="w-7 h-7 flex items-center justify-center text-sm hover:scale-125 transition-transform rounded-xl hover:bg-slate-800"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Keyboard Shortcuts Helper Modal Button */}
+              <button
+                onClick={() => setShowHelpOverlay(true)}
+                title="Buka Panduan Pintasan Tombol (? / H)"
+                className="p-1.5 hover:bg-slate-800 rounded-xl text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                <HelpCircle className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Presenter Speaker Notes Sidebar (Live Editable & Responsive Drawer on mobile) */}
+          {showNotes && (
+            <aside className="w-72 sm:w-80 border-l border-slate-800/80 bg-slate-900/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col justify-between shrink-0 fixed lg:static right-0 top-14 bottom-0 z-30 shadow-2xl lg:shadow-none animate-in slide-in-from-right duration-150">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                        Catatan Pembicara
+                      </span>
+                      {speechEstimateBadge && (
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                          {speechEstimateBadge}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="text-sm font-semibold text-slate-200 mt-1">{currentSlide.title}</h4>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setIsPodiumMode(true)}
+                      title="Buka Mode Teleprompter & Podium (Layar Naskah Panggung)"
+                      className="p-1 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg text-xs flex items-center gap-1 border border-slate-800 hover:border-indigo-500/40 transition-colors"
+                    >
+                      <Tv className="w-3.5 h-3.5 text-indigo-400" />
+                      <span className="text-[10px] font-mono">Podium</span>
+                    </button>
+                    <button
+                      onClick={downloadSpeakerNotes}
+                      title="Unduh seluruh naskah pembicara sebagai file Markdown (.md)"
+                      className="p-1 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg text-xs flex items-center gap-1 border border-slate-800 hover:border-indigo-500/40 transition-colors"
+                    >
+                      <FileDown className="w-3.5 h-3.5 text-indigo-400" />
+                      <span className="text-[10px] font-mono">Unduh .md</span>
+                    </button>
+                    <button
+                      onClick={() => setShowNotes(false)}
+                      title="Tutup Catatan"
+                      className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg lg:hidden"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Live Editable Textarea */}
+                <div className="space-y-1">
+                  <div className="text-[10px] text-slate-500 flex items-center justify-between">
+                    <span>Dapat diedit langsung saat presentasi:</span>
+                    <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5">
+                      <button
+                        onClick={() => {
+                          if (notesFontSize === 'xl') setNotesFontSize('lg');
+                          else if (notesFontSize === 'lg') setNotesFontSize('base');
+                          else if (notesFontSize === 'base') setNotesFontSize('sm');
+                        }}
+                        title="Perkecil Ukuran Font Catatan (A-)"
+                        className="text-[10px] text-slate-400 hover:text-white px-0.5"
+                      >
+                        A-
+                      </button>
+                      <span className="text-[9px] text-slate-500 font-mono uppercase">{notesFontSize}</span>
+                      <button
+                        onClick={() => {
+                          if (notesFontSize === 'sm') setNotesFontSize('base');
+                          else if (notesFontSize === 'base') setNotesFontSize('lg');
+                          else if (notesFontSize === 'lg') setNotesFontSize('xl');
+                        }}
+                        title="Perbesar Ukuran Font Catatan (A+)"
+                        className="text-[10px] text-slate-400 hover:text-white px-0.5 font-bold"
+                      >
+                        A+
+                      </button>
+                    </div>
+                  </div>
+                  <textarea
+                    value={currentSlide.notes || ''}
+                    onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
+                    placeholder="Ketik poin penting, panduan berbicara, atau naskah presentasi untuk slide ini..."
+                    className={`w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl p-3 text-slate-200 outline-none leading-relaxed min-h-[170px] resize-none font-sans ${notesFontSize === 'sm'
+                      ? 'text-xs'
+                      : notesFontSize === 'base'
+                        ? 'text-sm'
+                        : notesFontSize === 'lg'
+                          ? 'text-base'
+                          : 'text-lg font-medium'
+                      }`}
+                  />
+                </div>
+              </div>
+
+              {/* Next Slide Preview thumbnail (Interactive Mini Canvas Preview) */}
+              {currentIndex < slides.length - 1 && (() => {
+                const nextSlide = slides[currentIndex + 1];
+                const miniScale = Math.min(270 / nextSlide.width, 140 / nextSlide.height);
+                return (
+                  <div className="pt-3 border-t border-slate-800 space-y-1.5 shrink-0">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="font-semibold text-slate-500 uppercase tracking-wider">
+                        Slide Selanjutnya ({currentIndex + 2}/{slides.length})
+                      </span>
+                      <span className="text-indigo-400 font-mono text-[9px]">Klik untuk Maju →</span>
+                    </div>
+                    <button
+                      onClick={goToNext}
+                      title="Klik untuk berpindah ke slide berikutnya"
+                      className="w-full text-left group bg-slate-950/80 hover:bg-slate-950 border border-slate-800 hover:border-indigo-500/70 rounded-xl p-2 transition-all shadow hover:shadow-indigo-500/10"
+                    >
+                      {/* Visual scaled miniature */}
+                      <div className="w-full h-24 bg-slate-950 rounded-lg border border-slate-800/80 overflow-hidden relative mb-2 flex items-center justify-center">
+                        <div
+                          style={{
+                            width: `${nextSlide.width}px`,
+                            height: `${nextSlide.height}px`,
+                            background: getSlideBackground(nextSlide),
+                            transform: `scale(${miniScale})`,
+                            transformOrigin: 'center center',
+                          }}
+                          className="relative pointer-events-none select-none"
+                        >
+                          {nextSlide.elements.map(el => (
+                            <div
+                              key={el.id}
+                              className="absolute"
+                              style={{
+                                left: `${el.x}px`,
+                                top: `${el.y}px`,
+                                width: `${el.width}px`,
+                                height: `${el.height}px`,
+                                zIndex: el.zIndex,
+                              }}
+                            >
+                              <ElementRenderer element={el} isSelected={false} />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="absolute inset-0 bg-transparent group-hover:bg-indigo-500/5 transition-colors" />
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-300 group-hover:text-white">
+                        <span className="truncate pr-1">{nextSlide.title}</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                      {nextSlide.notes && nextSlide.notes.trim() && (
+                        <p className="text-[10px] text-slate-400 font-mono italic truncate mt-0.5 line-clamp-1 text-slate-500">
+                          "{nextSlide.notes.trim()}"
+                        </p>
+                      )}
+                    </button>
+                  </div>
+                );
+              })()}
+            </aside>
+          )}
+        </div>
       )}
 
       {/* Sound Toast Notification */}

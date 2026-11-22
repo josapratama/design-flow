@@ -51,6 +51,9 @@ export function generateDesignDSL(project: DesignProject): string {
       if (el.fontFamily && el.fontFamily !== 'sans') lines.push(`    fontFamily: "${el.fontFamily}"`);
       if (el.fontSize) lines.push(`    fontSize: ${el.fontSize}`);
       if (el.fontWeight && el.fontWeight !== 'normal') lines.push(`    fontWeight: "${el.fontWeight}"`);
+      if (el.fontStyle && el.fontStyle !== 'normal') lines.push(`    fontStyle: "${el.fontStyle}"`);
+      if (el.textDecoration && el.textDecoration !== 'none') lines.push(`    textDecoration: "${el.textDecoration}"`);
+      if (el.textTransform && el.textTransform !== 'none') lines.push(`    textTransform: "${el.textTransform}"`);
       if (el.textAlign && el.textAlign !== 'left') lines.push(`    textAlign: "${el.textAlign}"`);
       if (el.letterSpacing !== undefined && el.letterSpacing !== 0) lines.push(`    letterSpacing: ${el.letterSpacing}`);
       if (el.lineHeight !== undefined) lines.push(`    lineHeight: ${el.lineHeight}`);

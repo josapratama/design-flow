@@ -1752,11 +1752,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                             type="button"
                             onClick={() => handleChange('fontWeight', element.fontWeight === 'bold' ? 'normal' : 'bold')}
                             title="Tebal (Bold)"
-                            className={`p-1.5 rounded transition-colors ${
-                              element.fontWeight === 'bold' || element.fontWeight === 'extrabold'
-                                ? 'bg-indigo-600 text-white shadow'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                            }`}
+                            className={`p-1.5 rounded transition-colors ${element.fontWeight === 'bold' || element.fontWeight === 'extrabold'
+                              ? 'bg-indigo-600 text-white shadow'
+                              : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                              }`}
                           >
                             <Bold className="w-3.5 h-3.5" />
                           </button>
@@ -1764,11 +1763,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                             type="button"
                             onClick={() => handleChange('fontStyle', element.fontStyle === 'italic' ? 'normal' : 'italic')}
                             title="Miring (Italic)"
-                            className={`p-1.5 rounded transition-colors ${
-                              element.fontStyle === 'italic'
-                                ? 'bg-indigo-600 text-white shadow'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                            }`}
+                            className={`p-1.5 rounded transition-colors ${element.fontStyle === 'italic'
+                              ? 'bg-indigo-600 text-white shadow'
+                              : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                              }`}
                           >
                             <Italic className="w-3.5 h-3.5" />
                           </button>
@@ -1776,11 +1774,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                             type="button"
                             onClick={() => handleChange('textDecoration', element.textDecoration === 'underline' ? 'none' : 'underline')}
                             title="Garis Bawah (Underline)"
-                            className={`p-1.5 rounded transition-colors ${
-                              element.textDecoration === 'underline'
-                                ? 'bg-indigo-600 text-white shadow'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                            }`}
+                            className={`p-1.5 rounded transition-colors ${element.textDecoration === 'underline'
+                              ? 'bg-indigo-600 text-white shadow'
+                              : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                              }`}
                           >
                             <Underline className="w-3.5 h-3.5" />
                           </button>
@@ -1788,11 +1785,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                             type="button"
                             onClick={() => handleChange('textDecoration', element.textDecoration === 'line-through' ? 'none' : 'line-through')}
                             title="Coret (Strikethrough)"
-                            className={`p-1.5 rounded transition-colors ${
-                              element.textDecoration === 'line-through'
-                                ? 'bg-indigo-600 text-white shadow'
-                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-                            }`}
+                            className={`p-1.5 rounded transition-colors ${element.textDecoration === 'line-through'
+                              ? 'bg-indigo-600 text-white shadow'
+                              : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                              }`}
                           >
                             <Strikethrough className="w-3.5 h-3.5" />
                           </button>
@@ -1823,6 +1819,33 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                             );
                           })}
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Text Transform / Kapitalisasi Non-Destruktif */}
+                    <div className="flex items-center justify-between pt-1">
+                      <label className="text-[10px] text-slate-500">Kapitalisasi</label>
+                      <div className="flex items-center bg-slate-950 border border-slate-800 rounded-lg p-0.5">
+                        {[
+                          { id: 'none', label: 'Normal', title: 'Format Asli (Sesuai Ketikan)' },
+                          { id: 'uppercase', label: 'AA', title: 'SEMUA BESAR (UPPERCASE)' },
+                          { id: 'lowercase', label: 'aa', title: 'semua kecil (lowercase)' },
+                          { id: 'capitalize', label: 'Aa', title: 'Kapital Setiap Kata (Title Case)' },
+                        ].map(tt => (
+                          <button
+                            key={tt.id}
+                            type="button"
+                            onClick={() => handleChange('textTransform', (element.textTransform || 'none') === tt.id ? 'none' : tt.id)}
+                            title={tt.title}
+                            className={`px-2 py-0.5 text-[9px] font-mono rounded transition-colors ${
+                              (element.textTransform || 'none') === tt.id
+                                ? 'bg-indigo-600 text-white font-bold shadow'
+                                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                            }`}
+                          >
+                            {tt.label}
+                          </button>
+                        ))}
                       </div>
                     </div>
 
@@ -1930,21 +1953,16 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   <Pipette className="w-3 h-3" />
                 </button>
               </div>
-              <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 focus-within:border-indigo-500 rounded-lg px-2 py-1">
+              <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
                 <input
                   type="color"
-                  value={element.fill && element.fill.startsWith('#') ? element.fill : '#1e293b'}
-                  onChange={e => handleChange('fill', e.target.value)}
-                  className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
-                />
-                <input
-                  type="text"
                   value={element.fill || '#1e293b'}
                   onChange={e => handleChange('fill', e.target.value)}
-                  placeholder="#1e293b"
-                  maxLength={25}
-                  className="w-full bg-transparent text-[11px] font-mono text-slate-200 outline-none uppercase"
+                  className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
                 />
+                <span className="text-[11px] font-mono text-slate-300">
+                  {element.fill || '#1e293b'}
+                </span>
               </div>
               {/* Document Colors Palette */}
               {documentColors.length > 0 && (
@@ -2045,21 +2063,16 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                       </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 focus-within:border-indigo-500 rounded-lg px-2 py-1">
+                  <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
                     <input
                       type="color"
-                      value={element.color && element.color.startsWith('#') ? element.color : '#ffffff'}
-                      onChange={e => handleChange('color', e.target.value)}
-                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
-                    />
-                    <input
-                      type="text"
                       value={element.color || '#ffffff'}
                       onChange={e => handleChange('color', e.target.value)}
-                      placeholder="#ffffff"
-                      maxLength={25}
-                      className="w-full bg-transparent text-[11px] font-mono text-slate-200 outline-none uppercase"
+                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
                     />
+                    <span className="text-[11px] font-mono text-slate-300">
+                      {element.color || '#ffffff'}
+                    </span>
                   </div>
                   {/* Document Colors Palette for Text */}
                   {documentColors.length > 0 && (
@@ -2117,6 +2130,49 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 </div>
               );
             })()}
+          </div>
+
+          {/* Preset Gradien Elemen Modern */}
+          <div className="pt-2 border-t border-slate-800/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-indigo-400" />
+                <span>Preset Gradien Elemen</span>
+              </span>
+              {element.fill && element.fill.includes('gradient') && (
+                <button
+                  type="button"
+                  onClick={() => handleChange('fill', '#1e293b')}
+                  className="text-[9px] text-slate-400 hover:text-rose-400 underline"
+                  title="Kembalikan ke warna solid standar"
+                >
+                  Reset Solid
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              {[
+                { name: 'Midnight Violet', bg: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)' },
+                { name: 'Electric Indigo', bg: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' },
+                { name: 'Cyber Cyan', bg: 'linear-gradient(135deg, #0284c7 0%, #06b6d4 100%)' },
+                { name: 'Aurora Emerald', bg: 'linear-gradient(135deg, #047857 0%, #10b981 100%)' },
+                { name: 'Sunset Crimson', bg: 'linear-gradient(135deg, #be123c 0%, #f97316 100%)' },
+                { name: 'Cosmic Magenta', bg: 'linear-gradient(135deg, #831843 0%, #db2777 100%)' },
+                { name: 'Deep Slate', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' },
+                { name: 'Dark Glass', bg: 'linear-gradient(135deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 100%)' },
+              ].map(g => (
+                <button
+                  key={g.name}
+                  type="button"
+                  onClick={() => handleChange('fill', g.bg)}
+                  title={g.name}
+                  className={`h-6 rounded-md border transition-all ${
+                    element.fill === g.bg ? 'border-indigo-400 scale-105 ring-2 ring-indigo-400/50' : 'border-slate-800 hover:border-slate-600 hover:scale-105'
+                  }`}
+                  style={{ background: g.bg }}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Palet Harmonisasi Warna */}
@@ -2233,7 +2289,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     <Pipette className="w-3 h-3" />
                   </button>
                 </div>
-                <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 focus-within:border-indigo-500 rounded-lg px-2 py-1">
+                <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
                   <input
                     type="color"
                     value={element.stroke && element.stroke.startsWith('#') ? element.stroke : '#6366f1'}
@@ -2241,19 +2297,11 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                       handleChange('stroke', e.target.value);
                       if (!element.strokeWidth) handleChange('strokeWidth', 2);
                     }}
-                    className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
+                    className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
                   />
-                  <input
-                    type="text"
-                    value={element.stroke || ''}
-                    onChange={e => {
-                      handleChange('stroke', e.target.value);
-                      if (!element.strokeWidth) handleChange('strokeWidth', 2);
-                    }}
-                    placeholder="Tanpa Border"
-                    maxLength={25}
-                    className="w-full bg-transparent text-[11px] font-mono text-slate-200 outline-none uppercase"
-                  />
+                  <span className="text-[11px] font-mono text-slate-300 truncate">
+                    {element.stroke || 'Tanpa Border'}
+                  </span>
                 </div>
               </div>
 
