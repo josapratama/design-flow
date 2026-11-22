@@ -121,6 +121,9 @@ export interface DesignElement {
   flipX?: boolean;
   flipY?: boolean;
 
+  // Interactive Prototyping Link
+  linkToSlideId?: string; // Links to another slide on click during presentation
+
   // Chart specifics
   chartType?: 'bar' | 'line' | 'donut';
   chartData?: { label: string; value: number }[];

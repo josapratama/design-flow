@@ -3,6 +3,7 @@ import { Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
 import { getSlideBackground } from '../utils/slideStyle';
 import confetti from 'canvas-confetti';
+import { soundEffects } from '../utils/audioEffects';
 
 interface DoodleStroke {
   color: string;
@@ -261,9 +262,15 @@ export const AudienceScreen: React.FC = () => {
     ? ''
     : effectiveTransition === 'slide'
       ? 'animate-in slide-in-from-right-10 duration-300'
-      : effectiveTransition === 'zoom'
-        ? 'animate-in zoom-in-95 duration-200'
-        : 'animate-in fade-in duration-200';
+      : effectiveTransition === 'slide-vertical'
+        ? 'df-trans-slide-vertical'
+        : effectiveTransition === 'zoom'
+          ? 'animate-in zoom-in-95 duration-200'
+          : effectiveTransition === 'flip-cube'
+            ? 'df-trans-flip-cube'
+            : effectiveTransition === 'blur-fade'
+              ? 'df-trans-blur-fade'
+              : 'animate-in fade-in duration-200';
 
   return (
     <div
@@ -308,7 +315,17 @@ export const AudienceScreen: React.FC = () => {
           return (
             <div
               key={el.id}
-              className="absolute"
+              className={`absolute ${el.linkToSlideId ? 'cursor-pointer hover:ring-2 hover:ring-indigo-400/80 transition-all rounded-sm' : ''}`}
+              onClick={() => {
+                if (el.linkToSlideId) {
+                  const targetIdx = slides.findIndex(s => s.id === el.linkToSlideId);
+                  if (targetIdx !== -1 && targetIdx !== currentIndex) {
+                    setCurrentIndex(targetIdx);
+                    soundEffects.playSlideTransition();
+                    channelRef.current?.postMessage({ type: 'SLIDE_CHANGE', index: targetIdx });
+                  }
+                }
+              }}
               style={{
                 left: `${el.x}px`,
                 top: `${el.y}px`,

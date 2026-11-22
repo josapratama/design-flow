@@ -39,6 +39,7 @@ import {
   Italic,
   Underline,
   Strikethrough,
+  Link,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import confetti from 'canvas-confetti';
@@ -57,6 +58,7 @@ import { generateColorHarmonies } from '../utils/colorHarmonies';
 interface PropertyInspectorProps {
   element: DesignElement | null;
   activeSlide: Slide;
+  slides?: Slide[];
   selectedCount?: number;
   onUpdateElement: (elementId: string, updates: Partial<DesignElement>) => void;
   onUpdateSlide: (slideId: string, updates: Partial<Slide>) => void;
@@ -72,11 +74,13 @@ interface PropertyInspectorProps {
   onToggleHide?: (elementId: string) => void;
   onGroup?: () => void;
   onUngroup?: () => void;
+  onReplaceColorInProject?: (fromColor: string, toColor: string) => number;
 }
 
 export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   element,
   activeSlide,
+  slides = [],
   selectedCount = 0,
   onUpdateElement,
   onUpdateSlide,
@@ -92,7 +96,11 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   onToggleHide,
   onGroup,
   onUngroup,
+  onReplaceColorInProject,
 }) => {
+  const [inspectorTab, setInspectorTab] = useState<'design' | 'layout'>('design');
+  const [globalColorFrom, setGlobalColorFrom] = useState('');
+  const [globalColorTo, setGlobalColorTo] = useState('#6366f1');
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [iconFilter, setIconFilter] = useState('');
   const [fontFilterCategory, setFontFilterCategory] = useState<'all' | 'Sans Serif' | 'Serif' | 'Monospace' | 'Display'>('all');
@@ -758,6 +766,71 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               <option value="none">Tanpa Efek (Instan)</option>
             </select>
           </div>
+
+          {/* Ganti Warna Global Serentak di Seluruh Slide */}
+          {onReplaceColorInProject && documentColors.length > 0 && (
+            <details className="group border border-slate-800/80 rounded-xl bg-slate-950/40 overflow-hidden">
+              <summary className="px-2.5 py-2 cursor-pointer flex items-center justify-between text-[10px] font-medium text-slate-400 hover:text-slate-200 select-none">
+                <span className="flex items-center gap-1.5">
+                  <Palette className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Ganti Warna Serentak Seluruh Proyek</span>
+                </span>
+                <span className="text-slate-500 text-[10px] group-open:rotate-180 transition-transform">▼</span>
+              </summary>
+              <div className="p-2.5 pt-1 border-t border-slate-800/60 space-y-2">
+                <div>
+                  <span className="text-[9px] text-slate-500 block mb-1">Pilih Warna Asal:</span>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {documentColors.map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setGlobalColorFrom(c)}
+                        className={`w-4 h-4 rounded-full border transition-all ${
+                          (globalColorFrom || documentColors[0]) === c
+                            ? 'border-cyan-400 scale-125 ring-1 ring-cyan-400/50'
+                            : 'border-slate-700/80 hover:scale-110'
+                        }`}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <div className="flex-1">
+                    <span className="text-[9px] text-slate-500 block mb-1">Ganti Menjadi:</span>
+                    <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
+                      <input
+                        type="color"
+                        value={globalColorTo}
+                        onChange={e => setGlobalColorTo(e.target.value)}
+                        className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
+                      />
+                      <input
+                        type="text"
+                        value={globalColorTo}
+                        onChange={e => setGlobalColorTo(e.target.value)}
+                        className="w-full bg-transparent text-[10px] font-mono text-slate-200 outline-none uppercase"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const from = globalColorFrom || documentColors[0];
+                      if (!from || !globalColorTo) return;
+                      const count = onReplaceColorInProject(from, globalColorTo);
+                      showToast(`Warna diperbarui pada ${count} elemen!`);
+                    }}
+                    className="self-end px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-xs shadow-sm transition-colors"
+                  >
+                    Terapkan
+                  </button>
+                </div>
+              </div>
+            </details>
+          )}
         </div>
       </aside>
     );
@@ -913,301 +986,210 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         </div>
       </div>
 
+      {/* 2 Modern Segmented Tabs: Desain & Tata Letak */}
+      <div className="grid grid-cols-2 p-1.5 border-b border-slate-800 bg-slate-950/60 shrink-0 gap-1">
+        <button
+          type="button"
+          onClick={() => setInspectorTab('design')}
+          className={`py-1.5 text-xs font-semibold rounded-lg border transition-all text-center ${
+            inspectorTab === 'design'
+              ? 'bg-slate-800 border-slate-700 text-white shadow-sm'
+              : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+          }`}
+        >
+          Desain & Gaya
+        </button>
+        <button
+          type="button"
+          onClick={() => setInspectorTab('layout')}
+          className={`py-1.5 text-xs font-semibold rounded-lg border transition-all text-center ${
+            inspectorTab === 'layout'
+              ? 'bg-slate-800 border-slate-700 text-white shadow-sm'
+              : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
+          }`}
+        >
+          Tata Letak & Aksi
+        </button>
+      </div>
+
       <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs text-slate-300">
-        {/* Bilah Perataan Cepat (Smart Alignment Tools) */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Perataan (Align)
+        {inspectorTab === 'design' ? (
+          <div className="space-y-4">
+
+        {/* Pengaturan Khusus Progress Bar */}
+        {element.type === 'progress-bar' && (
+          <div className="space-y-2.5 p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+            <span className="text-[10px] font-semibold text-teal-400 uppercase tracking-wider block">
+              Pengaturan Progress Bar
             </span>
-            <button
-              type="button"
-              onClick={() => {
-                onAlignElement('center');
-                onAlignElement('middle');
-              }}
-              title="Pusatkan Elemen Tepat di Tengah Kanvas (Horizontal & Vertikal)"
-              className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 hover:underline"
-            >
-              <span>Pusatkan H+V</span>
-            </button>
-          </div>
-          <div className="grid grid-cols-6 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-            <button
-              onClick={() => onAlignElement('left')}
-              title="Rata Kiri"
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
-            >
-              <AlignLeft className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onAlignElement('center')}
-              title="Rata Tengah Horizontal"
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
-            >
-              <AlignCenter className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onAlignElement('right')}
-              title="Rata Kanan"
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
-            >
-              <AlignRight className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onAlignElement('top')}
-              title="Rata Atas"
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
-            >
-              <AlignStartVertical className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onAlignElement('middle')}
-              title="Rata Tengah Vertikal"
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
-            >
-              <AlignCenterVertical className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onAlignElement('bottom')}
-              title="Rata Bawah"
-              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
-            >
-              <AlignEndVertical className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Distribusi Jarak (Smart Spacing) saat 3+ elemen terpilih */}
-        {selectedCount >= 3 && onDistributeElements && (
-          <div className="space-y-2">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Distribusi Spasi Merata
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => onDistributeElements('horizontal')}
-                className="p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-center gap-1.5 text-slate-300 hover:text-white"
-              >
-                <ArrowLeftRight className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Rata Horizontal</span>
-              </button>
-              <button
-                onClick={() => onDistributeElements('vertical')}
-                className="p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-center gap-1.5 text-slate-300 hover:text-white"
-              >
-                <ArrowUpDown className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Rata Vertikal</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Transformasi Teks Massal saat 2+ elemen terpilih */}
-        {selectedCount > 1 && onBatchUpdateElements && (
-          <div className="space-y-2 p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider flex items-center gap-1">
-                <Sparkles className="w-3 h-3" />
-                <span>Format Teks Massal</span>
-              </span>
-              <span className="text-[9px] font-mono text-indigo-400">
-                {selectedCount} item
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-400 leading-tight">
-              Ubah kapitalisasi semua teks yang terpilih sekaligus:
-            </p>
-            <div className="grid grid-cols-3 gap-1.5 pt-0.5">
-              <button
-                type="button"
-                onClick={() => {
-                  onBatchUpdateElements(el => {
-                    if (el.content) return { content: el.content.toUpperCase() };
-                    return {};
-                  });
-                }}
-                className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 text-slate-200 rounded text-[10px] font-mono font-bold text-center transition-colors"
-                title="Ubah semua elemen teks terpilih ke UPPERCASE"
-              >
-                UPPERCASE
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onBatchUpdateElements(el => {
-                    if (el.content) return { content: el.content.toLowerCase() };
-                    return {};
-                  });
-                }}
-                className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 text-slate-200 rounded text-[10px] font-mono lowercase text-center transition-colors"
-                title="Ubah semua elemen teks terpilih ke lowercase"
-              >
-                lowercase
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  onBatchUpdateElements(el => {
-                    if (el.content) {
-                      return {
-                        content: el.content.replace(/\b\w+/g, t => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase()),
-                      };
-                    }
-                    return {};
-                  });
-                }}
-                className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 text-slate-200 rounded text-[10px] font-mono text-center transition-colors"
-                title="Ubah semua elemen teks terpilih ke Title Case"
-              >
-                Title Case
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Posisi, Dimensi & Rotasi */}
-        <div className="space-y-2">
-          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-            Ukuran, Posisi & Rotasi
-          </span>
-          <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-slate-500 block mb-1">X (Posisi)</label>
-              <input
-                type="number"
-                value={element.x}
-                onChange={e => handleChange('x', Number(e.target.value))}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] text-slate-500 block mb-1">Y (Posisi)</label>
-              <input
-                type="number"
-                value={element.y}
-                onChange={e => handleChange('y', Number(e.target.value))}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
-              />
-            </div>
-            <div className="col-span-2 grid grid-cols-5 gap-1.5 items-end">
-              <div className="col-span-2">
-                <label className="text-[10px] text-slate-500 block mb-1">Lebar (W)</label>
-                <input
-                  type="number"
-                  value={element.width}
-                  onChange={e => {
-                    const newW = Math.max(10, Number(e.target.value));
-                    if (isRatioLocked && element.height > 0) {
-                      const ratio = element.width / element.height;
-                      onUpdateElement(element.id, { width: newW, height: Math.max(10, Math.round(newW / ratio)) });
-                    } else {
-                      handleChange('width', newW);
-                    }
-                  }}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
-                />
+              <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                <span>Nilai Capaian</span>
+                <span className="font-mono font-bold text-teal-400">{element.content || '75'}%</span>
               </div>
-
-              <div className="col-span-1 flex justify-center pb-1">
-                <button
-                  type="button"
-                  onClick={() => setIsRatioLocked(!isRatioLocked)}
-                  title={isRatioLocked ? 'Kunci Rasio Aktif (Klik untuk Buka)' : 'Kunci Rasio Aspek W:H'}
-                  className={`p-1.5 rounded-lg border transition-colors ${isRatioLocked
-                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
-                    : 'bg-slate-950 border-slate-800 text-slate-500 hover:text-slate-300'
-                    }`}
-                >
-                  {isRatioLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-
-              <div className="col-span-2">
-                <label className="text-[10px] text-slate-500 block mb-1">Tinggi (H)</label>
-                <input
-                  type="number"
-                  value={element.height}
-                  onChange={e => {
-                    const newH = Math.max(10, Number(e.target.value));
-                    if (isRatioLocked && element.width > 0) {
-                      const ratio = element.width / element.height;
-                      onUpdateElement(element.id, { height: newH, width: Math.max(10, Math.round(newH * ratio)) });
-                    } else {
-                      handleChange('height', newH);
-                    }
-                  }}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Kontrol Rotasi Derajat */}
-          <div className="space-y-1.5 pt-1">
-            <div className="flex items-center justify-between">
-              <label className="text-[10px] text-slate-500 flex items-center gap-1">
-                <RotateCw className="w-3 h-3 text-indigo-400" />
-                <span>Rotasi Putar (Derajat)</span>
-              </label>
-              <span className="font-mono text-indigo-400 text-[11px]">
-                {element.rotation || 0}°
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
               <input
                 type="range"
                 min="0"
-                max="360"
-                step="5"
-                value={element.rotation || 0}
-                onChange={e => handleChange('rotation', Number(e.target.value))}
-                className="flex-1 accent-indigo-500 cursor-pointer"
+                max="100"
+                value={parseInt(element.content || '75', 10) || 75}
+                onChange={e => handleChange('content', e.target.value)}
+                className="w-full accent-teal-500 cursor-pointer"
               />
-              <div className="flex gap-1">
-                {[0, 90, 180, 270].map(deg => (
+            </div>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Judul Indikator</label>
+              <input
+                type="text"
+                value={element.subTitle || ''}
+                onChange={e => handleChange('subTitle', e.target.value)}
+                placeholder="Contoh: Realisasi Target Evaluasi"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 outline-none focus:border-teal-500"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Pengaturan Khusus Rating Bintang */}
+        {element.type === 'rating' && (
+          <div className="space-y-2 p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+            <span className="text-[10px] font-semibold text-amber-400 uppercase tracking-wider block">
+              Pengaturan Rating Bintang
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-[10px] text-slate-500 block mb-1">Nilai Skor</label>
+                <input
+                  type="text"
+                  value={element.content || '4.9'}
+                  onChange={e => handleChange('content', e.target.value)}
+                  placeholder="4.9"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs font-mono text-amber-400 outline-none focus:border-amber-500"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-slate-500 block mb-1">Label Ulasan</label>
+                <input
+                  type="text"
+                  value={element.subTitle || '(2.8k Ulasan)'}
+                  onChange={e => handleChange('subTitle', e.target.value)}
+                  placeholder="(2.8k Ulasan)"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 outline-none focus:border-amber-500"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pengaturan Khusus Alert Banner */}
+        {element.type === 'alert-box' && (
+          <div className="space-y-2 p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+            <span className="text-[10px] font-semibold text-rose-400 uppercase tracking-wider block">
+              Pengaturan Alert Banner
+            </span>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Tipe / Varian</label>
+              <div className="grid grid-cols-4 gap-1">
+                {[
+                  { id: 'primary', label: 'Info' },
+                  { id: 'success', label: 'Sukses' },
+                  { id: 'warning', label: 'Peringatan' },
+                  { id: 'danger', label: 'Bahaya' },
+                ].map(v => (
                   <button
-                    key={deg}
-                    onClick={() => handleChange('rotation', deg)}
-                    className="px-1.5 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-[9px] text-slate-400 hover:text-white"
+                    key={v.id}
+                    type="button"
+                    onClick={() => handleChange('variant', v.id)}
+                    className={`py-1 text-[10px] font-semibold rounded border transition-colors ${
+                      (element.variant || 'primary') === v.id
+                        ? 'bg-slate-700 border-slate-500 text-white'
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
                   >
-                    {deg}°
+                    {v.label}
                   </button>
                 ))}
               </div>
             </div>
-          </div>
-
-          {/* Flip Cermin Horisontal & Vertikal */}
-          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
-            <span className="text-[10px] text-slate-500">Cermin (Flip)</span>
-            <div className="flex gap-1.5">
-              <button
-                onClick={() => handleChange('flipX', !element.flipX)}
-                title="Cermin Horisontal"
-                className={`px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 font-medium transition-colors ${element.flipX
-                  ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
-              >
-                <ArrowLeftRight className="w-3.5 h-3.5" />
-                <span>Horisontal</span>
-              </button>
-              <button
-                onClick={() => handleChange('flipY', !element.flipY)}
-                title="Cermin Vertikal"
-                className={`px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 font-medium transition-colors ${element.flipY
-                  ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
-                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
-              >
-                <ArrowUpDown className="w-3.5 h-3.5" />
-                <span>Vertikal</span>
-              </button>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Judul Alert</label>
+              <input
+                type="text"
+                value={element.subTitle || ''}
+                onChange={e => handleChange('subTitle', e.target.value)}
+                placeholder="Judul notifikasi..."
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-200 outline-none focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Pesan Lengkap</label>
+              <textarea
+                rows={2}
+                value={element.content || ''}
+                onChange={e => handleChange('content', e.target.value)}
+                placeholder="Pesan detail peringatan..."
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 outline-none focus:border-indigo-500"
+              />
             </div>
           </div>
-        </div>
+        )}
 
+        {/* Pengaturan Khusus Chat Bubble */}
+        {element.type === 'chat-bubble' && (
+          <div className="space-y-2 p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+            <span className="text-[10px] font-semibold text-teal-400 uppercase tracking-wider block">
+              Pengaturan Gelembung Chat
+            </span>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Isi Pesan Obrolan</label>
+              <textarea
+                rows={2}
+                value={element.content || ''}
+                onChange={e => handleChange('content', e.target.value)}
+                placeholder="Ketik pesan chat..."
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs text-slate-200 outline-none focus:border-teal-500"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Waktu / Jam Kirim</label>
+              <input
+                type="text"
+                value={element.subTitle || '09:15'}
+                onChange={e => handleChange('subTitle', e.target.value)}
+                placeholder="09:15"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs font-mono text-slate-200 outline-none focus:border-teal-500"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Pengaturan Khusus Blok Kode */}
+        {element.type === 'code-snippet' && (
+          <div className="space-y-2 p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+            <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wider block">
+              Pengaturan Blok Kode
+            </span>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Nama File / Bahasa</label>
+              <input
+                type="text"
+                value={element.subTitle || 'index.ts'}
+                onChange={e => handleChange('subTitle', e.target.value)}
+                placeholder="app.tsx"
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs font-mono text-slate-200 outline-none focus:border-emerald-500"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Potongan Kode (Syntax)</label>
+              <textarea
+                rows={5}
+                value={element.content || ''}
+                onChange={e => handleChange('content', e.target.value)}
+                placeholder="// Tulis kode di sini..."
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-slate-200 outline-none focus:border-emerald-500"
+              />
+            </div>
+          </div>
+        )}
         {/* Pengaturan Elemen Chart */}
         {element.type === 'chart' && (
           <div className="space-y-3 p-3 bg-slate-950 border border-slate-800 rounded-xl">
@@ -2455,7 +2437,387 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
             return borderControls;
           })()}
+        </div>
+      </div>
+    ) : (
+      <div className="space-y-4">
+        {/* Bilah Perataan Cepat (Smart Alignment Tools) */}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Perataan (Align)
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                onAlignElement('center');
+                onAlignElement('middle');
+              }}
+              title="Pusatkan Elemen Tepat di Tengah Kanvas (Horizontal & Vertikal)"
+              className="text-[10px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 hover:underline"
+            >
+              <span>Pusatkan H+V</span>
+            </button>
+          </div>
+          <div className="grid grid-cols-6 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+            <button
+              onClick={() => onAlignElement('left')}
+              title="Rata Kiri"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignLeft className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onAlignElement('center')}
+              title="Rata Tengah Horizontal"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignCenter className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onAlignElement('right')}
+              title="Rata Kanan"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignRight className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onAlignElement('top')}
+              title="Rata Atas"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignStartVertical className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onAlignElement('middle')}
+              title="Rata Tengah Vertikal"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignCenterVertical className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => onAlignElement('bottom')}
+              title="Rata Bawah"
+              className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded flex justify-center"
+            >
+              <AlignEndVertical className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
 
+        {/* Distribusi Jarak (Smart Spacing) saat 3+ elemen terpilih */}
+        {selectedCount >= 3 && onDistributeElements && (
+          <div className="space-y-2">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Distribusi Spasi Merata
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => onDistributeElements('horizontal')}
+                className="p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-center gap-1.5 text-slate-300 hover:text-white"
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Rata Horizontal</span>
+              </button>
+              <button
+                onClick={() => onDistributeElements('vertical')}
+                className="p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-center gap-1.5 text-slate-300 hover:text-white"
+              >
+                <ArrowUpDown className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Rata Vertikal</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Transformasi Teks Massal saat 2+ elemen terpilih */}
+        {selectedCount > 1 && onBatchUpdateElements && (
+          <div className="space-y-2 p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                <span>Format Teks Massal</span>
+              </span>
+              <span className="text-[9px] font-mono text-indigo-400">
+                {selectedCount} item
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 leading-tight">
+              Ubah kapitalisasi semua teks yang terpilih sekaligus:
+            </p>
+            <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+              <button
+                type="button"
+                onClick={() => {
+                  onBatchUpdateElements(el => {
+                    if (el.content) return { content: el.content.toUpperCase() };
+                    return {};
+                  });
+                }}
+                className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 text-slate-200 rounded text-[10px] font-mono font-bold text-center transition-colors"
+                title="Ubah semua elemen teks terpilih ke UPPERCASE"
+              >
+                UPPERCASE
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onBatchUpdateElements(el => {
+                    if (el.content) return { content: el.content.toLowerCase() };
+                    return {};
+                  });
+                }}
+                className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 text-slate-200 rounded text-[10px] font-mono lowercase text-center transition-colors"
+                title="Ubah semua elemen teks terpilih ke lowercase"
+              >
+                lowercase
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onBatchUpdateElements(el => {
+                    if (el.content) {
+                      return {
+                        content: el.content.replace(/\b\w+/g, t => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase()),
+                      };
+                    }
+                    return {};
+                  });
+                }}
+                className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 text-slate-200 rounded text-[10px] font-mono text-center transition-colors"
+                title="Ubah semua elemen teks terpilih ke Title Case"
+              >
+                Title Case
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Posisi, Dimensi & Rotasi */}
+        <div className="space-y-2">
+          <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            Ukuran, Posisi & Rotasi
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">X (Posisi)</label>
+              <input
+                type="number"
+                value={element.x}
+                onChange={e => handleChange('x', Number(e.target.value))}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-slate-500 block mb-1">Y (Posisi)</label>
+              <input
+                type="number"
+                value={element.y}
+                onChange={e => handleChange('y', Number(e.target.value))}
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
+              />
+            </div>
+            <div className="col-span-2 grid grid-cols-5 gap-1.5 items-end">
+              <div className="col-span-2">
+                <label className="text-[10px] text-slate-500 block mb-1">Lebar (W)</label>
+                <input
+                  type="number"
+                  value={element.width}
+                  onChange={e => {
+                    const newW = Math.max(10, Number(e.target.value));
+                    if (isRatioLocked && element.height > 0) {
+                      const ratio = element.width / element.height;
+                      onUpdateElement(element.id, { width: newW, height: Math.max(10, Math.round(newW / ratio)) });
+                    } else {
+                      handleChange('width', newW);
+                    }
+                  }}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
+                />
+              </div>
+
+              <div className="col-span-1 flex justify-center pb-1">
+                <button
+                  type="button"
+                  onClick={() => setIsRatioLocked(!isRatioLocked)}
+                  title={isRatioLocked ? 'Kunci Rasio Aktif (Klik untuk Buka)' : 'Kunci Rasio Aspek W:H'}
+                  className={`p-1.5 rounded-lg border transition-colors ${isRatioLocked
+                    ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
+                    : 'bg-slate-950 border-slate-800 text-slate-500 hover:text-slate-300'
+                    }`}
+                >
+                  {isRatioLocked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+
+              <div className="col-span-2">
+                <label className="text-[10px] text-slate-500 block mb-1">Tinggi (H)</label>
+                <input
+                  type="number"
+                  value={element.height}
+                  onChange={e => {
+                    const newH = Math.max(10, Number(e.target.value));
+                    if (isRatioLocked && element.width > 0) {
+                      const ratio = element.width / element.height;
+                      onUpdateElement(element.id, { height: newH, width: Math.max(10, Math.round(newH * ratio)) });
+                    } else {
+                      handleChange('height', newH);
+                    }
+                  }}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 outline-none focus:border-indigo-500 font-mono text-xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Kontrol Rotasi Derajat */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-slate-500 flex items-center gap-1">
+                <RotateCw className="w-3 h-3 text-indigo-400" />
+                <span>Rotasi Putar (Derajat)</span>
+              </label>
+              <span className="font-mono text-indigo-400 text-[11px]">
+                {element.rotation || 0}°
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="range"
+                min="0"
+                max="360"
+                step="5"
+                value={element.rotation || 0}
+                onChange={e => handleChange('rotation', Number(e.target.value))}
+                className="flex-1 accent-indigo-500 cursor-pointer"
+              />
+              <div className="flex gap-1">
+                {[0, 90, 180, 270].map(deg => (
+                  <button
+                    key={deg}
+                    onClick={() => handleChange('rotation', deg)}
+                    className="px-1.5 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded text-[9px] text-slate-400 hover:text-white"
+                  >
+                    {deg}°
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Flip Cermin Horisontal & Vertikal */}
+          <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between">
+            <span className="text-[10px] text-slate-500">Cermin (Flip)</span>
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => handleChange('flipX', !element.flipX)}
+                title="Cermin Horisontal"
+                className={`px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 font-medium transition-colors ${element.flipX
+                  ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+              >
+                <ArrowLeftRight className="w-3.5 h-3.5" />
+                <span>Horisontal</span>
+              </button>
+              <button
+                onClick={() => handleChange('flipY', !element.flipY)}
+                title="Cermin Vertikal"
+                className={`px-2.5 py-1 rounded-lg border text-xs flex items-center gap-1 font-medium transition-colors ${element.flipY
+                  ? 'bg-indigo-600/30 border-indigo-500 text-indigo-300'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  }`}
+              >
+                <ArrowUpDown className="w-3.5 h-3.5" />
+                <span>Vertikal</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+          {/* Susunan Layer */}
+          <div className="space-y-2 pt-2 border-t border-slate-800">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              Urutan Layer (Z-Index)
+            </span>
+            <div className="grid grid-cols-4 gap-1">
+              <button
+                onClick={() => onReorder('front')}
+                title="Paling Depan"
+                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
+              >
+                <BringToFront className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => onReorder('up')}
+                title="Maju Satu Tingkat"
+                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
+              >
+                <ArrowUp className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => onReorder('down')}
+                title="Mundur Satu Tingkat"
+                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
+              >
+                <ArrowDown className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => onReorder('back')}
+                title="Paling Belakang"
+                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
+              >
+                <SendToBack className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+        {/* Aksi Klik & Tautan Antar-Slide (Prototyping) */}
+        <details className="group border border-slate-800/80 rounded-xl bg-slate-950/40 overflow-hidden">
+          <summary className="px-2.5 py-2 cursor-pointer flex items-center justify-between text-[10px] font-medium text-slate-400 hover:text-slate-200 select-none">
+            <span className="flex items-center gap-1.5">
+              <Link className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Tautan Aksi Klik (Prototyping)</span>
+            </span>
+            <div className="flex items-center gap-1.5">
+              {element.linkToSlideId && (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono">
+                  Slide Link
+                </span>
+              )}
+              <span className="text-slate-500 text-[10px] group-open:rotate-180 transition-transform">▼</span>
+            </div>
+          </summary>
+          <div className="p-2.5 pt-1 border-t border-slate-800/60 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] text-slate-400">Target Slide:</span>
+              {element.linkToSlideId && (
+                <button
+                  type="button"
+                  onClick={() => handleChange('linkToSlideId', undefined)}
+                  className="text-[9px] text-rose-400 hover:underline"
+                >
+                  Hapus Tautan
+                </button>
+              )}
+            </div>
+            <select
+              value={element.linkToSlideId || ''}
+              onChange={e => handleChange('linkToSlideId', e.target.value || undefined)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+            >
+              <option value="">Tidak Ada Aksi (Statis)</option>
+              {slides.map((s, idx) => (
+                <option key={s.id} value={s.id}>
+                  Lompat ke Slide {idx + 1}: {s.title}
+                </option>
+              ))}
+            </select>
+            <span className="text-[9px] text-slate-500 block leading-tight">
+              Saat diklik pada Mode Presentasi atau Layar Audiens, otomatis berpindah ke slide target.
+            </span>
+          </div>
+        </details>
           {/* Animasi Masuk & Gerakan Elemen (Collapsible) */}
           <details className="group border border-slate-800/80 rounded-xl bg-slate-950/40 overflow-hidden">
             <summary className="px-2.5 py-2 cursor-pointer flex items-center justify-between text-[10px] font-medium text-slate-400 hover:text-slate-200 select-none">
@@ -2558,43 +2920,8 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             </div>
           </details>
 
-          {/* Susunan Layer */}
-          <div className="space-y-2 pt-2 border-t border-slate-800">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Urutan Layer (Z-Index)
-            </span>
-            <div className="grid grid-cols-4 gap-1">
-              <button
-                onClick={() => onReorder('front')}
-                title="Paling Depan"
-                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
-              >
-                <BringToFront className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => onReorder('up')}
-                title="Maju Satu Tingkat"
-                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
-              >
-                <ArrowUp className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => onReorder('down')}
-                title="Mundur Satu Tingkat"
-                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
-              >
-                <ArrowDown className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => onReorder('back')}
-                title="Paling Belakang"
-                className="p-2 bg-slate-800/80 hover:bg-slate-800 rounded-lg flex justify-center text-slate-300 transition-colors"
-              >
-                <SendToBack className="w-4 h-4" />
-              </button>
-            </div>
           </div>
-        </div>
+        )}
       </div>
     </aside>
   );

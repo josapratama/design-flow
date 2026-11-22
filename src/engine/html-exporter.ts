@@ -292,14 +292,55 @@ ${fontLink}  <style>
           innerContent = '<img src="' + el.imageUrl + '" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />';
         } else if (el.type === 'button') {
           innerContent = '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:' + (el.color || '#ffffff') + ';font-weight:bold;font-size:14px;' + fontStyle + '">' + escapeHtml(el.content || '') + '</div>';
+        } else if (el.type === 'progress-bar') {
+          const val = Math.min(100, Math.max(0, parseInt(el.content || '75', 10) || 75));
+          innerContent = '<div style="display:flex;flex-direction:column;justify-content:center;width:100%;height:100%;padding:4px 8px;">' +
+            '<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px;color:' + (el.color || '#e2e8f0') + ';">' +
+            '<span>' + escapeHtml(el.subTitle || 'Progres Tugas') + '</span><span>' + val + '%</span></div>' +
+            '<div style="width:100%;height:10px;background:#334155;border-radius:9999px;overflow:hidden;">' +
+            '<div style="width:' + val + '%;height:100%;background:#6366f1;border-radius:9999px;"></div></div></div>';
+        } else if (el.type === 'rating') {
+          const stars = Math.round(parseFloat(el.content || '5') || 5);
+          const starHtml = Array.from({ length: 5 }, (_, i) => '<span style="font-size:18px;color:' + (i < stars ? '#eab308' : '#475569') + ';">★</span>').join('');
+          innerContent = '<div style="display:flex;align-items:center;gap:4px;height:100%;padding:0 8px;">' + starHtml +
+            (el.subTitle ? '<span style="font-size:12px;margin-left:8px;color:' + (el.color || '#cbd5e1') + ';">' + escapeHtml(el.subTitle) + '</span>' : '') + '</div>';
+        } else if (el.type === 'alert-box') {
+          innerContent = '<div style="display:flex;align-items:flex-start;gap:10px;height:100%;padding:10px 14px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:inherit;">' +
+            '<span style="font-size:16px;">💡</span><div style="font-size:13px;line-height:1.4;color:' + (el.color || '#e2e8f0') + ';">' + escapeHtml(el.content || 'Catatan penting di sini') + '</div></div>';
+        } else if (el.type === 'chat-bubble') {
+          innerContent = '<div style="display:flex;flex-direction:column;gap:3px;height:100%;padding:10px 14px;background:#1e293b;border-radius:inherit;">' +
+            '<span style="font-size:11px;font-weight:bold;color:#818cf8;">' + escapeHtml(el.subTitle || 'Pengguna') + '</span>' +
+            '<p style="font-size:13px;margin:0;color:' + (el.color || '#f1f5f9') + ';">' + escapeHtml(el.content || 'Halo!') + '</p></div>';
+        } else if (el.type === 'code-snippet') {
+          innerContent = '<pre style="height:100%;padding:10px;background:#0f172a;border-radius:inherit;font-family:monospace;font-size:12px;color:#38bdf8;overflow:hidden;margin:0;"><code>' +
+            escapeHtml(el.content || 'const x = 42;') + '</code></pre>';
+        } else if (el.type === 'heart') {
+          innerContent = '<svg viewBox="0 0 100 100" style="width:100%;height:100%;"><path d="M50 88.9L16.7 55.6C7.6 46.5 7.6 31.8 16.7 22.7c9.1-9.1 23.8-9.1 32.9 0l.4.4.4-.4c9.1-9.1 23.8-9.1 32.9 0 9.1 9.1 9.1 23.8 0 32.9L50 88.9z" fill="' + (el.fill || '#f43f5e') + '" stroke="' + (el.stroke || 'none') + '" stroke-width="' + (el.strokeWidth || 0) + '"/></svg>';
+        } else if (el.type === 'diamond') {
+          innerContent = '<svg viewBox="0 0 100 100" style="width:100%;height:100%;"><polygon points="50,5 95,50 50,95 5,50" fill="' + (el.fill || '#6366f1') + '" stroke="' + (el.stroke || 'none') + '" stroke-width="' + (el.strokeWidth || 0) + '"/></svg>';
+        } else if (el.type === 'speech-bubble') {
+          innerContent = '<svg viewBox="0 0 100 100" style="width:100%;height:100%;"><path d="M10 20 C10 10, 20 10, 30 10 L70 10 C80 10, 90 10, 90 20 L90 60 C90 70, 80 70, 70 70 L35 70 L20 85 L20 70 L20 70 C10 70, 10 60, 10 50 Z" fill="' + (el.fill || '#1e293b') + '" stroke="' + (el.stroke || '#6366f1') + '" stroke-width="' + (el.strokeWidth || 2) + '"/></svg>';
+        } else if (el.content) {
+          innerContent = '<div style="' + fontStyle + '; padding: 4px 6px;">' + escapeHtml(el.content) + '</div>';
         }
 
-        html += '<div class="slide-element" style="' + style + '">' + innerContent + '</div>';
+        const interactiveAttrs = el.linkToSlideId ? ' data-link-slide="' + el.linkToSlideId + '" style="' + style + '; cursor: pointer;"' : ' style="' + style + '"';
+        html += '<div class="slide-element"' + interactiveAttrs + '>' + innerContent + '</div>';
       });
 
       // Smooth slide appearance
       wrapper.style.opacity = '0';
       wrapper.innerHTML = html;
+      wrapper.querySelectorAll('[data-link-slide]').forEach(node => {
+        node.addEventListener('click', e => {
+          e.stopPropagation();
+          const targetId = node.getAttribute('data-link-slide');
+          const targetIdx = slides.findIndex(s => s.id === targetId);
+          if (targetIdx !== -1) {
+            renderSlide(targetIdx);
+          }
+        });
+      });
       resizeSlide();
       requestAnimationFrame(() => {
         wrapper.style.opacity = '1';

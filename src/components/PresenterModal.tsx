@@ -706,13 +706,19 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   };
 
   const currentSlide = slides[currentIndex];
-  // Calculate exact scale based on measured container bounds to prevent any clipping
-  const availableWidth = slideAreaBounds.width > 0
-    ? Math.max(100, slideAreaBounds.width - 48)
-    : Math.max(100, windowDimensions.width * (showNotes ? 0.68 : 0.94) - 48);
-  const availableHeight = slideAreaBounds.height > 0
-    ? Math.max(100, slideAreaBounds.height - 48)
-    : Math.max(100, windowDimensions.height * 0.84 - 48);
+  // Calculate exact scale based on measured container bounds to prevent any clipping or bottom toolbar overlap
+  const availableWidth = Math.max(
+    100,
+    (slideAreaBounds.width > 0
+      ? slideAreaBounds.width
+      : windowDimensions.width - (showNotes && windowDimensions.width >= 640 ? 340 : 0)) - 64
+  );
+  const availableHeight = Math.max(
+    100,
+    (slideAreaBounds.height > 0
+      ? slideAreaBounds.height
+      : windowDimensions.height - 120) - 110
+  );
   const scale = Math.max(0.05, Math.min(availableWidth / currentSlide.width, availableHeight / currentSlide.height));
 
   const wordCount = (currentSlide.notes || '').trim().split(/\s+/).filter(Boolean).length;
@@ -1361,7 +1367,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden min-h-0 relative">
           {/* Slide Canvas Area */}
           <div
             ref={slideAreaRef}
@@ -1369,7 +1375,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             onMouseLeave={handleMouseLeave}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
-            className={`flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden ${isLaserActive ? 'cursor-none' : 'cursor-default'
+            className={`flex-1 min-w-0 flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-slate-950 relative overflow-hidden ${isLaserActive ? 'cursor-none' : 'cursor-default'
               }`}
           >
             {/* Virtual Spotlight Mode (Stage Light focus) */}
@@ -1432,7 +1438,17 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                   .map(el => (
                     <div
                       key={el.id}
-                      className="absolute"
+                      className={`absolute ${el.linkToSlideId && !isPenActive ? 'cursor-pointer hover:ring-2 hover:ring-indigo-400/80 transition-all rounded-sm' : ''}`}
+                      onClick={() => {
+                        if (!isPenActive && el.linkToSlideId) {
+                          const targetIdx = slides.findIndex(s => s.id === el.linkToSlideId);
+                          if (targetIdx !== -1 && targetIdx !== currentIndex) {
+                            clearPenCanvas();
+                            setCurrentIndex(targetIdx);
+                            soundEffects.playSlideTransition();
+                          }
+                        }
+                      }}
                       style={{
                         left: `${el.x}px`,
                         top: `${el.y}px`,
@@ -1465,6 +1481,71 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 />
               </div>
             </div>
+
+            {/* Floating Pen Palette Toolbar when Pen is Active */}
+            {isPenActive && (
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 border border-slate-700/80 shadow-2xl rounded-2xl px-4 py-2 flex items-center gap-3 backdrop-blur-xl animate-in slide-in-from-bottom-4 duration-200">
+                <span className="text-[11px] font-semibold text-slate-300">Pena:</span>
+                <div className="flex items-center gap-1.5 border-r border-slate-800 pr-3">
+                  {[
+                    { color: '#facc15', label: 'Kuning Stabilo' },
+                    { color: '#f43f5e', label: 'Merah Koreksi' },
+                    { color: '#38bdf8', label: 'Cyan Terang' },
+                    { color: '#34d399', label: 'Emerald' },
+                    { color: '#ffffff', label: 'Putih' },
+                  ].map(sw => (
+                    <button
+                      key={sw.color}
+                      type="button"
+                      onClick={() => setPenColor(sw.color)}
+                      title={sw.label}
+                      className={`w-5 h-5 rounded-full border transition-all ${
+                        penColor === sw.color ? 'scale-125 border-white ring-2 ring-white/40 shadow-sm' : 'border-slate-700 hover:scale-110'
+                      }`}
+                      style={{ backgroundColor: sw.color }}
+                    />
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1 border-r border-slate-800 pr-3">
+                  {[
+                    { width: 2, label: 'Tipis' },
+                    { width: 4, label: 'Sedang' },
+                    { width: 8, label: 'Stabilo' },
+                  ].map(sz => (
+                    <button
+                      key={sz.width}
+                      type="button"
+                      onClick={() => setPenWidth(sz.width)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-mono transition-colors ${
+                        penWidth === sz.width ? 'bg-slate-700 text-white font-bold' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {sz.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={undoPenStroke}
+                    className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-medium transition-colors"
+                    title="Undo Coretan (U)"
+                  >
+                    Undo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearPenCanvas}
+                    className="px-2 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-[10px] font-medium transition-colors"
+                    title="Hapus Semua Coretan (C)"
+                  >
+                    Bersihkan
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Glowing Virtual Laser Pointer with Pulse Ring */}
             {isLaserActive && (
@@ -1677,9 +1758,15 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             </div>
           </div>
 
-          {/* Presenter Speaker Notes Sidebar (Live Editable & Responsive Drawer on mobile) */}
+          {/* Presenter Speaker Notes Sidebar (Docked on tablet/desktop, slide-over on small mobile) */}
           {showNotes && (
-            <aside className="w-72 sm:w-80 border-l border-slate-800/80 bg-slate-900/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col justify-between shrink-0 fixed lg:static right-0 top-14 bottom-0 z-30 shadow-2xl lg:shadow-none animate-in slide-in-from-right duration-150">
+            <>
+              {/* Backdrop on extra-small mobile screen */}
+              <div
+                onClick={() => setShowNotes(false)}
+                className="fixed inset-0 bg-black/60 z-30 sm:hidden animate-in fade-in"
+              />
+              <aside className="w-80 sm:w-88 border-l border-slate-800/80 bg-slate-900/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col justify-between shrink-0 fixed sm:static right-0 top-14 sm:top-0 bottom-0 z-30 sm:z-10 shadow-2xl sm:shadow-none animate-in slide-in-from-right duration-150 h-full overflow-y-auto">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -1852,6 +1939,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 );
               })()}
             </aside>
+            </>
           )}
         </div>
       )}

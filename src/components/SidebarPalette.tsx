@@ -81,6 +81,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
   onAddElements,
 }) => {
   const [activeTab, setActiveTab] = useState<'elements' | 'ui' | 'shapes' | 'media' | 'blocks' | 'layers'>('elements');
+  const [uiCategory, setUiCategory] = useState<'all' | 'form' | 'data' | 'nav'>('all');
   const [uiSearch, setUiSearch] = useState('');
   const [layerSearch, setLayerSearch] = useState('');
   const [mediaCategory, setMediaCategory] = useState<'all' | 'tech' | 'business' | 'arch' | 'nature' | 'people' | 'abstract'>('all');
@@ -586,9 +587,13 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         {/* TAB 2: UI KIT */}
         {activeTab === 'ui' && (
           <div className="space-y-3">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-              Komponen UI & Wireframe
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                Komponen UI & Wireframe
+              </span>
+              <span className="text-[9px] font-mono text-slate-500">20 komponen</span>
+            </div>
+
             {/* Search Input for UI Kit */}
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -596,8 +601,8 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                 type="text"
                 value={uiSearch}
                 onChange={e => setUiSearch(e.target.value)}
-                placeholder="Cari tombol, input, tabel..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                placeholder="Cari tombol, kartu, input..."
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-7 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
               />
               {uiSearch && (
                 <button
@@ -608,10 +613,41 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                 </button>
               )}
             </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {(!uiSearch || 'tombol aksi button cta mulai'.includes(uiSearch.toLowerCase())) && (
+
+            {/* Category Filter Pills - Clean & Calm */}
+            <div className="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+              {[
+                { id: 'all', label: 'Semua' },
+                { id: 'form', label: 'Form & Input' },
+                { id: 'data', label: 'Data & Kartu' },
+                { id: 'nav', label: 'Navigasi' },
+              ].map(cat => (
                 <button
-                  onClick={() =>
+                  key={cat.id}
+                  onClick={() => setUiCategory(cat.id as any)}
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-medium transition-colors shrink-0 ${
+                    uiCategory === cat.id
+                      ? 'bg-slate-800 text-white border border-slate-700 shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900 border border-transparent'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Structured Clean UI Components Grid */}
+            <div className="grid grid-cols-2 gap-1.5">
+              {[
+                // Form & Input
+                {
+                  id: 'button',
+                  cat: 'form',
+                  name: 'Tombol Aksi',
+                  sub: 'Tombol CTA',
+                  icon: MousePointerClick,
+                  tags: 'tombol aksi button cta mulai klik',
+                  action: () =>
                     onAddElement(
                       createBaseElement('button', 'Tombol Aksi', 160, 48, {
                         content: 'Mulai Sekarang',
@@ -620,20 +656,16 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                         borderRadius: 10,
                         shadow: 'md',
                       })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 transition-colors shrink-0">
-                    <MousePointerClick className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Tombol</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'kolom input teks form search text cari'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
+                    ),
+                },
+                {
+                  id: 'input',
+                  cat: 'form',
+                  name: 'Input Teks',
+                  sub: 'Formulir input',
+                  icon: TextCursorInput,
+                  tags: 'kolom input teks form search text cari',
+                  action: () =>
                     onAddElement(
                       createBaseElement('input', 'Kolom Input', 240, 48, {
                         placeholder: 'Masukkan kata kunci pencarian...',
@@ -642,20 +674,52 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                         color: '#94a3b8',
                         borderRadius: 10,
                       })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-teal-400 group-hover:border-teal-500/40 transition-colors shrink-0">
-                    <TextCursorInput className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Input Teks</span>
-                </button>
-              )}
+                    ),
+                },
+                {
+                  id: 'toggle',
+                  cat: 'form',
+                  name: 'Switch Toggle',
+                  sub: 'Saklar on/off',
+                  icon: ToggleLeft,
+                  tags: 'switch toggle saklar on off cek',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('toggle', 'Switch Toggle', 52, 30, {
+                        content: 'on',
+                        fill: '#10b981',
+                        shadow: 'sm',
+                      })
+                    ),
+                },
+                {
+                  id: 'rating',
+                  cat: 'form',
+                  name: 'Rating Bintang',
+                  sub: 'Skor kepuasan',
+                  icon: Star,
+                  tags: 'rating ulasan bintang skor review star',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('rating', 'Rating Bintang', 260, 52, {
+                        content: '4.9',
+                        subTitle: '(2.8k Ulasan)',
+                        fill: '#0f172a',
+                        stroke: '#1e293b',
+                        borderRadius: 12,
+                      })
+                    ),
+                },
 
-              {(!uiSearch || 'kartu metrik stat card angka kpi akurasi'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
+                // Data & Kartu
+                {
+                  id: 'metric-card',
+                  cat: 'data',
+                  name: 'Kartu Metrik',
+                  sub: 'KPI & statistik',
+                  icon: BarChart3,
+                  tags: 'kartu metrik stat card angka kpi akurasi',
+                  action: () =>
                     onAddElement(
                       createBaseElement('metric-card', 'Stat Card', 220, 110, {
                         content: '98.4%',
@@ -665,280 +729,16 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                         borderRadius: 14,
                         shadow: 'lg',
                       })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 group-hover:border-cyan-500/40 transition-colors shrink-0">
-                    <BarChart3 className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Metrik</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'nav header navbar mobile navigation aplikasi'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('navbar', 'App Navbar', 393, 56, {
-                        content: 'DesignFlow Mobile',
-                        fill: '#090d16',
-                        color: '#ffffff',
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-purple-400 group-hover:border-purple-500/40 transition-colors shrink-0">
-                    <Smartphone className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Navbar</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'avatar profil user usercheck akun pengguna'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('avatar', 'Avatar User', 64, 64, {
-                        content: 'DF',
-                        stroke: '#6366f1',
-                        fill: '#1e1b4b',
-                        color: '#c7d2fe',
-                        shadow: 'md',
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 transition-colors shrink-0">
-                    <UserCheck className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Avatar</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'badge pill tag label verified status'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('badge-shape', 'Badge Pill', 140, 36, {
-                        content: 'VERIFIED',
-                        fill: 'rgba(99, 102, 241, 0.2)',
-                        color: '#818cf8',
-                        iconName: 'Shield',
-                        borderRadius: 9999,
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-pink-400 group-hover:border-pink-500/40 transition-colors shrink-0">
-                    <Tag className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Badge Pill</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'switch toggle saklar on off cek'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('toggle', 'Switch Toggle', 52, 30, {
-                        content: 'on',
-                        fill: '#10b981',
-                        shadow: 'sm',
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-emerald-400 group-hover:border-emerald-500/40 transition-colors shrink-0">
-                    <ToggleLeft className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Toggle</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'ikon vektor sparkles icon simbol'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('icon', 'Ikon Vektor', 64, 64, {
-                        iconName: 'Sparkles',
-                        color: '#f59e0b',
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-400 group-hover:border-amber-500/40 transition-colors shrink-0">
-                    <Sparkles className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Ikon</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'grafik chart diagram bar analisis performa tren'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('chart', 'Grafik Analisis', 360, 220, {
-                        content: 'Pertumbuhan Kinerja',
-                        subTitle: 'Evaluasi metrik kuartal Q1-Q4',
-                        chartType: 'bar',
-                        fill: '#6366f1',
-                        color: '#38bdf8',
-                        borderRadius: 16,
-                        shadow: 'lg',
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 transition-colors shrink-0">
-                    <BarChart3 className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Grafik</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'tabel table data matriks grid baris kolom'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('table', 'Tabel Data', 480, 220, {
-                        content: 'Indikator | Target | Realisasi | Status\nAkurasi Model | 95.0% | 99.4% | Tercapai\nLatensi Inferensi | < 20ms | 11.8ms | Optimal\nThroughput | 2.0x | 3.4x | Melampaui',
-                        fill: '#0f172a',
-                        stroke: '#334155',
-                        strokeWidth: 1,
-                        borderRadius: 12,
-                        shadow: 'md',
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 group-hover:border-cyan-500/40 transition-colors shrink-0">
-                    <Table className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Tabel Data</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'rating ulasan bintang skor review kepuasan star'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('rating', 'Rating Bintang', 260, 52, {
-                        content: '4.9',
-                        subTitle: '(2.8k Ulasan)',
-                        fill: '#0f172a',
-                        stroke: '#1e293b',
-                        borderRadius: 12,
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-400 group-hover:border-amber-500/40 transition-colors shrink-0">
-                    <Star className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Rating Bintang</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'breadcrumb navigasi jejak rute link home'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('breadcrumb', 'Breadcrumb Nav', 340, 44, {
-                        content: 'Home / Proyek / Analisis Model',
-                        fill: '#0f172a',
-                        stroke: '#1e293b',
-                        borderRadius: 10,
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 transition-colors shrink-0">
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Breadcrumb</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'alert box banner peringatan info notifikasi alert-box'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('alert-box', 'Alert Banner', 380, 80, {
-                        variant: 'primary',
-                        subTitle: 'Sinkronisasi Otomatis Berhasil',
-                        content: 'Seluruh repositori aset dan data eksperimen telah diperbarui secara realtime.',
-                        fill: '#0f172a',
-                        stroke: '#0284c7',
-                        borderRadius: 12,
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-sky-400 group-hover:border-sky-500/40 transition-colors shrink-0">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Alert Banner</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'accordion faq dropdown pertanyaan collapse'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('accordion-item', 'Accordion FAQ', 420, 110, {
-                        subTitle: 'Bagaimana metode validasi model dievaluasi?',
-                        content: 'Metode pengujian menggunakan k-fold cross validation dengan 5 iterasi acak dan metrik F1-score.',
-                        fill: '#1e293b',
-                        stroke: '#334155',
-                        borderRadius: 12,
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 transition-colors shrink-0">
-                    <Sliders className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Accordion FAQ</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'progress bar persentase loading proses capaian'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('progress-bar', 'Progress Bar', 320, 75, {
-                        content: '82',
-                        subTitle: 'Pencapaian Target Q3',
-                        fill: '#0f172a',
-                        stroke: '#334155',
-                        borderRadius: 12,
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-teal-400 group-hover:border-teal-500/40 transition-colors shrink-0">
-                    <SlidersHorizontal className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Progress Bar</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'pricing kartu harga paket langganan subscription plan'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
+                    ),
+                },
+                {
+                  id: 'pricing-card',
+                  cat: 'data',
+                  name: 'Kartu Harga',
+                  sub: 'Paket tier',
+                  icon: CreditCard,
+                  tags: 'pricing kartu harga paket langganan plan',
+                  action: () =>
                     onAddElement(
                       createBaseElement('pricing-card', 'Pricing Card', 300, 360, {
                         subTitle: 'Paket Profesional',
@@ -948,88 +748,16 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                         borderRadius: 18,
                         shadow: 'xl',
                       })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-purple-400 group-hover:border-purple-500/40 transition-colors shrink-0">
-                    <CreditCard className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Kartu Harga</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'timeline linimasa roadmap milestone langkah fase waktu'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('timeline-item', 'Milestone Timeline', 360, 110, {
-                        name: 'Rilis Versi 2.0 Beta',
-                        subTitle: 'Tahap 03 • September 2026',
-                        content: 'Integrasi sistem terdistribusi dan audit keamanan tingkat lanjut.',
-                        fill: '#0f172a',
-                        stroke: '#334155',
-                        borderRadius: 14,
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-emerald-400 group-hover:border-emerald-500/40 transition-colors shrink-0">
-                    <Clock className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Timeline Item</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'chat bubble pesan percakapan dialog whatsapp messenger'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('chat-bubble', 'Chat Bubble', 380, 95, {
-                        content: 'Apakah arsitektur backend sudah siap untuk load testing?',
-                        subTitle: '09:15',
-                        fill: '#1e293b',
-                        stroke: '#334155',
-                        color: '#f8fafc',
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-teal-400 group-hover:border-teal-500/40 transition-colors shrink-0">
-                    <MessageSquare className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Chat Bubble</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'code snippet blok kode syntax program editor terminal'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
-                    onAddElement(
-                      createBaseElement('code-snippet', 'Blok Kode', 420, 160, {
-                        subTitle: 'evaluate_pipeline.ts',
-                        content: '// Kalkulasi Skor Akurasi & Latensi\nconst metrics = await model.evaluate(testBatch);\nconsole.log(`F1: ${metrics.f1Score}, Latency: ${metrics.latencyMs}ms`);',
-                        fill: '#020617',
-                        stroke: '#334155',
-                        borderRadius: 14,
-                        shadow: 'lg',
-                      })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-emerald-400 group-hover:border-emerald-500/40 transition-colors shrink-0">
-                    <Code2 className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Blok Kode</span>
-                </button>
-              )}
-
-              {(!uiSearch || 'testimonial ulasan review klien pengguna testimoni'.includes(uiSearch.toLowerCase())) && (
-                <button
-                  onClick={() =>
+                    ),
+                },
+                {
+                  id: 'testimonial-card',
+                  cat: 'data',
+                  name: 'Testimonial',
+                  sub: 'Ulasan tokoh',
+                  icon: Award,
+                  tags: 'testimonial ulasan review klien pengguna',
+                  action: () =>
                     onAddElement(
                       createBaseElement('testimonial-card', 'Testimonial Card', 360, 210, {
                         name: 'Prof. Bambang Sutrisno',
@@ -1040,16 +768,273 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                         borderRadius: 16,
                         shadow: 'md',
                       })
-                    )
-                  }
-                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-400 group-hover:border-amber-500/40 transition-colors shrink-0">
-                    <Award className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Testimonial</span>
-                </button>
-              )}
+                    ),
+                },
+                {
+                  id: 'code-snippet',
+                  cat: 'data',
+                  name: 'Blok Kode',
+                  sub: 'Syntax editor',
+                  icon: Code2,
+                  tags: 'code snippet blok kode syntax program editor terminal',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('code-snippet', 'Blok Kode', 420, 160, {
+                        subTitle: 'evaluate_pipeline.ts',
+                        content: '// Kalkulasi Skor Akurasi & Latensi\nconst metrics = await model.evaluate(testBatch);\nconsole.log(`F1: ${metrics.f1Score}, Latency: ${metrics.latencyMs}ms`);',
+                        fill: '#020617',
+                        stroke: '#334155',
+                        borderRadius: 14,
+                        shadow: 'lg',
+                      })
+                    ),
+                },
+                {
+                  id: 'table',
+                  cat: 'data',
+                  name: 'Tabel Data',
+                  sub: 'Matriks tabel',
+                  icon: Table,
+                  tags: 'tabel table data matriks grid baris kolom',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('table', 'Tabel Data', 480, 220, {
+                        content: 'Indikator | Target | Realisasi | Status\nAkurasi Model | 95.0% | 99.4% | Tercapai\nLatensi Inferensi | < 20ms | 11.8ms | Optimal\nThroughput | 2.0x | 3.4x | Melampaui',
+                        fill: '#0f172a',
+                        stroke: '#334155',
+                        strokeWidth: 1,
+                        borderRadius: 12,
+                        shadow: 'md',
+                      })
+                    ),
+                },
+                {
+                  id: 'chart',
+                  cat: 'data',
+                  name: 'Grafik Analisis',
+                  sub: 'Chart batang/garis',
+                  icon: BarChart3,
+                  tags: 'grafik chart diagram bar analisis performa tren',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('chart', 'Grafik Analisis', 360, 220, {
+                        content: 'Pertumbuhan Kinerja',
+                        subTitle: 'Evaluasi metrik kuartal Q1-Q4',
+                        chartType: 'bar',
+                        fill: '#6366f1',
+                        color: '#38bdf8',
+                        borderRadius: 16,
+                        shadow: 'lg',
+                      })
+                    ),
+                },
+                {
+                  id: 'progress-bar',
+                  cat: 'data',
+                  name: 'Progress Bar',
+                  sub: 'Persentase %',
+                  icon: SlidersHorizontal,
+                  tags: 'progress bar persentase loading proses capaian',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('progress-bar', 'Progress Bar', 320, 75, {
+                        content: '82',
+                        subTitle: 'Pencapaian Target Q3',
+                        fill: '#0f172a',
+                        stroke: '#334155',
+                        borderRadius: 12,
+                      })
+                    ),
+                },
+
+                // Navigasi & Feedback
+                {
+                  id: 'navbar',
+                  cat: 'nav',
+                  name: 'App Navbar',
+                  sub: 'Header menu app',
+                  icon: Smartphone,
+                  tags: 'nav header navbar mobile navigation aplikasi',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('navbar', 'App Navbar', 393, 56, {
+                        content: 'DesignFlow Mobile',
+                        fill: '#090d16',
+                        color: '#ffffff',
+                      })
+                    ),
+                },
+                {
+                  id: 'breadcrumb',
+                  cat: 'nav',
+                  name: 'Breadcrumb',
+                  sub: 'Jejak navigasi',
+                  icon: ChevronRight,
+                  tags: 'breadcrumb navigasi jejak rute link home',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('breadcrumb', 'Breadcrumb Nav', 340, 44, {
+                        content: 'Home / Proyek / Analisis Model',
+                        fill: '#0f172a',
+                        stroke: '#1e293b',
+                        borderRadius: 10,
+                      })
+                    ),
+                },
+                {
+                  id: 'alert-box',
+                  cat: 'nav',
+                  name: 'Alert Banner',
+                  sub: 'Peringatan & info',
+                  icon: AlertCircle,
+                  tags: 'alert box banner peringatan info notifikasi',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('alert-box', 'Alert Banner', 380, 80, {
+                        variant: 'primary',
+                        subTitle: 'Sinkronisasi Otomatis Berhasil',
+                        content: 'Seluruh repositori aset dan data eksperimen telah diperbarui secara realtime.',
+                        fill: '#0f172a',
+                        stroke: '#0284c7',
+                        borderRadius: 12,
+                      })
+                    ),
+                },
+                {
+                  id: 'accordion-item',
+                  cat: 'nav',
+                  name: 'Accordion FAQ',
+                  sub: 'Tanya jawab lipat',
+                  icon: Sliders,
+                  tags: 'accordion faq dropdown pertanyaan collapse',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('accordion-item', 'Accordion FAQ', 420, 110, {
+                        subTitle: 'Bagaimana metode validasi model dievaluasi?',
+                        content: 'Metode pengujian menggunakan k-fold cross validation dengan 5 iterasi acak dan metrik F1-score.',
+                        fill: '#1e293b',
+                        stroke: '#334155',
+                        borderRadius: 12,
+                      })
+                    ),
+                },
+                {
+                  id: 'timeline-item',
+                  cat: 'nav',
+                  name: 'Timeline Item',
+                  sub: 'Roadmap fase',
+                  icon: Clock,
+                  tags: 'timeline linimasa roadmap milestone langkah',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('timeline-item', 'Milestone Timeline', 360, 110, {
+                        name: 'Rilis Versi 2.0 Beta',
+                        subTitle: 'Tahap 03 • September 2026',
+                        content: 'Integrasi sistem terdistribusi dan audit keamanan tingkat lanjut.',
+                        fill: '#0f172a',
+                        stroke: '#334155',
+                        borderRadius: 14,
+                      })
+                    ),
+                },
+                {
+                  id: 'chat-bubble',
+                  cat: 'nav',
+                  name: 'Chat Bubble',
+                  sub: 'Gelembung pesan',
+                  icon: MessageSquare,
+                  tags: 'chat bubble pesan percakapan dialog whatsapp',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('chat-bubble', 'Chat Bubble', 380, 95, {
+                        content: 'Apakah arsitektur backend sudah siap untuk load testing?',
+                        subTitle: '09:15',
+                        fill: '#1e293b',
+                        stroke: '#334155',
+                        color: '#f8fafc',
+                      })
+                    ),
+                },
+                {
+                  id: 'avatar',
+                  cat: 'nav',
+                  name: 'Avatar Profil',
+                  sub: 'Inisial / avatar',
+                  icon: UserCheck,
+                  tags: 'avatar profil user usercheck akun pengguna',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('avatar', 'Avatar User', 64, 64, {
+                        content: 'DF',
+                        stroke: '#6366f1',
+                        fill: '#1e1b4b',
+                        color: '#c7d2fe',
+                        shadow: 'md',
+                      })
+                    ),
+                },
+                {
+                  id: 'badge-shape',
+                  cat: 'nav',
+                  name: 'Badge Pill',
+                  sub: 'Status verified',
+                  icon: Tag,
+                  tags: 'badge pill tag label verified status',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('badge-shape', 'Badge Pill', 140, 36, {
+                        content: 'VERIFIED',
+                        fill: 'rgba(99, 102, 241, 0.2)',
+                        color: '#818cf8',
+                        iconName: 'Shield',
+                        borderRadius: 9999,
+                      })
+                    ),
+                },
+                {
+                  id: 'icon',
+                  cat: 'nav',
+                  name: 'Ikon Vektor',
+                  sub: 'Simbol vektor',
+                  icon: Sparkles,
+                  tags: 'ikon vektor sparkles icon simbol',
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('icon', 'Ikon Vektor', 64, 64, {
+                        iconName: 'Sparkles',
+                        color: '#f59e0b',
+                      })
+                    ),
+                },
+              ]
+                .filter(item => {
+                  if (uiCategory !== 'all' && item.cat !== uiCategory) return false;
+                  if (!uiSearch.trim()) return true;
+                  const q = uiSearch.toLowerCase().trim();
+                  return item.name.toLowerCase().includes(q) || item.sub.toLowerCase().includes(q) || item.tags.includes(q);
+                })
+                .map(item => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={item.action}
+                      className="p-2 bg-slate-900/50 hover:bg-slate-800/80 border border-slate-800/80 hover:border-indigo-500/40 rounded-xl flex items-center gap-2.5 transition-all text-left group"
+                    >
+                      <div className="w-7 h-7 rounded-lg bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 group-hover:bg-indigo-950/20 transition-colors shrink-0">
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">
+                          {item.name}
+                        </div>
+                        <div className="text-[9px] text-slate-500 truncate">
+                          {item.sub}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
             </div>
           </div>
         )}
@@ -1057,175 +1042,141 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         {/* TAB 3: SHAPES */}
         {activeTab === 'shapes' && (
           <div className="space-y-3">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
               Bentuk Vektor Dasar
             </span>
             <div className="grid grid-cols-2 gap-1.5">
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('rect', 'Persegi Panjang', 240, 160, {
-                      fill: '#1e293b',
-                      borderRadius: 12,
-                      shadow: 'sm',
-                    })
-                  )
-                }
-                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-              >
-                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 transition-colors shrink-0">
-                  <Square className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Kotak / Card</span>
-              </button>
-
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('circle', 'Lingkaran', 140, 140, {
-                      fill: '#312e81',
-                      borderRadius: 9999,
-                    })
-                  )
-                }
-                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-              >
-                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-pink-400 transition-colors shrink-0">
-                  <Circle className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Lingkaran</span>
-              </button>
-
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('line', 'Garis Pembatas', 400, 4, {
-                      fill: '#475569',
-                    })
-                  )
-                }
-                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-              >
-                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-slate-200 transition-colors shrink-0">
-                  <Minus className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Garis</span>
-              </button>
-
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('triangle', 'Segitiga Vektor', 120, 120, {
-                      fill: '#6366f1',
-                    })
-                  )
-                }
-                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-              >
-                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 transition-colors shrink-0">
-                  <Triangle className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Segitiga</span>
-              </button>
-
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('star', 'Bintang Vektor', 120, 120, {
-                      fill: '#f59e0b',
-                    })
-                  )
-                }
-                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-              >
-                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-400 transition-colors shrink-0">
-                  <Star className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Bintang</span>
-              </button>
-
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('arrow', 'Panah Vektor', 160, 60, {
-                      fill: '#06b6d4',
-                    })
-                  )
-                }
-                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-              >
-                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 transition-colors shrink-0">
-                  <MoveRight className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Panah Arah</span>
-              </button>
-
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('hexagon', 'Segi Enam (Hexagon)', 140, 130, {
-                      fill: '#8b5cf6',
-                    })
-                  )
-                }
-                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-              >
-                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-purple-400 transition-colors shrink-0">
-                  <Hexagon className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Hexagon</span>
-              </button>
-
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('heart', 'Hati (Heart)', 120, 110, {
-                      fill: '#f43f5e',
-                    })
-                  )
-                }
-                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-              >
-                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-rose-400 transition-colors shrink-0">
-                  <Heart className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Hati</span>
-              </button>
-
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('diamond', 'Belah Ketupat', 120, 120, {
-                      fill: '#06b6d4',
-                    })
-                  )
-                }
-                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-              >
-                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 transition-colors shrink-0">
-                  <Diamond className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Diamond</span>
-              </button>
-
-              <button
-                onClick={() =>
-                  onAddElement(
-                    createBaseElement('speech-bubble', 'Gelembung Pesan', 220, 130, {
-                      content: 'Gagas ide Anda di sini!',
-                      fill: '#1e293b',
-                      stroke: '#475569',
-                      strokeWidth: 1.5,
-                    })
-                  )
-                }
-                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
-              >
-                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-teal-400 transition-colors shrink-0">
-                  <MessageSquare className="w-3.5 h-3.5" />
-                </div>
-                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Callout</span>
-              </button>
+              {[
+                {
+                  id: 'rect',
+                  name: 'Kotak / Card',
+                  icon: Square,
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('rect', 'Persegi Panjang', 240, 160, {
+                        fill: '#1e293b',
+                        borderRadius: 12,
+                        shadow: 'sm',
+                      })
+                    ),
+                },
+                {
+                  id: 'circle',
+                  name: 'Lingkaran',
+                  icon: Circle,
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('circle', 'Lingkaran', 140, 140, {
+                        fill: '#312e81',
+                        borderRadius: 9999,
+                      })
+                    ),
+                },
+                {
+                  id: 'line',
+                  name: 'Garis Pembatas',
+                  icon: Minus,
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('line', 'Garis Pembatas', 400, 4, {
+                        fill: '#475569',
+                      })
+                    ),
+                },
+                {
+                  id: 'triangle',
+                  name: 'Segitiga',
+                  icon: Triangle,
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('triangle', 'Segitiga Vektor', 120, 120, {
+                        fill: '#6366f1',
+                      })
+                    ),
+                },
+                {
+                  id: 'star',
+                  name: 'Bintang',
+                  icon: Star,
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('star', 'Bintang Vektor', 120, 120, {
+                        fill: '#f59e0b',
+                      })
+                    ),
+                },
+                {
+                  id: 'arrow',
+                  name: 'Panah Arah',
+                  icon: MoveRight,
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('arrow', 'Panah Vektor', 160, 60, {
+                        fill: '#06b6d4',
+                      })
+                    ),
+                },
+                {
+                  id: 'hexagon',
+                  name: 'Hexagon',
+                  icon: Hexagon,
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('hexagon', 'Segi Enam (Hexagon)', 140, 130, {
+                        fill: '#8b5cf6',
+                      })
+                    ),
+                },
+                {
+                  id: 'heart',
+                  name: 'Hati (Heart)',
+                  icon: Heart,
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('heart', 'Hati (Heart)', 120, 110, {
+                        fill: '#f43f5e',
+                      })
+                    ),
+                },
+                {
+                  id: 'diamond',
+                  name: 'Diamond',
+                  icon: Diamond,
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('diamond', 'Belah Ketupat', 120, 120, {
+                        fill: '#06b6d4',
+                      })
+                    ),
+                },
+                {
+                  id: 'speech-bubble',
+                  name: 'Callout Balon',
+                  icon: MessageSquare,
+                  action: () =>
+                    onAddElement(
+                      createBaseElement('speech-bubble', 'Gelembung Pesan', 220, 130, {
+                        content: 'Gagas ide Anda di sini!',
+                        fill: '#1e293b',
+                        stroke: '#475569',
+                        strokeWidth: 1.5,
+                      })
+                    ),
+                },
+              ].map(sh => (
+                <button
+                  key={sh.id}
+                  onClick={sh.action}
+                  className="p-2 bg-slate-900/50 hover:bg-slate-800/80 border border-slate-800/80 hover:border-indigo-500/40 rounded-xl flex items-center gap-2.5 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 group-hover:bg-indigo-950/20 transition-colors shrink-0">
+                    <sh.icon className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">
+                    {sh.name}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
         )}

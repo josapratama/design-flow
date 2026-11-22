@@ -33,6 +33,7 @@ interface SlideSorterModalProps {
   onMoveSlideToIndex?: (slideId: string, targetIndex: number) => void;
   onUpdateSlideTitle: (slideId: string, title: string) => void;
   onReverseSlides?: () => void;
+  onBatchUpdateTransitions?: (transition: Slide['transition']) => void;
 }
 
 export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
@@ -48,6 +49,7 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
   onMoveSlideToIndex,
   onUpdateSlideTitle,
   onReverseSlides,
+  onBatchUpdateTransitions,
 }) => {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'notes' | 'wallpaper'>('all');
@@ -194,6 +196,34 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
               </button>
             ))}
           </div>
+
+          {/* Batch Slide Transitions */}
+          {onBatchUpdateTransitions && (
+            <div className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 rounded-xl px-2 py-1">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <select
+                onChange={e => {
+                  const val = e.target.value as any;
+                  if (val) {
+                    onBatchUpdateTransitions(val);
+                    confetti({ particleCount: 30, spread: 45, origin: { y: 0.2 } });
+                  }
+                }}
+                defaultValue=""
+                className="bg-transparent text-xs text-slate-300 outline-none cursor-pointer"
+                title="Terapkan efek transisi seragam ke seluruh slide"
+              >
+                <option value="" disabled>Set Transisi Semua Slide...</option>
+                <option value="fade">Semua: Fade Lembut</option>
+                <option value="slide">Semua: Slide Horizontal</option>
+                <option value="slide-vertical">Semua: Slide Vertikal</option>
+                <option value="zoom">Semua: Zoom Membesar</option>
+                <option value="flip-cube">Semua: Flip 3D</option>
+                <option value="blur-fade">Semua: Blur Focus</option>
+                <option value="none">Semua: Tanpa Efek</option>
+              </select>
+            </div>
+          )}
 
           {/* Reverse Slide Order Button */}
           {onReverseSlides && slides.length > 1 && (

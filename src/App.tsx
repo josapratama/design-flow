@@ -75,6 +75,8 @@ export default function App() {
     loadProjectData,
     lastSaved,
     replaceTextInElements,
+    replaceColorInProject,
+    batchUpdateSlideTransitions,
     resetProjectToDefault,
     applyThemeToActiveSlide,
     invertActiveSlideTheme,
@@ -642,6 +644,7 @@ export default function App() {
             <PropertyInspector
               element={selectedElement}
               activeSlide={activeSlide}
+              slides={project.slides}
               selectedCount={project.selectedElementIds.length}
               onUpdateElement={updateElement}
               onUpdateSlide={updateSlideSettings}
@@ -657,6 +660,7 @@ export default function App() {
               onToggleHide={toggleHideElement}
               onGroup={groupSelectedElements}
               onUngroup={ungroupSelectedElements}
+              onReplaceColorInProject={replaceColorInProject}
             />
             {isMobileRightOpen && (
               <button
@@ -843,6 +847,7 @@ export default function App() {
         onMoveSlideToIndex={moveSlideToIndex}
         onUpdateSlideTitle={(slideId, title) => updateSlideSettings(slideId, { title })}
         onReverseSlides={reverseSlidesOrder}
+        onBatchUpdateTransitions={batchUpdateSlideTransitions}
       />
 
       {/* Presentation Deck Stats & Pacing Inspector */}

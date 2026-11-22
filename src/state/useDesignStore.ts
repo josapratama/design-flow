@@ -910,6 +910,55 @@ export function useDesignStore() {
     }));
   }, [activeSlide, project.slides, pushHistory, updateActiveSlide]);
 
+  // Global Replace Color across all slides and elements
+  const replaceColorInProject = useCallback(
+    (fromColor: string, toColor: string) => {
+      if (!fromColor || !toColor) return 0;
+      pushHistory(project.slides);
+      const targetFrom = fromColor.toLowerCase();
+      let changedCount = 0;
+
+      setProject(prev => ({
+        ...prev,
+        slides: prev.slides.map(slide => ({
+          ...slide,
+          background: slide.background.toLowerCase() === targetFrom ? (changedCount++, toColor) : slide.background,
+          elements: slide.elements.map(el => {
+            const updated = { ...el };
+            if (el.fill && el.fill.toLowerCase() === targetFrom) {
+              updated.fill = toColor;
+              changedCount++;
+            }
+            if (el.color && el.color.toLowerCase() === targetFrom) {
+              updated.color = toColor;
+              changedCount++;
+            }
+            if (el.stroke && el.stroke.toLowerCase() === targetFrom) {
+              updated.stroke = toColor;
+              changedCount++;
+            }
+            return updated;
+          }),
+        })),
+      }));
+
+      return changedCount;
+    },
+    [project.slides, pushHistory]
+  );
+
+  // Batch Update Transitions across all slides
+  const batchUpdateSlideTransitions = useCallback(
+    (transition: Slide['transition']) => {
+      pushHistory(project.slides);
+      setProject(prev => ({
+        ...prev,
+        slides: prev.slides.map(s => ({ ...s, transition })),
+      }));
+    },
+    [project.slides, pushHistory]
+  );
+
   return {
     project,
     setProject,
@@ -954,6 +1003,8 @@ export function useDesignStore() {
     saveProjectToFile,
     loadProjectData,
     replaceTextInElements,
+    replaceColorInProject,
+    batchUpdateSlideTransitions,
     resetProjectToDefault,
     applyThemeToActiveSlide,
     invertActiveSlideTheme,

@@ -461,6 +461,103 @@ export function renderElementJSX(el: DesignElement): string {
         <polygon points="0,35 60,35 60,10 100,50 60,90 60,65 0,65" fill="${el.fill || '#3b82f6'}" stroke="${el.stroke || 'none'}" strokeWidth="${el.strokeWidth || 0}" />
       </svg>`;
 
+    case 'heart':
+      return `      {/* Heart Shape: ${el.name} */}
+      <svg 
+        className="absolute"
+        ${toStyleAttr()}
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <path d="M50 88.9L16.7 55.6C7.6 46.5 7.6 31.8 16.7 22.7c9.1-9.1 23.8-9.1 32.9 0l.4.4.4-.4c9.1-9.1 23.8-9.1 32.9 0 9.1 9.1 9.1 23.8 0 32.9L50 88.9z" fill="${el.fill || '#f43f5e'}" stroke="${el.stroke || 'none'}" strokeWidth="${el.strokeWidth || 0}" />
+      </svg>`;
+
+    case 'diamond':
+      return `      {/* Diamond Shape: ${el.name} */}
+      <svg 
+        className="absolute"
+        ${toStyleAttr()}
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <polygon points="50,5 95,50 50,95 5,50" fill="${el.fill || '#6366f1'}" stroke="${el.stroke || 'none'}" strokeWidth="${el.strokeWidth || 0}" />
+      </svg>`;
+
+    case 'speech-bubble':
+      return `      {/* Speech Bubble: ${el.name} */}
+      <svg 
+        className="absolute"
+        ${toStyleAttr()}
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+      >
+        <path d="M10 20 C10 10, 20 10, 30 10 L70 10 C80 10, 90 10, 90 20 L90 60 C90 70, 80 70, 70 70 L35 70 L20 85 L20 70 L20 70 C10 70, 10 60, 10 50 Z" fill="${el.fill || '#1e293b'}" stroke="${el.stroke || '#6366f1'}" strokeWidth="${el.strokeWidth || 2}" />
+      </svg>`;
+
+    case 'progress-bar': {
+      const val = Math.min(100, Math.max(0, parseInt(el.content || '75', 10) || 75));
+      return `      {/* Progress Bar: ${el.name} */}
+      <div 
+        className="absolute flex flex-col justify-center px-3 bg-slate-900/60 border border-slate-800 rounded-xl"
+        ${toStyleAttr()}
+      >
+        <div className="flex justify-between text-xs font-semibold mb-1.5" style={{ color: '${el.color || '#e2e8f0'}' }}>
+          <span>${escapeJSX(el.subTitle || 'Progres Tugas')}</span>
+          <span>${val}%</span>
+        </div>
+        <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-full bg-indigo-500 rounded-full" style={{ width: '${val}%' }} />
+        </div>
+      </div>`;
+    }
+
+    case 'rating': {
+      const score = Math.round(parseFloat(el.content || '5') || 5);
+      return `      {/* Rating Stars: ${el.name} */}
+      <div 
+        className="absolute flex items-center gap-1.5 px-3 bg-slate-900/60 border border-slate-800 rounded-xl"
+        ${toStyleAttr()}
+      >
+        <div className="flex text-amber-400 text-lg">
+          {[1, 2, 3, 4, 5].map(star => (
+            <span key={star} className={star <= ${score} ? 'text-amber-400' : 'text-slate-600'}>★</span>
+          ))}
+        </div>
+        ${el.subTitle ? `<span className="text-xs text-slate-300 ml-1.5">${escapeJSX(el.subTitle)}</span>` : ''}
+      </div>`;
+    }
+
+    case 'alert-box':
+      return `      {/* Alert Box: ${el.name} */}
+      <div 
+        className="absolute flex items-start gap-3 p-3.5 bg-indigo-950/30 border border-indigo-500/40 rounded-xl"
+        ${toStyleAttr({ borderRadius: `${el.borderRadius || 12}px` })}
+      >
+        <span className="text-lg">💡</span>
+        <div className="text-xs text-slate-200 leading-relaxed font-medium">
+          ${escapeJSX(el.content || 'Pemberitahuan atau tips penting di sini.')}
+        </div>
+      </div>`;
+
+    case 'chat-bubble':
+      return `      {/* Chat Bubble: ${el.name} */}
+      <div 
+        className="absolute p-3.5 bg-slate-800/90 border border-slate-700/60 rounded-2xl flex flex-col gap-1 shadow-lg"
+        ${toStyleAttr({ borderRadius: `${el.borderRadius || 16}px` })}
+      >
+        <span className="text-[11px] font-bold text-indigo-400">${escapeJSX(el.subTitle || 'Pengguna')}</span>
+        <p className="text-xs text-slate-200 leading-relaxed font-sans">${escapeJSX(el.content || 'Pesan chat...')}</p>
+      </div>`;
+
+    case 'code-snippet':
+      return `      {/* Code Snippet: ${el.name} */}
+      <pre 
+        className="absolute p-3.5 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xs text-cyan-400 overflow-hidden shadow-inner"
+        ${toStyleAttr({ borderRadius: `${el.borderRadius || 12}px` })}
+      >
+        <code>${escapeJSX(el.content || 'const app = () => console.log("OK");')}</code>
+      </pre>`;
+
     case 'chart': {
       const chartData = el.chartData && el.chartData.length > 0 ? el.chartData : [
         { label: 'Q1', value: 35 },
