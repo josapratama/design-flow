@@ -115,9 +115,35 @@ export const TemplatesModal: React.FC<TemplatesModalProps> = ({ onSelectTemplate
                   <p className="text-xs text-slate-400 leading-relaxed">
                     {template.description}
                   </p>
+
+                  {/* Theme Palette Swatches */}
+                  <div className="flex items-center gap-1.5 mt-3 pt-2.5 border-t border-slate-800/50">
+                    <span className="text-[10px] text-slate-500 font-medium mr-1">Palet:</span>
+                    <span
+                      className="w-3.5 h-3.5 rounded-full border border-slate-700 shadow-sm shrink-0"
+                      style={{ backgroundColor: template.slides[0]?.background || '#090d16' }}
+                      title={`Latar Belakang: ${template.slides[0]?.background}`}
+                    />
+                    {Array.from(
+                      new Set(
+                        template.slides[0]?.elements
+                          .map(e => e.fill || e.color)
+                          .filter(c => c && c.startsWith('#') && c !== template.slides[0]?.background)
+                      )
+                    )
+                      .slice(0, 3)
+                      .map((color, i) => (
+                        <span
+                          key={i}
+                          className="w-3.5 h-3.5 rounded-full border border-slate-700 shadow-sm shrink-0"
+                          style={{ backgroundColor: color }}
+                          title={`Aksen Warna: ${color}`}
+                        />
+                      ))}
+                  </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500">
+                <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500">
                   <span>{template.slides.length} Slide / Halaman</span>
                   <span className="text-indigo-400 font-semibold group-hover:underline">Gunakan →</span>
                 </div>

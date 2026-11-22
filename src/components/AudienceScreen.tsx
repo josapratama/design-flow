@@ -133,9 +133,9 @@ export const AudienceScreen: React.FC = () => {
 
   const handleToggleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
+      document.documentElement.requestFullscreen().catch(() => { });
     } else {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => { });
     }
   };
 
@@ -255,13 +255,12 @@ export const AudienceScreen: React.FC = () => {
       {/* Slide Canvas Container */}
       <div
         key={currentIndex}
-        className={`relative shadow-2xl overflow-hidden shrink-0 ${
-          transitionEffect === 'slide'
-            ? 'animate-in slide-in-from-right-10 duration-300'
-            : transitionEffect === 'zoom'
-              ? 'animate-in zoom-in-95 duration-200'
-              : 'animate-in fade-in duration-200'
-        }`}
+        className={`relative shadow-2xl overflow-hidden shrink-0 ${transitionEffect === 'slide'
+          ? 'animate-in slide-in-from-right-10 duration-300'
+          : transitionEffect === 'zoom'
+            ? 'animate-in zoom-in-95 duration-200'
+            : 'animate-in fade-in duration-200'
+          }`}
         style={{
           width: `${currentSlide.width}px`,
           height: `${currentSlide.height}px`,
@@ -279,26 +278,26 @@ export const AudienceScreen: React.FC = () => {
             <div
               key={el.id}
               className="absolute"
-            style={{
-              left: `${el.x}px`,
-              top: `${el.y}px`,
-              width: `${el.width}px`,
-              height: `${el.height}px`,
-              zIndex: el.zIndex,
-              transform: [
-                el.rotation ? `rotate(${el.rotation}deg)` : '',
-                el.flipX ? 'scaleX(-1)' : '',
-                el.flipY ? 'scaleY(-1)' : '',
-              ]
-                .filter(Boolean)
-                .join(' ') || undefined,
-              opacity: el.opacity !== undefined ? el.opacity : 1,
-            }}
-          >
-            <ElementRenderer element={el} isSelected={false} />
-          </div>
-        );
-      })}
+              style={{
+                left: `${el.x}px`,
+                top: `${el.y}px`,
+                width: `${el.width}px`,
+                height: `${el.height}px`,
+                zIndex: el.zIndex,
+                transform: [
+                  el.rotation ? `rotate(${el.rotation}deg)` : '',
+                  el.flipX ? 'scaleX(-1)' : '',
+                  el.flipY ? 'scaleY(-1)' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ') || undefined,
+                opacity: el.opacity !== undefined ? el.opacity : 1,
+              }}
+            >
+              <ElementRenderer element={el} isSelected={false} />
+            </div>
+          );
+        })}
 
         {/* Live Synchronized Doodle Canvas from Presenter */}
         <canvas

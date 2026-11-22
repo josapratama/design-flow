@@ -185,15 +185,23 @@ export function useDesignStore() {
     if (project.selectedElementIds.length === 0) return;
     updateActiveSlide(slide => ({
       ...slide,
-      elements: slide.elements.filter(el => !project.selectedElementIds.includes(el.id)),
+      elements: slide.elements.filter(
+        el => !project.selectedElementIds.includes(el.id) || el.locked
+      ),
     }));
-    setProject(prev => ({ ...prev, selectedElementIds: [] }));
-  }, [project.selectedElementIds, updateActiveSlide]);
+    setProject(prev => ({
+      ...prev,
+      selectedElementIds: prev.selectedElementIds.filter(id => {
+        const found = activeSlide?.elements.find(el => el.id === id);
+        return found?.locked;
+      }),
+    }));
+  }, [project.selectedElementIds, activeSlide, updateActiveSlide]);
 
   const deleteElementById = useCallback((elementId: string) => {
     updateActiveSlide(slide => ({
       ...slide,
-      elements: slide.elements.filter(el => el.id !== elementId),
+      elements: slide.elements.filter(el => el.id !== elementId || el.locked),
     }));
     setProject(prev => ({
       ...prev,

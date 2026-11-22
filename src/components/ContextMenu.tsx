@@ -29,6 +29,8 @@ import {
   SunMoon,
   Code,
   Download,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { DesignElement } from '../types';
 
@@ -45,6 +47,7 @@ interface ContextMenuProps {
   onUngroup?: () => void;
   onReorder: (direction: 'front' | 'back' | 'up' | 'down') => void;
   onToggleLock: (elementId: string) => void;
+  onToggleHide?: (elementId: string) => void;
   onDelete: () => void;
   onSelectAll?: () => void;
   onOpenCommandPalette?: () => void;
@@ -76,6 +79,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onUngroup,
   onReorder,
   onToggleLock,
+  onToggleHide,
   onDelete,
   onSelectAll,
   onOpenCommandPalette,
@@ -356,6 +360,28 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               </>
             )}
           </button>
+
+          {onToggleHide && (
+            <button
+              onClick={() => {
+                onToggleHide(element.id);
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center gap-2 hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              {element.hidden ? (
+                <>
+                  <Eye className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Tampilkan Elemen</span>
+                </>
+              ) : (
+                <>
+                  <EyeOff className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Sembunyikan Elemen</span>
+                </>
+              )}
+            </button>
+          )}
 
           <div className="my-1 border-t border-slate-800" />
 

@@ -698,6 +698,7 @@ export default function App() {
           onUngroup={ungroupSelectedElements}
           onReorder={reorderSelectedElement}
           onToggleLock={toggleLockElement}
+          onToggleHide={toggleHideElement}
           onDelete={deleteSelectedElements}
           onSelectAll={selectAllElements}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
