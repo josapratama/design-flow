@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
+import confetti from 'canvas-confetti';
 
 interface DoodleStroke {
   color: string;
@@ -116,6 +117,8 @@ export const AudienceScreen: React.FC = () => {
         setLaserPos(data.pos);
       } else if (data.type === 'SYNC_STROKES') {
         setStrokes(data.strokes || []);
+      } else if (data.type === 'CONFETTI') {
+        confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
       }
     };
 

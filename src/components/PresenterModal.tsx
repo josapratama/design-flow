@@ -20,6 +20,8 @@ import {
   ExternalLink,
   FileDown,
   Undo2,
+  HelpCircle,
+  PartyPopper,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../utils/audioEffects';
@@ -58,6 +60,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [notesFontSize, setNotesFontSize] = useState<'sm' | 'base' | 'lg' | 'xl'>('base');
   const [jumpBuffer, setJumpBuffer] = useState<string>('');
   const jumpTimerRef = useRef<any>(null);
+  const [showHelpOverlay, setShowHelpOverlay] = useState(false);
+  const [soundToast, setSoundToast] = useState<string | null>(null);
   const [windowDimensions, setWindowDimensions] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
@@ -365,7 +369,14 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       } else if (e.key.toLowerCase() === 'w' || e.key === ',') {
         setBlankMode(prev => (prev === 'white' ? 'none' : 'white'));
       } else if (e.key === 'Escape') {
+        if (showHelpOverlay) {
+          setShowHelpOverlay(false);
+          return;
+        }
         onClose();
+      } else if (e.key === '?' || e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        setShowHelpOverlay(prev => !prev);
       } else if (e.key.toLowerCase() === 'l') {
         setIsLaserActive(prev => {
           if (!prev) setIsPenActive(false);
@@ -397,6 +408,13 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     const nextState = !isSoundMuted;
     setIsSoundMuted(nextState);
     soundEffects.setSoundEnabled(!nextState);
+    setSoundToast(nextState ? 'Suara Slide: Dibisukan' : 'Suara Slide: Aktif');
+    setTimeout(() => setSoundToast(null), 1800);
+  };
+
+  const triggerCelebration = () => {
+    confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
+    channelRef.current?.postMessage({ type: 'CONFETTI' });
   };
 
   const goToNext = () => {
@@ -406,6 +424,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       soundEffects.playSlideTransition();
       if (currentIndex + 1 === slides.length - 1) {
         confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        channelRef.current?.postMessage({ type: 'CONFETTI' });
       }
     }
   };
@@ -897,6 +916,21 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
+              <div className="h-4 w-[1px] bg-slate-800" />
+              <button
+                onClick={triggerCelebration}
+                title="Tembakkan Selebrasi Confetti ke Layar Utama & Audiens"
+                className="p-1.5 hover:bg-slate-800 rounded-full text-amber-400 hover:text-amber-300 transition-colors"
+              >
+                <PartyPopper className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setShowHelpOverlay(true)}
+                title="Buka Panduan Pintasan Tombol (? / H)"
+                className="p-1.5 hover:bg-slate-800 rounded-full text-indigo-400 hover:text-indigo-300 transition-colors"
+              >
+                <HelpCircle className="w-4 h-4" />
+              </button>
             </div>
             {/* Quick Keyboard Cheatsheet */}
             <div className="px-3 py-0.5 rounded-full bg-slate-950/70 border border-slate-800/60 text-[10px] font-mono text-slate-400 flex items-center gap-2 select-none shadow-sm">
@@ -1007,6 +1041,123 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           </aside>
         )}
       </div>
+
+      {/* Sound Toast Notification */}
+      {soundToast && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-slate-900/95 border border-indigo-500/60 text-white rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-2 animate-in fade-in zoom-in-95 duration-150">
+          <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
+          <span className="text-xs font-semibold">{soundToast}</span>
+        </div>
+      )}
+
+      {/* In-Show Presenter Shortcut HUD Modal (? / H) */}
+      {showHelpOverlay && (
+        <div
+          onClick={() => setShowHelpOverlay(false)}
+          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150"
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl text-slate-200 animate-in zoom-in-95 duration-150 space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+                  <HelpCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Panduan Tombol Pintas Presentasi</h3>
+                  <p className="text-[11px] text-slate-400">Pintasan keyboard cepat saat mode slideshow aktif</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowHelpOverlay(false)}
+                className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1.5">
+                <span className="text-[10px] uppercase font-bold text-indigo-400 tracking-wider">Navigasi Slide</span>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Slide Berikutnya</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">Spasi / →</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Slide Sebelumnya</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">← / Backspace</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Slide Awal / Akhir</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">Home / End</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Lompat ke Slide X</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">0-9 + Enter</kbd>
+                </div>
+              </div>
+
+              <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1.5">
+                <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">Layar & Interaksi</span>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Laser Pointer</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">L</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Pena Coretan Doodle</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">P</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Undo Coretan</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">U / Ctrl+Z</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Hapus Semua Coretan</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">C</kbd>
+                </div>
+              </div>
+
+              <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1.5">
+                <span className="text-[10px] uppercase font-bold text-rose-400 tracking-wider">Fokus Audiens</span>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Layar Hitam (Black)</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-rose-300">B / .</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Layar Putih (White)</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-rose-300">W / ,</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Layar Penuh (Toggle)</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-rose-300">F / F11</kbd>
+                </div>
+              </div>
+
+              <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1.5">
+                <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Presenter & Audio</span>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Panel Catatan Naskah</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-emerald-300">N</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Mute / Unmute Suara</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-emerald-300">M</kbd>
+                </div>
+                <div className="flex justify-between items-center text-slate-300">
+                  <span>Tutup Panduan / Keluar</span>
+                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-emerald-300">Esc</kbd>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-center pt-1 text-[11px] text-slate-500 font-mono">
+              Tekan <kbd className="text-indigo-400">Esc</kbd> atau klik di luar untuk menutup
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
