@@ -307,11 +307,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         <div className="flex border-b border-slate-800 bg-slate-950/20 px-5 gap-2 pt-2">
           <button
             onClick={() => setActiveTab('pptx')}
-            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
-              activeTab === 'pptx'
-                ? 'border-indigo-500 text-indigo-400'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
+            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'pptx'
+              ? 'border-indigo-500 text-indigo-400'
+              : 'border-transparent text-slate-400 hover:text-white'
+              }`}
           >
             <FileText className="w-4 h-4" />
             <span>PowerPoint (.pptx)</span>
@@ -319,11 +318,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           <button
             onClick={() => setActiveTab('image')}
-            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
-              activeTab === 'image'
-                ? 'border-indigo-500 text-indigo-400'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
+            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'image'
+              ? 'border-indigo-500 text-indigo-400'
+              : 'border-transparent text-slate-400 hover:text-white'
+              }`}
           >
             <Image className="w-4 h-4" />
             <span>Gambar (PNG / SVG)</span>
@@ -331,11 +329,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           <button
             onClick={() => setActiveTab('pdf')}
-            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
-              activeTab === 'pdf'
-                ? 'border-indigo-500 text-indigo-400'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
+            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'pdf'
+              ? 'border-indigo-500 text-indigo-400'
+              : 'border-transparent text-slate-400 hover:text-white'
+              }`}
           >
             <FileText className="w-4 h-4" />
             <span>Dokumen PDF ({project.slides.length} Halaman)</span>
@@ -343,11 +340,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           <button
             onClick={() => setActiveTab('code')}
-            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
-              activeTab === 'code'
-                ? 'border-indigo-500 text-indigo-400'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
+            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'code'
+              ? 'border-indigo-500 text-indigo-400'
+              : 'border-transparent text-slate-400 hover:text-white'
+              }`}
           >
             <Code2 className="w-4 h-4" />
             <span>React & Tailwind</span>
@@ -355,11 +351,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           <button
             onClick={() => setActiveTab('notes')}
-            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
-              activeTab === 'notes'
-                ? 'border-indigo-500 text-indigo-400'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
+            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'notes'
+              ? 'border-indigo-500 text-indigo-400'
+              : 'border-transparent text-slate-400 hover:text-white'
+              }`}
           >
             <BookOpen className="w-4 h-4" />
             <span>Naskah & Cadangan</span>
@@ -367,11 +362,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
           <button
             onClick={() => setActiveTab('html')}
-            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${
-              activeTab === 'html'
-                ? 'border-indigo-500 text-indigo-400'
-                : 'border-transparent text-slate-400 hover:text-white'
-            }`}
+            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'html'
+              ? 'border-indigo-500 text-indigo-400'
+              : 'border-transparent text-slate-400 hover:text-white'
+              }`}
           >
             <Globe className="w-4 h-4" />
             <span>HTML Slideshow</span>
@@ -429,11 +423,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     <button
                       key={opt.scale}
                       onClick={() => setImageScale(opt.scale)}
-                      className={`p-2 rounded-xl border text-left transition-colors ${
-                        imageScale === opt.scale
-                          ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                          : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                      }`}
+                      className={`p-2 rounded-xl border text-left transition-colors ${imageScale === opt.scale
+                        ? 'bg-indigo-600/20 border-indigo-500 text-white'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
                     >
                       <div className="font-bold text-xs">{opt.label}</div>
                       <div className="text-[10px] text-slate-500">{opt.desc}</div>
@@ -517,11 +510,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPdfScope('all')}
-                  className={`p-3 rounded-xl border text-left transition-all ${
-                    pdfScope === 'all'
-                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
+                  className={`p-3 rounded-xl border text-left transition-all ${pdfScope === 'all'
+                    ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
                 >
                   <div className="font-bold text-xs">Seluruh Slide Deck</div>
                   <div className="text-[10px] text-slate-500">Total {project.slides.length} halaman terpadu</div>
@@ -530,11 +522,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPdfScope('active')}
-                  className={`p-3 rounded-xl border text-left transition-all ${
-                    pdfScope === 'active'
-                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
+                  className={`p-3 rounded-xl border text-left transition-all ${pdfScope === 'active'
+                    ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
+                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
                 >
                   <div className="font-bold text-xs truncate">Slide Aktif Saja</div>
                   <div className="text-[10px] text-slate-500 truncate">Hanya: {activeSlide.title}</div>
@@ -551,8 +542,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   {isExporting
                     ? (exportProgress || 'Menyusun Dokumen PDF...')
                     : pdfScope === 'active'
-                    ? 'Unduh PDF (1 Halaman Slide Ini)'
-                    : `Unduh Dokumen PDF (${project.slides.length} Halaman)`}
+                      ? 'Unduh PDF (1 Halaman Slide Ini)'
+                      : `Unduh Dokumen PDF (${project.slides.length} Halaman)`}
                 </span>
               </button>
             </div>
@@ -745,25 +736,25 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               return (
                 <div
                   key={el.id}
-                style={{
-                  position: 'absolute',
-                  left: `${el.x}px`,
-                  top: `${el.y}px`,
-                  width: `${el.width}px`,
-                  height: `${el.height}px`,
-                  zIndex: el.zIndex,
-                  transform: [
-                    el.rotation ? `rotate(${el.rotation}deg)` : '',
-                    el.flipX ? 'scaleX(-1)' : '',
-                    el.flipY ? 'scaleY(-1)' : '',
-                  ].filter(Boolean).join(' ') || undefined,
-                  opacity: el.opacity !== undefined ? el.opacity : 1,
-                }}
-              >
-                <ElementRenderer element={el} isSelected={false} />
-              </div>
-            );
-          })}
+                  style={{
+                    position: 'absolute',
+                    left: `${el.x}px`,
+                    top: `${el.y}px`,
+                    width: `${el.width}px`,
+                    height: `${el.height}px`,
+                    zIndex: el.zIndex,
+                    transform: [
+                      el.rotation ? `rotate(${el.rotation}deg)` : '',
+                      el.flipX ? 'scaleX(-1)' : '',
+                      el.flipY ? 'scaleY(-1)' : '',
+                    ].filter(Boolean).join(' ') || undefined,
+                    opacity: el.opacity !== undefined ? el.opacity : 1,
+                  }}
+                >
+                  <ElementRenderer element={el} isSelected={false} />
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>

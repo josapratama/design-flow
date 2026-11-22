@@ -22,6 +22,7 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [fileSuccessInfo, setFileSuccessInfo] = useState<{ fileName: string; slideCount: number } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [appliedSuccess, setAppliedSuccess] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -50,6 +51,9 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
         activeSlideId: preservedActiveId,
       });
       setError(null);
+      setAppliedSuccess(true);
+      setTimeout(() => setAppliedSuccess(false), 2200);
+      confetti({ particleCount: 35, spread: 50, origin: { y: 0.8 } });
     } catch (err: any) {
       setError(err.message || 'Gagal mem-parsing sintaks kode DSL.');
     }
@@ -299,10 +303,14 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
         <button
           onClick={handleApply}
           title="Terapkan kode ke visual kanvas (Ctrl+Enter)"
-          className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
+          className={`px-4 py-1.5 text-white font-semibold rounded-xl text-xs flex items-center gap-2 shadow-lg transition-all active:scale-95 ${
+            appliedSuccess
+              ? 'bg-emerald-600 shadow-emerald-600/30'
+              : 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30'
+          }`}
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Terapkan ke Visual</span>
+          {appliedSuccess ? <Check className="w-3.5 h-3.5 text-emerald-200" /> : <RefreshCw className="w-3.5 h-3.5" />}
+          <span>{appliedSuccess ? 'Tersinkronkan!' : 'Terapkan ke Visual'}</span>
         </button>
       </div>
     </div>

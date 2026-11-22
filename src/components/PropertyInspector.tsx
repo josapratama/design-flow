@@ -460,11 +460,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                         type="button"
                         onClick={() => onUpdateSlide(activeSlide.id, { wallpaperOverlay: preset.val })}
                         title={preset.title}
-                        className={`px-2 py-0.5 rounded text-[10px] font-mono transition-colors ${
-                          (activeSlide.wallpaperOverlay ?? 0) === preset.val
-                            ? 'bg-indigo-600 text-white font-bold'
-                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800'
-                        }`}
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono transition-colors ${(activeSlide.wallpaperOverlay ?? 0) === preset.val
+                          ? 'bg-indigo-600 text-white font-bold'
+                          : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800'
+                          }`}
                       >
                         {preset.label}
                       </button>
@@ -539,6 +538,51 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                       )}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Wallpaper Dimmer / Dark Overlay Tint */}
+              {activeSlide.wallpaper && (
+                <div className="space-y-1.5 p-2 rounded-xl bg-slate-950/70 border border-slate-800 mt-2">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-300 font-medium flex items-center gap-1.5">
+                      <SunMoon className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Dimmer Gelap Foto</span>
+                    </span>
+                    <span className="font-mono text-indigo-400 font-bold">
+                      {Math.round((activeSlide.wallpaperOverlay ?? 0) * 100)}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={0.9}
+                    step={0.05}
+                    value={activeSlide.wallpaperOverlay ?? 0}
+                    onChange={e => onUpdateSlide(activeSlide.id, { wallpaperOverlay: parseFloat(e.target.value) })}
+                    className="w-full accent-indigo-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                  />
+                  <div className="flex items-center justify-between gap-1 pt-0.5">
+                    {[
+                      { label: '0%', val: 0, title: 'Original Jernih' },
+                      { label: '30%', val: 0.3, title: 'Dim Sedang' },
+                      { label: '50%', val: 0.5, title: 'Kontras Teks Bagus' },
+                      { label: '75%', val: 0.75, title: 'Gelap Fokus Teks' },
+                    ].map(preset => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => onUpdateSlide(activeSlide.id, { wallpaperOverlay: preset.val })}
+                        title={preset.title}
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono transition-colors ${(activeSlide.wallpaperOverlay ?? 0) === preset.val
+                          ? 'bg-indigo-600 text-white font-bold'
+                          : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800'
+                          }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -1300,11 +1344,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                         key={cat.id}
                         type="button"
                         onClick={() => setFontFilterCategory(cat.id as any)}
-                        className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
-                          fontFilterCategory === cat.id
-                            ? 'bg-indigo-600 text-white font-semibold'
-                            : 'bg-slate-900 text-slate-400 hover:text-white'
-                        }`}
+                        className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${fontFilterCategory === cat.id
+                          ? 'bg-indigo-600 text-white font-semibold'
+                          : 'bg-slate-900 text-slate-400 hover:text-white'
+                          }`}
                       >
                         {cat.label}
                       </button>
@@ -1441,11 +1484,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                         type="button"
                         onClick={() => handleChange('fill', c)}
                         title={`Pilih warna slide ${c}`}
-                        className={`w-3.5 h-3.5 rounded-full border transition-transform ${
-                          element.fill?.toLowerCase() === c
-                            ? 'scale-125 border-white ring-1 ring-white/50'
-                            : 'border-slate-700 hover:scale-110'
-                        }`}
+                        className={`w-3.5 h-3.5 rounded-full border transition-transform ${element.fill?.toLowerCase() === c
+                          ? 'scale-125 border-white ring-1 ring-white/50'
+                          : 'border-slate-700 hover:scale-110'
+                          }`}
                         style={{ backgroundColor: c }}
                       />
                     ))}
@@ -1480,13 +1522,12 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     <div className="flex items-center gap-1.5">
                       <label className="text-[10px] text-slate-500">Warna Teks</label>
                       <span
-                        className={`text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold ${
-                          contrast.level === 'AAA' || contrast.level === 'AA'
-                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                            : contrast.level === 'AA Large'
+                        className={`text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold ${contrast.level === 'AAA' || contrast.level === 'AA'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                          : contrast.level === 'AA Large'
                             ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
                             : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
-                        }`}
+                          }`}
                         title={`Kontras WCAG: ${contrast.ratio}:1 (${contrast.label})`}
                       >
                         {contrast.ratio}:1 {contrast.level}
@@ -1535,11 +1576,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                             type="button"
                             onClick={() => handleChange('color', c)}
                             title={`Pilih warna teks slide ${c}`}
-                            className={`w-3.5 h-3.5 rounded-full border transition-transform ${
-                              element.color?.toLowerCase() === c
-                                ? 'scale-125 border-white ring-1 ring-white/50'
-                                : 'border-slate-700 hover:scale-110'
-                            }`}
+                            className={`w-3.5 h-3.5 rounded-full border transition-transform ${element.color?.toLowerCase() === c
+                              ? 'scale-125 border-white ring-1 ring-white/50'
+                              : 'border-slate-700 hover:scale-110'
+                              }`}
                             style={{ backgroundColor: c }}
                           />
                         ))}

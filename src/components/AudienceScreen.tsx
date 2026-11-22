@@ -24,6 +24,24 @@ export const AudienceScreen: React.FC = () => {
   const [laserPos, setLaserPos] = useState<LaserData | null>(null);
   const [strokes, setStrokes] = useState<DoodleStroke[]>([]);
   const [showHint, setShowHint] = useState(true);
+  const [reactions, setReactions] = useState<Array<{ id: number; emoji: string; left: number }>>([]);
+
+  const triggerFloatingReaction = (emoji: string) => {
+    const id = Date.now() + Math.random();
+    const left = Math.floor(Math.random() * 70) + 15;
+    setReactions(prev => [...prev.slice(-15), { id, emoji, left }]);
+    setTimeout(() => {
+      setReactions(prev => prev.filter(r => r.id !== id));
+    }, 2200);
+  };
+
+  const handleSendReaction = (emoji: string) => {
+    triggerFloatingReaction(emoji);
+    channelRef.current?.postMessage({
+      type: 'REACTION',
+      emoji,
+    });
+  };
   const [windowDimensions, setWindowDimensions] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
@@ -121,6 +139,8 @@ export const AudienceScreen: React.FC = () => {
         setStrokes(data.strokes || []);
       } else if (data.type === 'CONFETTI') {
         confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
+      } else if (data.type === 'REACTION' && data.emoji) {
+        triggerFloatingReaction(data.emoji);
       }
     };
 
@@ -279,7 +299,10 @@ export const AudienceScreen: React.FC = () => {
         }}
       >
         {/* Slide Elements */}
-        {currentSlide.elements.map(el => {
+        {currentSlide.elements
+          .slice()
+          .sort((a, b) => a.zIndex - b.zIndex)
+          .map(el => {
           if (el.hidden) return null;
           return (
             <div
@@ -339,6 +362,49 @@ export const AudienceScreen: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Floating Audience Reactions Overlay */}
+      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+        {reactions.map(r => (
+          <div
+            key={r.id}
+            className="absolute bottom-16 text-4xl select-none"
+            style={{
+              left: `${r.left}%`,
+              animation: 'floatUpAndFade 2.2s ease-out forwards',
+            }}
+          >
+            {r.emoji}
+          </div>
+        ))}
+      </div>
+
+      {/* Audience Interactive Reaction Bar */}
+      <div className="fixed bottom-4 z-40 bg-slate-900/80 hover:bg-slate-900/95 border border-slate-700/60 backdrop-blur-md rounded-full px-3 py-1 shadow-2xl flex items-center gap-1.5 transition-all">
+        <span className="text-[11px] text-slate-400 font-medium mr-1 select-none hidden sm:inline">
+          Reaksi:
+        </span>
+        {['👏', '❤️', '🔥', '💡', '🚀'].map(emoji => (
+          <button
+            key={emoji}
+            type="button"
+            onClick={() => handleSendReaction(emoji)}
+            title={`Kirim reaksi ${emoji} ke pembicara`}
+            className="w-8 h-8 flex items-center justify-center text-lg hover:scale-125 active:scale-95 transition-transform rounded-full hover:bg-slate-800"
+          >
+            {emoji}
+          </button>
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes floatUpAndFade {
+          0% { transform: translateY(0) scale(0.6); opacity: 0; }
+          20% { transform: translateY(-30px) scale(1.2); opacity: 1; }
+          80% { transform: translateY(-160px) scale(1); opacity: 0.9; }
+          100% { transform: translateY(-240px) scale(0.8); opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 };

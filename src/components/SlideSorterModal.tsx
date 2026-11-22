@@ -50,6 +50,7 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
   onReverseSlides,
 }) => {
   const [search, setSearch] = useState('');
+  const [filterType, setFilterType] = useState<'all' | 'notes' | 'wallpaper'>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempTitle, setTempTitle] = useState('');
   const [draggedSlideId, setDraggedSlideId] = useState<string | null>(null);
@@ -104,9 +105,16 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
 
   if (!isOpen) return null;
 
-  const filteredSlides = slides.filter(s =>
-    s.title.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredSlides = slides.filter(s => {
+    const matchesSearch =
+      s.title.toLowerCase().includes(search.toLowerCase()) ||
+      s.elements.some(el => (el.name || el.content || '').toLowerCase().includes(search.toLowerCase())) ||
+      (s.notes || '').toLowerCase().includes(search.toLowerCase());
+    if (!matchesSearch) return false;
+    if (filterType === 'notes') return Boolean(s.notes && s.notes.trim().length > 0);
+    if (filterType === 'wallpaper') return Boolean(s.wallpaper);
+    return true;
+  });
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex flex-col select-none animate-in fade-in-50 duration-150 text-slate-100">
@@ -135,11 +143,35 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
             <Search className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Cari judul slide..."
+              placeholder="Cari konten / judul..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500 w-44 transition-all"
+              className="bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500 w-40 transition-all"
             />
+          </div>
+
+          {/* Quick Filter: All / Notes / Wallpaper */}
+          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-0.5 gap-0.5">
+            {[
+              { id: 'all', label: 'Semua', count: slides.length },
+              { id: 'notes', label: 'Catatan', count: slides.filter(s => s.notes?.trim()).length },
+              { id: 'wallpaper', label: 'Foto', count: slides.filter(s => s.wallpaper).length },
+            ].map(f => (
+              <button
+                key={f.id}
+                onClick={() => setFilterType(f.id as any)}
+                className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
+                  filterType === f.id
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <span>{f.label}</span>
+                <span className={`text-[10px] px-1 rounded-full ${filterType === f.id ? 'bg-indigo-700 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                  {f.count}
+                </span>
+              </button>
+            ))}
           </div>
 
           {/* Density Grid Switcher */}
@@ -153,11 +185,10 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
                 key={d.id}
                 onClick={() => setDensity(d.id as any)}
                 title={d.title}
-                className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all ${
-                  density === d.id
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
+                className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all ${density === d.id
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+                  }`}
               >
                 {d.label}
               </button>
@@ -207,13 +238,12 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
       {/* Grid Canvas Area */}
       <div className="flex-1 overflow-y-auto p-6 md:p-8">
         <div
-          className={`max-w-7xl mx-auto grid ${
-            density === 'large'
-              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
-              : density === 'compact'
+          className={`max-w-7xl mx-auto grid ${density === 'large'
+            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+            : density === 'compact'
               ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3.5'
               : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
-          }`}
+            }`}
         >
           {filteredSlides.map((slide, index) => {
             const isActive = slide.id === activeSlideId;
@@ -258,23 +288,21 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
                   onSelectSlide(slide.id);
                   onClose();
                 }}
-                className={`group relative rounded-2xl border-2 transition-all cursor-grab active:cursor-grabbing flex flex-col justify-between p-3.5 bg-slate-900/90 hover:bg-slate-900 shadow-lg ${
-                  dragOverIndex === originalIndex && draggedSlideId !== slide.id
-                    ? 'border-indigo-400 ring-4 ring-indigo-500/50 scale-[1.02] bg-indigo-950/40 shadow-indigo-500/20'
-                    : isActive
+                className={`group relative rounded-2xl border-2 transition-all cursor-grab active:cursor-grabbing flex flex-col justify-between p-3.5 bg-slate-900/90 hover:bg-slate-900 shadow-lg ${dragOverIndex === originalIndex && draggedSlideId !== slide.id
+                  ? 'border-indigo-400 ring-4 ring-indigo-500/50 scale-[1.02] bg-indigo-950/40 shadow-indigo-500/20'
+                  : isActive
                     ? 'border-indigo-500 ring-2 ring-indigo-500/40 shadow-indigo-500/10'
                     : 'border-slate-800 hover:border-slate-700'
-                }`}
+                  }`}
               >
                 {/* Header: Slide Number & Editable Title */}
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`text-xs font-mono font-bold px-2 py-0.5 rounded-lg border ${
-                        isActive
-                          ? 'bg-indigo-600 text-white border-indigo-400'
-                          : 'bg-slate-800 text-slate-300 border-slate-700'
-                      }`}
+                      className={`text-xs font-mono font-bold px-2 py-0.5 rounded-lg border ${isActive
+                        ? 'bg-indigo-600 text-white border-indigo-400'
+                        : 'bg-slate-800 text-slate-300 border-slate-700'
+                        }`}
                     >
                       {originalIndex + 1}
                     </span>
@@ -336,6 +364,14 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
                         <FileText className="w-3.5 h-3.5" />
                       </span>
                     ) : null}
+                    {slide.wallpaper ? (
+                      <span
+                        title="Slide ini menggunakan gambar latar / wallpaper"
+                        className="text-cyan-400 p-0.5 hover:scale-110 transition-transform"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                      </span>
+                    ) : null}
                     <span className="text-[10px] font-mono text-slate-500 flex items-center gap-0.5">
                       <Layers className="w-3 h-3" />
                       <span>{slide.elements.length}</span>
@@ -366,27 +402,27 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
                       return (
                         <div
                           key={el.id}
-                        style={{
-                          position: 'absolute',
-                          left: `${el.x}px`,
-                          top: `${el.y}px`,
-                          width: `${el.width}px`,
-                          height: `${el.height}px`,
-                          zIndex: el.zIndex,
-                          transform: [
-                            el.rotation ? `rotate(${el.rotation}deg)` : '',
-                            el.flipX ? 'scaleX(-1)' : '',
-                            el.flipY ? 'scaleY(-1)' : '',
-                          ]
-                            .filter(Boolean)
-                            .join(' ') || undefined,
-                          opacity: el.opacity !== undefined ? el.opacity : 1,
-                        }}
-                      >
-                        <ElementRenderer element={el} isSelected={false} />
-                      </div>
-                    );
-                  })}
+                          style={{
+                            position: 'absolute',
+                            left: `${el.x}px`,
+                            top: `${el.y}px`,
+                            width: `${el.width}px`,
+                            height: `${el.height}px`,
+                            zIndex: el.zIndex,
+                            transform: [
+                              el.rotation ? `rotate(${el.rotation}deg)` : '',
+                              el.flipX ? 'scaleX(-1)' : '',
+                              el.flipY ? 'scaleY(-1)' : '',
+                            ]
+                              .filter(Boolean)
+                              .join(' ') || undefined,
+                            opacity: el.opacity !== undefined ? el.opacity : 1,
+                          }}
+                        >
+                          <ElementRenderer element={el} isSelected={false} />
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

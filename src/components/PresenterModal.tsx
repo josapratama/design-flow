@@ -66,6 +66,16 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const jumpTimerRef = useRef<any>(null);
   const [showHelpOverlay, setShowHelpOverlay] = useState(false);
   const [soundToast, setSoundToast] = useState<string | null>(null);
+  const [reactions, setReactions] = useState<Array<{ id: number; emoji: string; left: number }>>([]);
+
+  const triggerFloatingReaction = (emoji: string) => {
+    const id = Date.now() + Math.random();
+    const left = Math.floor(Math.random() * 70) + 15;
+    setReactions(prev => [...prev.slice(-15), { id, emoji, left }]);
+    setTimeout(() => {
+      setReactions(prev => prev.filter(r => r.id !== id));
+    }, 2200);
+  };
   const [windowDimensions, setWindowDimensions] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
@@ -105,6 +115,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         soundEffects.playSlideTransition();
       } else if (event.data?.type === 'BLANK_MODE' && event.data.mode) {
         setBlankMode(event.data.mode);
+      } else if (event.data?.type === 'REACTION' && event.data.emoji) {
+        triggerFloatingReaction(event.data.emoji);
       }
     };
 
@@ -866,7 +878,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               transformOrigin: 'center center',
             }}
           >
-            {currentSlide.elements.map(el => (
+            {currentSlide.elements
+              .slice()
+              .sort((a, b) => a.zIndex - b.zIndex)
+              .map(el => (
               <div
                 key={el.id}
                 className="absolute"
@@ -1028,6 +1043,23 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               >
                 <PartyPopper className="w-4 h-4" />
               </button>
+
+              {/* Quick Interactive Reaction Emojis */}
+              <div className="flex items-center gap-0.5 px-1 bg-slate-800/80 rounded-full border border-slate-700/60">
+                {['👏', '❤️', '🔥', '💡', '🚀'].map(emoji => (
+                  <button
+                    key={emoji}
+                    onClick={() => {
+                      triggerFloatingReaction(emoji);
+                      channelRef.current?.postMessage({ type: 'REACTION', emoji });
+                    }}
+                    title={`Kirim reaksi ${emoji} ke layar audiens`}
+                    className="w-6 h-6 flex items-center justify-center text-xs hover:scale-125 transition-transform rounded-full"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
               <button
                 onClick={() => setShowHelpOverlay(true)}
                 title="Buka Panduan Pintasan Tombol (? / H)"
@@ -1262,6 +1294,30 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           </div>
         </div>
       )}
+      {/* Floating Audience Reactions Overlay */}
+      <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+        {reactions.map(r => (
+          <div
+            key={r.id}
+            className="absolute bottom-20 text-4xl select-none"
+            style={{
+              left: `${r.left}%`,
+              animation: 'floatUpAndFade 2.2s ease-out forwards',
+            }}
+          >
+            {r.emoji}
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        @keyframes floatUpAndFade {
+          0% { transform: translateY(0) scale(0.6); opacity: 0; }
+          20% { transform: translateY(-30px) scale(1.2); opacity: 1; }
+          80% { transform: translateY(-160px) scale(1); opacity: 0.9; }
+          100% { transform: translateY(-240px) scale(0.8); opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 };
