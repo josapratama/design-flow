@@ -30,7 +30,7 @@ export default function ${sanitizeComponentName(slide.title)}Screen() {
         width: '${slide.width}px',
         height: '${slide.height}px',
         background: '${slide.background || '#0f172a'}',
-        ${slide.wallpaper ? `backgroundImage: 'url(${slide.wallpaper})', backgroundSize: 'cover', backgroundPosition: 'center',` : ''}
+        ${slide.wallpaper ? (slide.wallpaperOverlay && slide.wallpaperOverlay > 0 ? `backgroundImage: 'linear-gradient(rgba(0,0,0,${slide.wallpaperOverlay}), rgba(0,0,0,${slide.wallpaperOverlay})), url(${slide.wallpaper})', backgroundSize: 'cover', backgroundPosition: 'center',` : `backgroundImage: 'url(${slide.wallpaper})', backgroundSize: 'cover', backgroundPosition: 'center',`) : ''}
       }}
     >
 ${jsxElements}

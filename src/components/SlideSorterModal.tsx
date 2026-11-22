@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
+import { getSlideBackground } from '../utils/slideStyle';
 import {
   LayoutGrid,
   X,
@@ -324,9 +325,7 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
                 <div
                   className="relative w-full aspect-video rounded-xl overflow-hidden border border-slate-800/80 mb-3 bg-slate-950 pointer-events-none"
                   style={{
-                    background: slide.wallpaper
-                      ? `url('${slide.wallpaper}') center / cover no-repeat`
-                      : slide.background || '#0f172a',
+                    background: getSlideBackground(slide),
                   }}
                 >
                   <div

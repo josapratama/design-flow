@@ -772,6 +772,7 @@ export default function App() {
         activeSlideId={project.activeSlideId}
         onClose={() => setIsFindReplaceOpen(false)}
         onReplaceAll={replaceTextInElements}
+        onSelectSlide={slideId => setProject(prev => ({ ...prev, activeSlideId: slideId, selectedElementIds: [] }))}
       />
 
       {/* Visual Slide Sorter / Light Table Modal (Alt+S) */}

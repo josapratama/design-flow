@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
+import { getSlideBackground } from '../utils/slideStyle';
 import {
   Play,
   Pause,
@@ -853,9 +854,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             style={{
               width: `${currentSlide.width}px`,
               height: `${currentSlide.height}px`,
-              background: currentSlide.wallpaper
-                ? `url('${currentSlide.wallpaper}') center / cover no-repeat`
-                : currentSlide.background || '#0f172a',
+              background: getSlideBackground(currentSlide),
               transform: `scale(${scale})`,
               transformOrigin: 'center center',
             }}

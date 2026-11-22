@@ -9,6 +9,7 @@ interface FindReplaceModalProps {
   activeSlideId: string;
   onClose: () => void;
   onReplaceAll: (findText: string, replaceText: string, scope: 'active' | 'all', matchCase: boolean) => number;
+  onSelectSlide?: (slideId: string) => void;
 }
 
 export const FindReplaceModal: React.FC<FindReplaceModalProps> = ({
@@ -17,6 +18,7 @@ export const FindReplaceModal: React.FC<FindReplaceModalProps> = ({
   activeSlideId,
   onClose,
   onReplaceAll,
+  onSelectSlide,
 }) => {
   const [findText, setFindText] = useState('');
   const [replaceText, setReplaceText] = useState('');
@@ -33,16 +35,17 @@ export const FindReplaceModal: React.FC<FindReplaceModalProps> = ({
     }
   }, [isOpen]);
 
-  // Compute live match count
-  const matchCount = React.useMemo(() => {
-    if (!findText.trim()) return 0;
-    let count = 0;
-    const targetSlides = scope === 'active' ? slides.filter(s => s.id === activeSlideId) : slides;
+  // Compute live match breakdown per slide
+  const matchedSlides = React.useMemo(() => {
+    if (!findText.trim()) return [];
     const flags = matchCase ? 'g' : 'gi';
     const escaped = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(escaped, flags);
+    const results: { slide: Slide; index: number; count: number }[] = [];
 
-    targetSlides.forEach(slide => {
+    slides.forEach((slide, idx) => {
+      if (scope === 'active' && slide.id !== activeSlideId) return;
+      let count = 0;
       const slideMetaFields = [slide.title, slide.notes];
       slideMetaFields.forEach(smf => {
         if (smf) {
@@ -60,10 +63,19 @@ export const FindReplaceModal: React.FC<FindReplaceModalProps> = ({
           }
         });
       });
+
+      if (count > 0) {
+        results.push({ slide, index: idx + 1, count });
+      }
     });
 
-    return count;
+    return results;
   }, [findText, scope, matchCase, slides, activeSlideId]);
+
+  // Compute live match count from matchedSlides
+  const matchCount = React.useMemo(() => {
+    return matchedSlides.reduce((acc, curr) => acc + curr.count, 0);
+  }, [matchedSlides]);
 
   const handleExecuteReplace = () => {
     if (!findText) return;
@@ -194,6 +206,42 @@ export const FindReplaceModal: React.FC<FindReplaceModalProps> = ({
               <span className="text-[10px] font-sans">Sensitif Huruf Besar</span>
             </button>
           </div>
+
+          {/* Matched Slides Quick Navigation */}
+          {matchedSlides.length > 0 && (
+            <div className="space-y-1.5 pt-2 border-t border-slate-800/80">
+              <div className="flex items-center justify-between text-[11px] text-slate-400">
+                <span className="font-semibold text-slate-300">Ditemukan di {matchedSlides.length} Slide:</span>
+                <span className="text-[10px] text-slate-500">Klik untuk langsung membuka slide</span>
+              </div>
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-h-24 flex-wrap">
+                {matchedSlides.map(({ slide, index, count }) => {
+                  const isActive = slide.id === activeSlideId;
+                  return (
+                    <button
+                      key={slide.id}
+                      type="button"
+                      onClick={() => onSelectSlide?.(slide.id)}
+                      className={`px-2 py-1 rounded-lg text-[11px] flex items-center gap-1.5 border transition-all ${
+                        isActive
+                          ? 'bg-indigo-600/30 border-indigo-500 text-indigo-200 font-semibold shadow-sm'
+                          : 'bg-slate-950 hover:bg-slate-800 border-slate-800 text-slate-300 hover:text-white'
+                      }`}
+                      title={`Klik untuk buka slide #${index}: ${slide.title || 'Slide ' + index}`}
+                    >
+                      <span className="font-mono text-[10px] px-1 py-0.5 rounded bg-slate-800 text-slate-300">
+                        #{index}
+                      </span>
+                      <span className="truncate max-w-[120px]">{slide.title || `Slide ${index}`}</span>
+                      <span className="px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-bold">
+                        {count}x
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Feedback banner */}
           {lastReplacedCount !== null && (

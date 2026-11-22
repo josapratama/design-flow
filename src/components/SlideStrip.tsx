@@ -1,5 +1,6 @@
 import React from 'react';
 import { Slide } from '../types';
+import { getSlideBackground } from '../utils/slideStyle';
 import {
   Plus,
   Copy,
@@ -158,9 +159,7 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
             <div
               className="relative w-full h-14 rounded-md overflow-hidden border border-slate-700/60 my-0.5 pointer-events-none shrink-0"
               style={{
-                background: slide.wallpaper
-                  ? `url('${slide.wallpaper}') center / cover no-repeat`
-                  : slide.background || '#0f172a',
+                background: getSlideBackground(slide),
               }}
             >
               <div

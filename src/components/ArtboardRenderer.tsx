@@ -2,6 +2,7 @@ import React, { forwardRef, useState } from 'react';
 import { DesignElement, Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
 import { TransformHandles } from './TransformHandles';
+import { getSlideBackground } from '../utils/slideStyle';
 
 interface ArtboardRendererProps {
   slide: Slide;
@@ -49,9 +50,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
         style={{
           width: `${slide.width}px`,
           height: `${slide.height}px`,
-          background: slide.wallpaper
-            ? `url('${slide.wallpaper}') center / cover no-repeat`
-            : slide.background || '#0f172a',
+          background: getSlideBackground(slide),
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)',
         }}
         onClick={e => {

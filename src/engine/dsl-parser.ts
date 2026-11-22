@@ -140,6 +140,12 @@ function parseSlideProperty(line: string, slide: Slide) {
     return;
   }
 
+  const overlayMatch = line.match(/wallpaperOverlay:\s*([0-9.]+)/);
+  if (overlayMatch) {
+    slide.wallpaperOverlay = parseFloat(overlayMatch[1]);
+    return;
+  }
+
   const transitionMatch = line.match(/transition:\s*"([^"]+)"/);
   if (transitionMatch) {
     slide.transition = transitionMatch[1] as any;

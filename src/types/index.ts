@@ -114,6 +114,7 @@ export interface Slide {
   notes?: string;
   background: string;
   wallpaper?: string;
+  wallpaperOverlay?: number; // 0 to 0.9 (darkness dimming overlay)
   transition?: 'fade' | 'slide' | 'zoom' | 'none';
   elements: DesignElement[];
   width: number;

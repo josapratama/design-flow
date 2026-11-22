@@ -202,7 +202,11 @@ export function generateStandaloneHtmlPresentation(project: DesignProject): stri
       wrapper.style.height = height + 'px';
 
       if (slide.wallpaper) {
-        wrapper.style.background = "url('" + slide.wallpaper + "') center / cover no-repeat";
+        if (slide.wallpaperOverlay && slide.wallpaperOverlay > 0) {
+          wrapper.style.background = "linear-gradient(rgba(0,0,0," + slide.wallpaperOverlay + "), rgba(0,0,0," + slide.wallpaperOverlay + ")), url('" + slide.wallpaper + "') center / cover no-repeat";
+        } else {
+          wrapper.style.background = "url('" + slide.wallpaper + "') center / cover no-repeat";
+        }
       } else {
         wrapper.style.background = slide.background || '#090d16';
       }

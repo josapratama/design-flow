@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { POPULAR_FONTS, getFontFamilyStyle } from '../utils/fontLoader';
+import { evaluateContrast } from '../utils/colorContrast';
 
 interface PropertyInspectorProps {
   element: DesignElement | null;
@@ -407,6 +408,52 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   />
                 </label>
               </div>
+
+              {/* Wallpaper Dimmer / Dark Overlay Tint */}
+              {activeSlide.wallpaper && (
+                <div className="space-y-1.5 p-2 rounded-xl bg-slate-950/70 border border-slate-800 mt-2">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-300 font-medium flex items-center gap-1.5">
+                      <SunMoon className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Dimmer Gelap Foto</span>
+                    </span>
+                    <span className="font-mono text-indigo-400 font-bold">
+                      {Math.round((activeSlide.wallpaperOverlay ?? 0) * 100)}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={0.9}
+                    step={0.05}
+                    value={activeSlide.wallpaperOverlay ?? 0}
+                    onChange={e => onUpdateSlide(activeSlide.id, { wallpaperOverlay: parseFloat(e.target.value) })}
+                    className="w-full accent-indigo-500 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+                  />
+                  <div className="flex items-center justify-between gap-1 pt-0.5">
+                    {[
+                      { label: '0%', val: 0, title: 'Original Jernih' },
+                      { label: '30%', val: 0.3, title: 'Dim Sedang' },
+                      { label: '50%', val: 0.5, title: 'Kontras Teks Bagus' },
+                      { label: '75%', val: 0.75, title: 'Gelap Fokus Teks' },
+                    ].map(preset => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => onUpdateSlide(activeSlide.id, { wallpaperOverlay: preset.val })}
+                        title={preset.title}
+                        className={`px-2 py-0.5 rounded text-[10px] font-mono transition-colors ${
+                          (activeSlide.wallpaperOverlay ?? 0) === preset.val
+                            ? 'bg-indigo-600 text-white font-bold'
+                            : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1308,66 +1355,101 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               </div>
             </div>
 
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] text-slate-500">Warna Teks</label>
-                <button
-                  type="button"
-                  onClick={() => handleEyeDropper('color')}
-                  title="Ambil warna dari layar (Pipet Eyedropper)"
-                  className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded"
-                >
-                  <Pipette className="w-3 h-3" />
-                </button>
-              </div>
-              <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
-                <input
-                  type="color"
-                  value={element.color || '#ffffff'}
-                  onChange={e => handleChange('color', e.target.value)}
-                  className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
-                />
-                <span className="text-[11px] font-mono text-slate-300">
-                  {element.color || '#ffffff'}
-                </span>
-              </div>
-              {/* Document Colors Palette for Text */}
-              {documentColors.length > 0 && (
-                <div className="pt-1.5">
-                  <span className="text-[9px] text-slate-500 font-medium block mb-1">Warna di Slide Ini:</span>
-                  <div className="flex items-center gap-1 flex-wrap">
-                    {documentColors.map(c => (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() => handleChange('color', c)}
-                        title={`Pilih warna teks slide ${c}`}
-                        className={`w-3.5 h-3.5 rounded-full border transition-transform ${
-                          element.color?.toLowerCase() === c
-                            ? 'scale-125 border-white ring-1 ring-white/50'
-                            : 'border-slate-700 hover:scale-110'
+            {(() => {
+              const effectiveBg = (element.fill && element.fill !== 'transparent' && !element.fill.startsWith('rgba'))
+                ? element.fill
+                : (activeSlide.background || '#0f172a');
+              const contrast = evaluateContrast(element.color || '#ffffff', effectiveBg);
+
+              return (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex items-center gap-1.5">
+                      <label className="text-[10px] text-slate-500">Warna Teks</label>
+                      <span
+                        className={`text-[9px] px-1.5 py-0.5 rounded border font-mono font-bold ${
+                          contrast.level === 'AAA' || contrast.level === 'AA'
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                            : contrast.level === 'AA Large'
+                            ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                            : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
                         }`}
-                        style={{ backgroundColor: c }}
+                        title={`Kontras WCAG: ${contrast.ratio}:1 (${contrast.label})`}
+                      >
+                        {contrast.ratio}:1 {contrast.level}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      {!contrast.isGood && (
+                        <button
+                          type="button"
+                          onClick={() => handleChange('color', contrast.recommendedColor)}
+                          className="text-[9px] text-indigo-400 hover:text-indigo-300 underline font-medium"
+                          title={`Ubah ke ${contrast.recommendedColor} agar teks mudah dibaca`}
+                        >
+                          Auto-Fix
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleEyeDropper('color')}
+                        title="Ambil warna dari layar (Pipet Eyedropper)"
+                        className="p-0.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded"
+                      >
+                        <Pipette className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
+                    <input
+                      type="color"
+                      value={element.color || '#ffffff'}
+                      onChange={e => handleChange('color', e.target.value)}
+                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                    />
+                    <span className="text-[11px] font-mono text-slate-300">
+                      {element.color || '#ffffff'}
+                    </span>
+                  </div>
+                  {/* Document Colors Palette for Text */}
+                  {documentColors.length > 0 && (
+                    <div className="pt-1.5">
+                      <span className="text-[9px] text-slate-500 font-medium block mb-1">Warna di Slide Ini:</span>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {documentColors.map(c => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => handleChange('color', c)}
+                            title={`Pilih warna teks slide ${c}`}
+                            className={`w-3.5 h-3.5 rounded-full border transition-transform ${
+                              element.color?.toLowerCase() === c
+                                ? 'scale-125 border-white ring-1 ring-white/50'
+                                : 'border-slate-700 hover:scale-110'
+                            }`}
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* Quick Swatches for Text Color */}
+                  <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                    {['#ffffff', '#94a3b8', '#6366f1', '#38bdf8', '#34d399', '#f87171', '#fbbf24', '#0f172a'].map(sw => (
+                      <button
+                        key={sw}
+                        type="button"
+                        onClick={() => handleChange('color', sw)}
+                        title={`Pilih warna teks ${sw}`}
+                        className={`w-3.5 h-3.5 rounded-full border transition-transform ${element.color === sw ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent hover:scale-110'
+                          }`}
+                        style={{ backgroundColor: sw }}
                       />
                     ))}
                   </div>
                 </div>
-              )}
-              {/* Quick Swatches for Text Color */}
-              <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                {['#ffffff', '#94a3b8', '#6366f1', '#38bdf8', '#34d399', '#f87171', '#fbbf24', '#0f172a'].map(sw => (
-                  <button
-                    key={sw}
-                    type="button"
-                    onClick={() => handleChange('color', sw)}
-                    title={`Pilih warna teks ${sw}`}
-                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${element.color === sw ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent hover:scale-110'
-                      }`}
-                    style={{ backgroundColor: sw }}
-                  />
-                ))}
-              </div>
-            </div>
+              );
+            })()}
           </div>
 
           {/* Opasitas Slider */}
