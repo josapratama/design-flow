@@ -111,6 +111,15 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     };
   }, [slides, currentIndex, blankMode]);
 
+  useEffect(() => {
+    if (!isLaserActive) {
+      channelRef.current?.postMessage({
+        type: 'LASER_MOVE',
+        pos: null,
+      });
+    }
+  }, [isLaserActive]);
+
   const openAudienceWindow = () => {
     window.open(
       '/?mode=audience',
@@ -173,10 +182,18 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     });
   };
 
+  const broadcastStrokes = (strokes: DoodleStroke[]) => {
+    channelRef.current?.postMessage({
+      type: 'SYNC_STROKES',
+      strokes,
+    });
+  };
+
   const undoPenStroke = () => {
     if (strokesRef.current.length === 0) return;
     strokesRef.current.pop();
     redrawCanvasStrokes();
+    broadcastStrokes(strokesRef.current);
   };
 
   const clearPenCanvas = () => {
@@ -186,6 +203,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    broadcastStrokes([]);
   };
 
   const getCanvasCoords = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -235,6 +253,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const handlePenPointerUp = () => {
     if (currentStrokeRef.current && currentStrokeRef.current.points.length > 1) {
       strokesRef.current.push(currentStrokeRef.current);
+      broadcastStrokes(strokesRef.current);
     }
     currentStrokeRef.current = null;
     isDrawingRef.current = false;
@@ -410,9 +429,24 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isLaserActive && slideAreaRef.current) {
       const rect = slideAreaRef.current.getBoundingClientRect();
-      setLaserPos({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setLaserPos({ x, y });
+      channelRef.current?.postMessage({
+        type: 'LASER_MOVE',
+        pos: {
+          xRatio: Math.max(0, Math.min(1, x / rect.width)),
+          yRatio: Math.max(0, Math.min(1, y / rect.height)),
+        },
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isLaserActive) {
+      channelRef.current?.postMessage({
+        type: 'LASER_MOVE',
+        pos: null,
       });
     }
   };
@@ -697,6 +731,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         <div
           ref={slideAreaRef}
           onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
           className={`flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden ${isLaserActive ? 'cursor-none' : 'cursor-default'
             }`}
         >

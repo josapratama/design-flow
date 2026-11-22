@@ -1,21 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
+
+interface DoodleStroke {
+  color: string;
+  points: Array<{ x: number; y: number }>;
+}
 
 export const AudienceScreen: React.FC = () => {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [blankMode, setBlankMode] = useState<'none' | 'black' | 'white'>('none');
-  const [laserPos, setLaserPos] = useState<{ x: number; y: number } | null>(null);
+  const [laserPos, setLaserPos] = useState<{ xRatio: number; yRatio: number } | null>(null);
+  const [strokes, setStrokes] = useState<DoodleStroke[]>([]);
   const [showHint, setShowHint] = useState(true);
   const [windowDimensions, setWindowDimensions] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
   });
 
-  // Fade out top hint after 4 seconds
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Fade out top hint after 5 seconds
   useEffect(() => {
-    const timer = setTimeout(() => setShowHint(false), 4000);
+    const timer = setTimeout(() => setShowHint(false), 5000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -31,7 +39,30 @@ export const AudienceScreen: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Listen to BroadcastChannel
+  // Redraw doodle strokes on canvas whenever strokes or slide changes
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    strokes.forEach(stroke => {
+      if (stroke.points.length < 2) return;
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+      for (let i = 1; i < stroke.points.length; i++) {
+        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+      }
+      ctx.stroke();
+    });
+  }, [strokes, currentIndex]);
+
+  // Listen to BroadcastChannel for synchronized presenter state
   useEffect(() => {
     // Initial restore from localStorage
     try {
@@ -57,11 +88,16 @@ export const AudienceScreen: React.FC = () => {
         if (typeof data.currentIndex === 'number') setCurrentIndex(data.currentIndex);
         if (data.blankMode) setBlankMode(data.blankMode);
       } else if (data.type === 'SLIDE_CHANGE') {
-        if (typeof data.index === 'number') setCurrentIndex(data.index);
+        if (typeof data.index === 'number') {
+          setCurrentIndex(data.index);
+          setStrokes([]);
+        }
       } else if (data.type === 'BLANK_MODE') {
         setBlankMode(data.mode);
       } else if (data.type === 'LASER_MOVE') {
         setLaserPos(data.pos);
+      } else if (data.type === 'SYNC_STROKES') {
+        setStrokes(data.strokes || []);
       }
     };
 
@@ -72,6 +108,14 @@ export const AudienceScreen: React.FC = () => {
       channel.close();
     };
   }, []);
+
+  const handleToggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
 
   const currentSlide = slides[currentIndex];
 
@@ -95,19 +139,28 @@ export const AudienceScreen: React.FC = () => {
   );
 
   return (
-    <div className="fixed inset-0 bg-black flex items-center justify-center overflow-hidden select-none">
+    <div
+      onDoubleClick={handleToggleFullscreen}
+      className="fixed inset-0 bg-black flex items-center justify-center overflow-hidden select-none cursor-default"
+      title="Klik ganda untuk beralih mode Layar Penuh"
+    >
       {/* Subtle Hint */}
       {showHint && (
-        <div className="absolute top-4 right-4 z-50 bg-slate-900/80 border border-slate-800 text-slate-400 text-xs px-3 py-1.5 rounded-full backdrop-blur-md animate-in fade-in transition-opacity">
-          Layar Tampilan Audiens • Tekan <kbd className="text-indigo-300 font-bold">F11</kbd> untuk Layar Penuh
+        <div className="absolute top-4 right-4 z-50 bg-slate-900/90 border border-slate-800 text-slate-300 text-xs px-3.5 py-1.5 rounded-full backdrop-blur-md animate-in fade-in transition-opacity shadow-xl flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>Layar Audiens (Proyektor) • Dobel-klik / <kbd className="text-indigo-300 font-bold">F11</kbd> Layar Penuh</span>
         </div>
       )}
 
-      {/* Blank Screen Overlay */}
-      {blankMode === 'black' && <div className="absolute inset-0 bg-black z-40 animate-in fade-in duration-150" />}
-      {blankMode === 'white' && <div className="absolute inset-0 bg-white z-40 animate-in fade-in duration-150" />}
+      {/* Blank Screen Overlay with Smooth Transition */}
+      {blankMode === 'black' && (
+        <div className="absolute inset-0 bg-black z-40 transition-opacity duration-300 animate-in fade-in" />
+      )}
+      {blankMode === 'white' && (
+        <div className="absolute inset-0 bg-white z-40 transition-opacity duration-300 animate-in fade-in" />
+      )}
 
-      {/* Slide Canvas */}
+      {/* Slide Canvas Container */}
       <div
         className="relative shadow-2xl overflow-hidden shrink-0"
         style={{
@@ -120,6 +173,7 @@ export const AudienceScreen: React.FC = () => {
           transformOrigin: 'center center',
         }}
       >
+        {/* Slide Elements */}
         {currentSlide.elements.map(el => (
           <div
             key={el.id}
@@ -134,30 +188,40 @@ export const AudienceScreen: React.FC = () => {
                 el.rotation ? `rotate(${el.rotation}deg)` : '',
                 el.flipX ? 'scaleX(-1)' : '',
                 el.flipY ? 'scaleY(-1)' : '',
-              ].filter(Boolean).join(' ') || undefined,
+              ]
+                .filter(Boolean)
+                .join(' ') || undefined,
               opacity: el.opacity !== undefined ? el.opacity : 1,
             }}
           >
             <ElementRenderer element={el} isSelected={false} />
           </div>
         ))}
-      </div>
 
-      {/* Glowing Virtual Laser Pointer */}
-      {laserPos && (
-        <div
-          className="absolute pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2"
-          style={{
-            left: `${laserPos.x}px`,
-            top: `${laserPos.y}px`,
-          }}
-        >
-          <div className="relative flex items-center justify-center">
-            <span className="absolute w-8 h-8 rounded-full bg-rose-500/30 animate-ping" />
-            <span className="w-4 h-4 rounded-full bg-rose-500 shadow-[0_0_18px_6px_rgba(244,63,94,0.9),0_0_6px_#fff]" />
+        {/* Live Synchronized Doodle Canvas from Presenter */}
+        <canvas
+          ref={canvasRef}
+          width={currentSlide.width}
+          height={currentSlide.height}
+          className="absolute inset-0 z-30 pointer-events-none"
+        />
+
+        {/* Glowing Virtual Laser Pointer accurately scaled inside slide */}
+        {laserPos && (
+          <div
+            className="absolute pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2"
+            style={{
+              left: `${laserPos.xRatio * currentSlide.width}px`,
+              top: `${laserPos.yRatio * currentSlide.height}px`,
+            }}
+          >
+            <div className="relative flex items-center justify-center">
+              <span className="absolute w-8 h-8 rounded-full bg-rose-500/35 animate-ping" />
+              <span className="w-4 h-4 rounded-full bg-rose-500 shadow-[0_0_20px_8px_rgba(244,63,94,0.95),0_0_6px_#fff]" />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

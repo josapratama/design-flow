@@ -13,6 +13,7 @@ import {
   Shield,
   PanelLeftClose,
   Focus,
+  LayoutGrid,
 } from 'lucide-react';
 
 interface ToolbarProps {
@@ -37,6 +38,7 @@ interface ToolbarProps {
   onToggleRulers?: () => void;
   onToggleSafeMargin?: () => void;
   onToggleZenMode?: () => void;
+  onOpenSlideSorter?: () => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
 }
@@ -63,6 +65,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onToggleRulers,
   onToggleSafeMargin,
   onToggleZenMode,
+  onOpenSlideSorter,
   onDeleteSelected,
   onDuplicateSelected,
 }) => {
@@ -222,6 +225,17 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           }`}
         >
           <PanelLeftClose className="w-4 h-4" />
+        </button>
+      )}
+
+      {/* Slide Sorter / Light Table Mode */}
+      {onOpenSlideSorter && (
+        <button
+          onClick={onOpenSlideSorter}
+          title="Buka Pengatur Kisi Slide (Alt+S)"
+          className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded-xl transition-colors"
+        >
+          <LayoutGrid className="w-4 h-4" />
         </button>
       )}
 

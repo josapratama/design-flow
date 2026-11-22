@@ -521,6 +521,7 @@ export default function App() {
             }
             onToggleSafeMargin={() => setShowSafeMargin(prev => !prev)}
             onToggleZenMode={() => setIsZenMode(prev => !prev)}
+            onOpenSlideSorter={() => setIsSlideSorterOpen(true)}
             onDeleteSelected={deleteSelectedElements}
             onDuplicateSelected={duplicateSelectedElements}
           />
