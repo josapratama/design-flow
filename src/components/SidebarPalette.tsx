@@ -37,6 +37,10 @@ import {
   TrendingUp,
   Split,
   Quote,
+  Search,
+  Link,
+  Plus,
+  ExternalLink,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -67,7 +71,9 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'elements' | 'ui' | 'shapes' | 'media' | 'blocks' | 'layers'>('elements');
   const [layerSearch, setLayerSearch] = useState('');
-  const [mediaCategory, setMediaCategory] = useState<'all' | 'tech' | 'business' | 'arch' | 'nature' | 'people'>('all');
+  const [mediaCategory, setMediaCategory] = useState<'all' | 'tech' | 'business' | 'arch' | 'nature' | 'people' | 'abstract'>('all');
+  const [stockSearchQuery, setStockSearchQuery] = useState('');
+  const [directImageUrl, setDirectImageUrl] = useState('');
   const [aiTopic, setAiTopic] = useState('');
   const [isAiGenerating, setIsAiGenerating] = useState(false);
 
@@ -199,87 +205,115 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
     {
       title: 'Server Cloud & AI',
       category: 'tech',
+      tags: ['server', 'ai', 'cloud', 'datacenter', 'infra'],
       url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Kode & Pengembangan',
       category: 'tech',
+      tags: ['code', 'programming', 'developer', 'react', 'javascript'],
       url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Hardware & Chipset',
       category: 'tech',
+      tags: ['hardware', 'chip', 'processor', 'cpu', 'electronic'],
       url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Siber & Jaringan',
       category: 'tech',
+      tags: ['security', 'network', 'cyber', 'security', 'matrix'],
       url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Neon Cyberpunk Kota',
+      category: 'tech',
+      tags: ['cyberpunk', 'neon', 'futuristic', 'night', 'lights'],
+      url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800&auto=format&fit=crop&q=80',
     },
 
     // Business & Meeting
     {
       title: 'Pertemuan Eksekutif',
       category: 'business',
+      tags: ['meeting', 'executive', 'boardroom', 'office'],
       url: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Diskusi Tim Kreatif',
       category: 'business',
+      tags: ['discussion', 'brainstorming', 'creatives', 'team'],
       url: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Ruang Kerja Modern',
       category: 'business',
+      tags: ['workspace', 'desk', 'laptop', 'office', 'minimalist'],
       url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Analitik & Finansial',
       category: 'business',
+      tags: ['analytics', 'chart', 'finance', 'growth', 'stocks'],
       url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Kopi & Workspace Kreatif',
+      category: 'business',
+      tags: ['coffee', 'freelance', 'notes', 'work', 'morning'],
+      url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&auto=format&fit=crop&q=80',
     },
 
     // Architecture & Space
     {
       title: 'Gedung Pencakar Langit',
       category: 'arch',
+      tags: ['skyscraper', 'architecture', 'glass', 'city', 'building'],
       url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Struktur Minimalis',
       category: 'arch',
+      tags: ['minimalist', 'concrete', 'lines', 'modern', 'interior'],
       url: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Interior Galeri Seni',
       category: 'arch',
+      tags: ['gallery', 'art', 'museum', 'exhibition', 'sculpture'],
       url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Kampus Universitas',
       category: 'arch',
+      tags: ['campus', 'university', 'college', 'study', 'education'],
       url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=80',
     },
 
-    // Nature & Abstract
+    // Nature & Landscape
     {
       title: 'Pemandangan Pegunungan',
       category: 'nature',
+      tags: ['mountain', 'peaks', 'nature', 'alps', 'snow'],
       url: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Samudra & Horizon',
       category: 'nature',
+      tags: ['ocean', 'sea', 'water', 'beach', 'blue'],
       url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Gradasi Kabut Senja',
       category: 'nature',
+      tags: ['fog', 'mist', 'sunset', 'forest', 'calm'],
       url: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Pendar Aurora Kutub',
       category: 'nature',
+      tags: ['aurora', 'northern lights', 'night', 'green', 'stars'],
       url: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&auto=format&fit=crop&q=80',
     },
 
@@ -287,22 +321,46 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
     {
       title: 'Foto Profil Profesional',
       category: 'people',
+      tags: ['portrait', 'face', 'person', 'woman', 'professional'],
       url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Pengembang Software',
       category: 'people',
+      tags: ['man', 'developer', 'glasses', 'portrait', 'smile'],
       url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Desainer & Kreator',
       category: 'people',
+      tags: ['designer', 'creative', 'woman', 'portrait', 'studio'],
       url: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=800&auto=format&fit=crop&q=80',
     },
     {
       title: 'Kepemimpinan & Presentasi',
       category: 'people',
+      tags: ['leader', 'speaker', 'presentation', 'conference'],
       url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80',
+    },
+
+    // Abstract & Shapes
+    {
+      title: 'Gradasi Geometris 3D',
+      category: 'abstract',
+      tags: ['gradient', '3d', 'shapes', 'purple', 'abstract', 'futuristic'],
+      url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Tekstur Kertas Minimalis',
+      category: 'abstract',
+      tags: ['paper', 'texture', 'clean', 'white', 'simple', 'minimal'],
+      url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=800&auto=format&fit=crop&q=80',
+    },
+    {
+      title: 'Cairan Warna Organik',
+      category: 'abstract',
+      tags: ['liquid', 'colors', 'paint', 'fluid', 'marble'],
+      url: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=800&auto=format&fit=crop&q=80',
     },
   ];
 
@@ -834,30 +892,100 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         {/* TAB 4: MEDIA & STOCK PHOTOS */}
         {activeTab === 'media' && (
           <div className="space-y-4">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Unggah Media & Foto
-            </span>
+            <div>
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-2">
+                Unggah Media & Foto
+              </span>
 
-            {/* File Upload Trigger */}
-            <label className="border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-xl p-4 flex flex-col items-center justify-center cursor-pointer transition-colors bg-slate-950/40 hover:bg-slate-950/80 group">
-              <Upload className="w-6 h-6 text-indigo-400 group-hover:scale-110 transition-transform mb-2" />
-              <span className="text-xs font-semibold text-slate-200">Unggah Gambar Lokal</span>
-              <span className="text-[10px] text-slate-400 mt-1">PNG, JPG, WebP, SVG</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
+              {/* File Upload Trigger */}
+              <label className="border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-xl p-3.5 flex flex-col items-center justify-center cursor-pointer transition-colors bg-slate-950/40 hover:bg-slate-950/80 group">
+                <Upload className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform mb-1.5" />
+                <span className="text-xs font-semibold text-slate-200">Unggah Gambar Lokal</span>
+                <span className="text-[10px] text-slate-400 mt-0.5">PNG, JPG, WebP, SVG</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
 
-            {/* Preset Stock Photos with Category Chips */}
-            <div className="space-y-2 pt-2 border-t border-slate-800">
+            {/* Direct Image URL Inserter */}
+            <div className="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
+              <div className="flex items-center gap-1.5 text-slate-300 text-xs font-semibold">
+                <Link className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Sisipkan dari URL Web</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="url"
+                  placeholder="https://images.unsplash.com/photo..."
+                  value={directImageUrl}
+                  onChange={e => setDirectImageUrl(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && directImageUrl.trim()) {
+                      onAddElement(
+                        createBaseElement('image', 'Gambar Web', 400, 260, {
+                          imageUrl: directImageUrl.trim(),
+                          borderRadius: 12,
+                          shadow: 'md',
+                        })
+                      );
+                      setDirectImageUrl('');
+                    }
+                  }}
+                  className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 outline-none focus:border-indigo-500 font-mono"
+                />
+                <button
+                  type="button"
+                  disabled={!directImageUrl.trim()}
+                  onClick={() => {
+                    if (!directImageUrl.trim()) return;
+                    onAddElement(
+                      createBaseElement('image', 'Gambar Web', 400, 260, {
+                        imageUrl: directImageUrl.trim(),
+                        borderRadius: 12,
+                        shadow: 'md',
+                      })
+                    );
+                    setDirectImageUrl('');
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:hover:bg-indigo-600 text-white text-xs font-semibold shrink-0 transition-colors"
+                >
+                  Sisipkan
+                </button>
+              </div>
+            </div>
+
+            {/* Preset Stock Photos with Live Search & Category Chips */}
+            <div className="space-y-2.5 pt-2 border-t border-slate-800">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                   Foto Stok Bebas Royalti
                 </span>
                 <span className="text-[9px] text-indigo-400 font-mono">Unsplash HD</span>
+              </div>
+
+              {/* Stock Photo Live Search Bar */}
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Cari foto (kopi, tech, neon)..."
+                  value={stockSearchQuery}
+                  onChange={e => setStockSearchQuery(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-7 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500 font-medium"
+                />
+                {stockSearchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setStockSearchQuery('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
 
               {/* Category Filter Chips */}
@@ -869,6 +997,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                   { id: 'arch', label: 'Arsitektur' },
                   { id: 'nature', label: 'Alam' },
                   { id: 'people', label: 'Tim' },
+                  { id: 'abstract', label: 'Abstrak' },
                 ].map(cat => (
                   <button
                     key={cat.id}
@@ -884,10 +1013,41 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                 ))}
               </div>
 
+              {/* Quick Dynamic Search Button if Query Present */}
+              {stockSearchQuery.trim() && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const query = encodeURIComponent(stockSearchQuery.trim());
+                    onAddElement(
+                      createBaseElement('image', `Unsplash: ${stockSearchQuery.trim()}`, 400, 260, {
+                        imageUrl: `https://images.unsplash.com/featured/800x600/?${query}&auto=format&fit=crop&q=80`,
+                        borderRadius: 12,
+                        shadow: 'md',
+                      })
+                    );
+                  }}
+                  className="w-full py-1.5 px-2 bg-indigo-950/40 hover:bg-indigo-900/50 border border-indigo-700/60 rounded-lg text-indigo-300 hover:text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span className="truncate">Sisipkan Foto Unsplash "{stockSearchQuery}"</span>
+                </button>
+              )}
+
               {/* Photo Grid */}
-              <div className="grid grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
                 {sampleStockPhotos
-                  .filter(p => mediaCategory === 'all' || p.category === mediaCategory)
+                  .filter(p => {
+                    const matchesCategory = mediaCategory === 'all' || p.category === mediaCategory;
+                    if (!matchesCategory) return false;
+                    if (!stockSearchQuery.trim()) return true;
+                    const q = stockSearchQuery.toLowerCase();
+                    return (
+                      p.title.toLowerCase().includes(q) ||
+                      p.category.toLowerCase().includes(q) ||
+                      (p.tags && p.tags.some(t => t.toLowerCase().includes(q)))
+                    );
+                  })
                   .map((photo, i) => (
                     <button
                       key={i}
@@ -896,6 +1056,7 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                           createBaseElement('image', photo.title, 360, 240, {
                             imageUrl: photo.url,
                             borderRadius: 12,
+                            shadow: 'md',
                           })
                         )
                       }

@@ -65,6 +65,7 @@ export default function App() {
     reorderSlide,
     moveSlideToIndex,
     loadTemplate,
+    appendTemplateSlides,
     saveProjectToFile,
     loadProjectData,
     lastSaved,
@@ -748,6 +749,8 @@ export default function App() {
       {isTemplatesOpen && (
         <TemplatesModal
           onSelectTemplate={loadTemplate}
+          onAppendTemplate={appendTemplateSlides}
+          currentSlideCount={project.slides.length}
           onClose={() => setIsTemplatesOpen(false)}
         />
       )}

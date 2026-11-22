@@ -634,6 +634,35 @@ export function useDesignStore() {
     }));
   }, [project.slides, pushHistory]);
 
+  // Append template slides to the current project without losing existing work
+  const appendTemplateSlides = useCallback((template: typeof TEMPLATES[0]) => {
+    pushHistory(project.slides);
+
+    // Deep clone template slides and assign brand new unique IDs to slides and elements
+    const newSlides: Slide[] = template.slides.map((s, sIndex) => {
+      const newSlideId = `slide_${Date.now()}_${Math.random().toString(36).slice(2, 7)}_${sIndex}`;
+      return {
+        ...JSON.parse(JSON.stringify(s)),
+        id: newSlideId,
+        title: `${s.title} (${template.name})`,
+        elements: s.elements.map(el => ({
+          ...JSON.parse(JSON.stringify(el)),
+          id: `el_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        })),
+      };
+    });
+
+    setProject(prev => {
+      const combined = [...prev.slides, ...newSlides];
+      return {
+        ...prev,
+        slides: combined,
+        activeSlideId: newSlides[0]?.id || prev.activeSlideId,
+        selectedElementIds: [],
+      };
+    });
+  }, [project.slides, pushHistory]);
+
   // Save project as JSON file
   const saveProjectToFile = useCallback(() => {
     const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
@@ -873,6 +902,7 @@ export function useDesignStore() {
     reorderSlide,
     moveSlideToIndex,
     loadTemplate,
+    appendTemplateSlides,
     saveProjectToFile,
     loadProjectData,
     replaceTextInElements,

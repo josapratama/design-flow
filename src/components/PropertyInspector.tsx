@@ -32,7 +32,7 @@ import {
   Upload,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import { POPULAR_FONTS } from '../utils/fontLoader';
+import { POPULAR_FONTS, getFontFamilyStyle } from '../utils/fontLoader';
 
 interface PropertyInspectorProps {
   element: DesignElement | null;
@@ -69,6 +69,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 }) => {
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [iconFilter, setIconFilter] = useState('');
+  const [fontFilterCategory, setFontFilterCategory] = useState<'all' | 'Sans Serif' | 'Serif' | 'Monospace' | 'Display'>('all');
 
   const popularIconNames = [
     'Star', 'Heart', 'Shield', 'Check', 'User', 'Search', 'Settings', 'Home',
@@ -1106,50 +1107,101 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     ))}
                   </div>
                 </div>
-                <div className="col-span-3">
-                  <div className="flex items-center justify-between mb-1">
+                <div className="col-span-3 space-y-1.5">
+                  <div className="flex items-center justify-between">
                     <label className="text-[10px] text-slate-500">Google & Web Font Family</label>
                     <span className="text-[9px] text-indigo-400 font-medium">Live CDN</span>
                   </div>
+
+                  {/* Font Category Filter Pills */}
+                  <div className="flex items-center gap-1 overflow-x-auto pb-0.5 no-scrollbar">
+                    {[
+                      { id: 'all', label: 'Semua' },
+                      { id: 'Sans Serif', label: 'Sans' },
+                      { id: 'Serif', label: 'Serif' },
+                      { id: 'Monospace', label: 'Mono' },
+                      { id: 'Display', label: 'Display' },
+                    ].map(cat => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setFontFilterCategory(cat.id as any)}
+                        className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${
+                          fontFilterCategory === cat.id
+                            ? 'bg-indigo-600 text-white font-semibold'
+                            : 'bg-slate-900 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+
                   <select
                     value={element.fontFamily || 'sans'}
                     onChange={e => handleChange('fontFamily', e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs font-medium cursor-pointer"
                   >
-                    <optgroup label="Sistem Dasar">
-                      <option value="sans">Sans (Inter / Default)</option>
-                      <option value="serif">Serif (Klasik)</option>
-                      <option value="mono">Monospace (Kode)</option>
-                    </optgroup>
-                    <optgroup label="Google Fonts — Sans Serif">
-                      {POPULAR_FONTS.filter(f => f.category === 'Sans Serif').map(f => (
-                        <option key={f.id} value={f.id}>
-                          {f.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Google Fonts — Serif">
-                      {POPULAR_FONTS.filter(f => f.category === 'Serif').map(f => (
-                        <option key={f.id} value={f.id}>
-                          {f.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Google Fonts — Monospace">
-                      {POPULAR_FONTS.filter(f => f.category === 'Monospace').map(f => (
-                        <option key={f.id} value={f.id}>
-                          {f.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                    <optgroup label="Google Fonts — Display & Headline">
-                      {POPULAR_FONTS.filter(f => f.category === 'Display').map(f => (
-                        <option key={f.id} value={f.id}>
-                          {f.name}
-                        </option>
-                      ))}
-                    </optgroup>
+                    {(fontFilterCategory === 'all' || fontFilterCategory === 'Sans Serif') && (
+                      <optgroup label="Sistem Dasar">
+                        <option value="sans">Sans (Inter / Default)</option>
+                        {fontFilterCategory === 'all' && <option value="serif">Serif (Klasik)</option>}
+                        {fontFilterCategory === 'all' && <option value="mono">Monospace (Kode)</option>}
+                      </optgroup>
+                    )}
+                    {(fontFilterCategory === 'all' || fontFilterCategory === 'Sans Serif') && (
+                      <optgroup label="Google Fonts — Sans Serif">
+                        {POPULAR_FONTS.filter(f => f.category === 'Sans Serif').map(f => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {(fontFilterCategory === 'all' || fontFilterCategory === 'Serif') && (
+                      <optgroup label="Google Fonts — Serif">
+                        {POPULAR_FONTS.filter(f => f.category === 'Serif').map(f => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {(fontFilterCategory === 'all' || fontFilterCategory === 'Monospace') && (
+                      <optgroup label="Google Fonts — Monospace">
+                        {POPULAR_FONTS.filter(f => f.category === 'Monospace').map(f => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {(fontFilterCategory === 'all' || fontFilterCategory === 'Display') && (
+                      <optgroup label="Google Fonts — Display & Headline">
+                        {POPULAR_FONTS.filter(f => f.category === 'Display').map(f => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
                   </select>
+
+                  {/* Live Font Visual Preview Badge */}
+                  <div className="p-2 bg-slate-950/80 rounded-lg border border-slate-800/80 space-y-1">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-slate-400 font-medium">Pratinjau Tipografi</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-300 font-mono">
+                        {POPULAR_FONTS.find(f => f.id === element.fontFamily || f.name.toLowerCase() === element.fontFamily?.toLowerCase())?.name || (element.fontFamily === 'serif' ? 'Serif (Klasik)' : element.fontFamily === 'mono' ? 'Monospace (Kode)' : 'Inter (Sans)')}
+                      </span>
+                    </div>
+                    <div
+                      className="text-xs text-slate-200 py-1 px-2 bg-slate-900/60 rounded border border-slate-800/60 overflow-hidden text-ellipsis whitespace-nowrap"
+                      style={{ fontFamily: getFontFamilyStyle(element.fontFamily) }}
+                    >
+                      Ag The quick brown fox jumps 123
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

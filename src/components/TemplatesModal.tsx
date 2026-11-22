@@ -1,15 +1,42 @@
 import React, { useState } from 'react';
 import { TEMPLATES, TemplateDefinition } from '../templates/template-library';
-import { Layout, Smartphone, Presentation, Instagram, Sparkles, X, Search } from 'lucide-react';
+import { Layout, Smartphone, Presentation, Instagram, Sparkles, X, Search, Plus, RefreshCw } from 'lucide-react';
 
 interface TemplatesModalProps {
   onSelectTemplate: (template: TemplateDefinition) => void;
+  onAppendTemplate?: (template: TemplateDefinition) => void;
+  currentSlideCount?: number;
   onClose: () => void;
 }
 
-export const TemplatesModal: React.FC<TemplatesModalProps> = ({ onSelectTemplate, onClose }) => {
+export const TemplatesModal: React.FC<TemplatesModalProps> = ({
+  onSelectTemplate,
+  onAppendTemplate,
+  currentSlideCount = 1,
+  onClose,
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'slide' | 'uiux' | 'graphic'>('all');
+
+  const handleReplace = (template: TemplateDefinition) => {
+    if (currentSlideCount > 1) {
+      const confirmReplace = window.confirm(
+        `Perhatian: Membuka template "${template.name}" akan menggantikan seluruh ${currentSlideCount} slide proyek saat ini. Lanjutkan?\n\n(Tip: Pilih "+ Tambah Slide" jika ingin menggabungkan tanpa menghapus pekerjaan lama).`
+      );
+      if (!confirmReplace) return;
+    }
+    onSelectTemplate(template);
+    onClose();
+  };
+
+  const handleAppend = (template: TemplateDefinition) => {
+    if (onAppendTemplate) {
+      onAppendTemplate(template);
+    } else {
+      onSelectTemplate(template);
+    }
+    onClose();
+  };
 
   const filteredTemplates = TEMPLATES.filter(tpl => {
     const matchesCategory = selectedCategory === 'all' || tpl.category === selectedCategory;
@@ -87,11 +114,7 @@ export const TemplatesModal: React.FC<TemplatesModalProps> = ({ onSelectTemplate
             filteredTemplates.map(template => (
               <div
                 key={template.id}
-                onClick={() => {
-                  onSelectTemplate(template);
-                  onClose();
-                }}
-                className="group p-5 bg-slate-950/80 hover:bg-slate-800/80 border border-slate-800 hover:border-indigo-500 rounded-2xl flex flex-col justify-between transition-all cursor-pointer shadow-lg hover:shadow-indigo-500/10"
+                className="group p-5 bg-slate-950/80 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/80 rounded-2xl flex flex-col justify-between transition-all shadow-lg hover:shadow-indigo-500/10"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -143,9 +166,32 @@ export const TemplatesModal: React.FC<TemplatesModalProps> = ({ onSelectTemplate
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500">
-                  <span>{template.slides.length} Slide / Halaman</span>
-                  <span className="text-indigo-400 font-semibold group-hover:underline">Gunakan →</span>
+                <div className="mt-4 pt-3 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-[11px] text-slate-400 font-medium shrink-0">
+                    {template.slides.length} Slide
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    {onAppendTemplate && (
+                      <button
+                        type="button"
+                        onClick={() => handleAppend(template)}
+                        title="Tambahkan slide template ini ke akhir proyek tanpa menghapus slide lama"
+                        className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white border border-slate-700 hover:border-indigo-500 text-[11px] font-semibold flex items-center gap-1 transition-all"
+                      >
+                        <Plus className="w-3 h-3" />
+                        Tambah
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleReplace(template)}
+                      title="Buka template ini sebagai proyek baru"
+                      className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold flex items-center gap-1 transition-all shadow-sm"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      Ganti
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
