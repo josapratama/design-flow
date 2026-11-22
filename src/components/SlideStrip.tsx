@@ -116,15 +116,6 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
 
   return (
     <div className="h-28 bg-slate-950/90 border-t border-slate-800/80 px-3 sm:px-4 py-2 flex items-center gap-2.5 overflow-x-auto select-none shrink-0 z-10 backdrop-blur-md relative group/strip transition-all">
-      {/* Collapse button floating pill */}
-      <button
-        onClick={() => setIsCollapsed(true)}
-        title="Kecilkan Bilah Slide (Lebihkan Area Kanvas)"
-        className="absolute top-1.5 right-2 z-20 p-1 rounded-md bg-slate-900/80 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition-colors"
-      >
-        <ChevronDown className="w-3.5 h-3.5" />
-      </button>
-
       {slides.map((slide, index) => {
         const isActive = slide.id === activeSlideId;
         const scaleFactor = 120 / (slide.width || 1920);
@@ -348,6 +339,16 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
           <span className="text-[10px] font-semibold">Kisi</span>
         </button>
       )}
+
+      {/* Minimize Slide Strip Button */}
+      <button
+        onClick={() => setIsCollapsed(true)}
+        title="Kecilkan Bilah Slide (Lebihkan Area Kanvas)"
+        className="h-24 w-12 rounded-xl border border-slate-800/80 hover:border-slate-700 bg-slate-900/40 hover:bg-slate-900 text-slate-500 hover:text-white flex flex-col items-center justify-center gap-1 transition-all shrink-0"
+      >
+        <ChevronDown className="w-4 h-4 text-slate-400" />
+        <span className="text-[9px] font-mono">Tutup</span>
+      </button>
     </div>
   );
 };

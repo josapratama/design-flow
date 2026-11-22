@@ -20,6 +20,8 @@ import { DesignElement } from './types';
 import { preloadCoreFonts } from './utils/fontLoader';
 import { AudienceScreen } from './components/AudienceScreen';
 import { copyArtboardToClipboard } from './engine/canvas-exporter';
+import { renderElementJSX } from './engine/tailwind-exporter';
+import { copyElementStyle, pasteElementStyle, hasCopiedStyle } from './utils/styleClipboard';
 import { Layers, Sliders, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -746,6 +748,26 @@ export default function App() {
           onOpenCodeEditor={() => setIsCodeDrawerOpen(true)}
           onOpenExport={() => setIsExportOpen(true)}
           onInvertSlideTheme={invertActiveSlideTheme}
+          onCopyStyle={() => {
+            if (contextMenu.element) {
+              copyElementStyle(contextMenu.element);
+              confetti({ particleCount: 25, spread: 45, origin: { y: 0.7 } });
+            }
+          }}
+          onPasteStyle={() => {
+            if (contextMenu.element) {
+              pasteElementStyle(contextMenu.element.id, updateElement);
+              confetti({ particleCount: 35, spread: 55, origin: { y: 0.7 } });
+            }
+          }}
+          hasCopiedStyle={hasCopiedStyle()}
+          onCopyJSX={() => {
+            if (contextMenu.element) {
+              const jsx = renderElementJSX(contextMenu.element);
+              navigator.clipboard.writeText(jsx);
+              confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
+            }
+          }}
         />
       )}
 

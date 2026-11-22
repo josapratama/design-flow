@@ -828,8 +828,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         </div>
       </div>
 
-      {/* Hidden Offscreen Containers for PDF Generation of all slides */}
-      <div className="fixed -left-[9999px] -top-[9999px] pointer-events-none opacity-0">
+      {/* Hidden Offscreen Containers for PDF Generation of all slides (Offscreen without opacity-0 to ensure crisp non-blank render) */}
+      <div className="fixed -left-[9999px] -top-[9999px] pointer-events-none" aria-hidden="true">
         {project.slides.map((s, idx) => (
           <div
             key={s.id}

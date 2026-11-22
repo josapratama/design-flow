@@ -31,6 +31,8 @@ import {
   Download,
   Eye,
   EyeOff,
+  Paintbrush,
+  CopyCheck,
 } from 'lucide-react';
 import { DesignElement } from '../types';
 
@@ -64,6 +66,10 @@ interface ContextMenuProps {
   onOpenCodeEditor?: () => void;
   onOpenExport?: () => void;
   onInvertSlideTheme?: () => void;
+  onCopyStyle?: () => void;
+  onPasteStyle?: () => void;
+  hasCopiedStyle?: boolean;
+  onCopyJSX?: () => void;
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -96,6 +102,10 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onOpenCodeEditor,
   onOpenExport,
   onInvertSlideTheme,
+  onCopyStyle,
+  onPasteStyle,
+  hasCopiedStyle,
+  onCopyJSX,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -158,6 +168,53 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             </span>
             <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+D</kbd>
           </button>
+
+          {onCopyStyle && (
+            <button
+              onClick={() => {
+                onCopyStyle();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Paintbrush className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Salin Gaya Visual</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+Alt+C</kbd>
+            </button>
+          )}
+
+          {hasCopiedStyle && onPasteStyle && (
+            <button
+              onClick={() => {
+                onPasteStyle();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-indigo-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <CopyCheck className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Tempel Gaya Visual</span>
+              </span>
+              <kbd className="text-[10px] text-indigo-400 font-mono">Ctrl+Alt+V</kbd>
+            </button>
+          )}
+
+          {onCopyJSX && (
+            <button
+              onClick={() => {
+                onCopyJSX();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Code className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Salin Kode JSX</span>
+              </span>
+            </button>
+          )}
 
           {onZoomToSelection && (
             <button

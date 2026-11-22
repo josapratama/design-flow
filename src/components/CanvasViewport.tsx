@@ -407,12 +407,26 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
 
         return (
           <>
-            {/* Top-Left Corner Block */}
+            {/* Top-Left Corner Block with Clear All Guides */}
             <div
-              className="absolute top-0 left-0 w-5 h-5 bg-slate-950 border-r border-b border-slate-800 z-30 flex items-center justify-center text-[8px] font-mono font-bold text-slate-500 pointer-events-none select-none"
+              onClick={() => {
+                if (userGuides.length > 0) {
+                  setUserGuides([]);
+                }
+              }}
+              title={
+                userGuides.length > 0
+                  ? `Klik untuk bersihkan semua (${userGuides.length}) garis pandu`
+                  : 'Penggaris Piksel'
+              }
+              className={`absolute top-0 left-0 w-5 h-5 border-r border-b z-30 flex items-center justify-center text-[8px] font-mono font-bold select-none transition-colors ${
+                userGuides.length > 0
+                  ? 'bg-sky-600 border-sky-500 text-white cursor-pointer hover:bg-rose-600 hover:border-rose-500 shadow'
+                  : 'bg-slate-950 border-slate-800 text-slate-500 pointer-events-none'
+              }`}
               data-export-ignore="true"
             >
-              px
+              {userGuides.length > 0 ? '✕' : 'px'}
             </div>
 
             {/* Top Horizontal Ruler */}

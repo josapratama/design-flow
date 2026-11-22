@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { DesignElement, PRESET_SIZES, Slide } from '../types';
 import {
   Trash2,
@@ -42,25 +42,13 @@ import { POPULAR_FONTS, getFontFamilyStyle } from '../utils/fontLoader';
 import { evaluateContrast } from '../utils/colorContrast';
 import { extractPaletteFromImage, ExtractedPalette } from '../utils/paletteExtractor';
 import { renderElementJSX } from '../engine/tailwind-exporter';
-
-interface CopiedVisualAttributes {
-  fill?: string;
-  color?: string;
-  stroke?: string;
-  strokeWidth?: number;
-  strokeDash?: 'solid' | 'dashed' | 'dotted';
-  borderRadius?: number;
-  shadow?: DesignElement['shadow'];
-  fontFamily?: string;
-  fontSize?: number;
-  fontWeight?: DesignElement['fontWeight'];
-  opacity?: number;
-  letterSpacing?: number;
-  lineHeight?: number;
-  textAlign?: DesignElement['textAlign'];
-}
-
-let clipboardVisualAttributes: CopiedVisualAttributes | null = null;
+import {
+  copyElementStyle,
+  pasteElementStyle,
+  hasCopiedStyle,
+  subscribeStyleClipboard,
+} from '../utils/styleClipboard';
+import { generateColorHarmonies } from '../utils/colorHarmonies';
 
 interface PropertyInspectorProps {
   element: DesignElement | null;
@@ -694,8 +682,14 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     name.toLowerCase().includes(iconFilter.toLowerCase())
   );
 
-  const [copiedStyleActive, setCopiedStyleActive] = useState<boolean>(() => Boolean(clipboardVisualAttributes));
+  const [copiedStyleActive, setCopiedStyleActive] = useState<boolean>(() => hasCopiedStyle());
   const [inspectorToast, setInspectorToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    return subscribeStyleClipboard(() => {
+      setCopiedStyleActive(hasCopiedStyle());
+    });
+  }, []);
 
   const showToast = (msg: string) => {
     setInspectorToast(msg);
@@ -704,48 +698,32 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
   const handleCopyStyle = () => {
     if (!element) return;
-    clipboardVisualAttributes = {
-      fill: element.fill,
-      color: element.color,
-      stroke: element.stroke,
-      strokeWidth: element.strokeWidth,
-      strokeDash: element.strokeDash,
-      borderRadius: element.borderRadius,
-      shadow: element.shadow,
-      fontFamily: element.fontFamily,
-      fontSize: element.fontSize,
-      fontWeight: element.fontWeight,
-      opacity: element.opacity,
-      letterSpacing: element.letterSpacing,
-      lineHeight: element.lineHeight,
-      textAlign: element.textAlign,
-    };
-    setCopiedStyleActive(true);
+    copyElementStyle(element);
     showToast('Gaya Disalin! (Pilih elemen lain untuk Tempel)');
   };
 
   const handlePasteStyle = () => {
-    if (!element || !clipboardVisualAttributes) return;
-    const updates: Partial<DesignElement> = {};
-    if (clipboardVisualAttributes.fill !== undefined) updates.fill = clipboardVisualAttributes.fill;
-    if (clipboardVisualAttributes.color !== undefined) updates.color = clipboardVisualAttributes.color;
-    if (clipboardVisualAttributes.stroke !== undefined) updates.stroke = clipboardVisualAttributes.stroke;
-    if (clipboardVisualAttributes.strokeWidth !== undefined) updates.strokeWidth = clipboardVisualAttributes.strokeWidth;
-    if (clipboardVisualAttributes.strokeDash !== undefined) updates.strokeDash = clipboardVisualAttributes.strokeDash;
-    if (clipboardVisualAttributes.borderRadius !== undefined) updates.borderRadius = clipboardVisualAttributes.borderRadius;
-    if (clipboardVisualAttributes.shadow !== undefined) updates.shadow = clipboardVisualAttributes.shadow;
-    if (clipboardVisualAttributes.fontFamily !== undefined) updates.fontFamily = clipboardVisualAttributes.fontFamily;
-    if (clipboardVisualAttributes.fontSize !== undefined) updates.fontSize = clipboardVisualAttributes.fontSize;
-    if (clipboardVisualAttributes.fontWeight !== undefined) updates.fontWeight = clipboardVisualAttributes.fontWeight;
-    if (clipboardVisualAttributes.opacity !== undefined) updates.opacity = clipboardVisualAttributes.opacity;
-    if (clipboardVisualAttributes.letterSpacing !== undefined) updates.letterSpacing = clipboardVisualAttributes.letterSpacing;
-    if (clipboardVisualAttributes.lineHeight !== undefined) updates.lineHeight = clipboardVisualAttributes.lineHeight;
-    if (clipboardVisualAttributes.textAlign !== undefined) updates.textAlign = clipboardVisualAttributes.textAlign;
-
-    onUpdateElement(element.id, updates);
-    showToast('Gaya Diterapkan!');
-    confetti({ particleCount: 25, spread: 45, origin: { y: 0.7 } });
+    if (!element) return;
+    const applied = pasteElementStyle(element.id, onUpdateElement);
+    if (applied) {
+      showToast('Gaya Diterapkan!');
+      confetti({ particleCount: 25, spread: 45, origin: { y: 0.7 } });
+    }
   };
+
+  const activeColorForHarmonies = useMemo(() => {
+    if (element?.fill && element.fill.startsWith('#') && element.fill !== 'transparent') {
+      return element.fill;
+    }
+    if (element?.color && element.color.startsWith('#')) {
+      return element.color;
+    }
+    return '#6366f1';
+  }, [element?.fill, element?.color]);
+
+  const colorHarmonies = useMemo(() => {
+    return generateColorHarmonies(activeColorForHarmonies);
+  }, [activeColorForHarmonies]);
 
   const handleCopyJSX = () => {
     if (!element) return;
@@ -1939,6 +1917,49 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               );
             })()}
           </div>
+
+          {/* Palet Harmonisasi Warna */}
+          {colorHarmonies.length > 0 && (
+            <div className="pt-2 border-t border-slate-800/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3 h-3 text-amber-400" />
+                  Harmoni Warna Teoretis
+                </span>
+                <span className="text-[9px] text-slate-500 font-mono">
+                  Basis: {activeColorForHarmonies}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {colorHarmonies.map((grp) => (
+                  <div key={grp.type} className="p-1.5 rounded-lg bg-slate-950/60 border border-slate-800">
+                    <div className="text-[9px] text-slate-400 truncate mb-1" title={grp.name}>
+                      {grp.name.split(' ')[0]}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {grp.colors.map((c, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => {
+                            if (element.type === 'text') {
+                              handleChange('color', c);
+                            } else {
+                              handleChange('fill', c);
+                            }
+                            showToast(`Warna diterapkan: ${c}`);
+                          }}
+                          title={`Gunakan warna ${c}`}
+                          className="flex-1 h-5 rounded-md border border-slate-700/60 hover:scale-105 transition-transform shadow-sm"
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Opasitas Slider */}
           <div className="space-y-1">
