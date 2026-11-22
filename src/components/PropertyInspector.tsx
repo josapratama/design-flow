@@ -1930,16 +1930,21 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   <Pipette className="w-3 h-3" />
                 </button>
               </div>
-              <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
+              <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 focus-within:border-indigo-500 rounded-lg px-2 py-1">
                 <input
                   type="color"
+                  value={element.fill && element.fill.startsWith('#') ? element.fill : '#1e293b'}
+                  onChange={e => handleChange('fill', e.target.value)}
+                  className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
+                />
+                <input
+                  type="text"
                   value={element.fill || '#1e293b'}
                   onChange={e => handleChange('fill', e.target.value)}
-                  className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                  placeholder="#1e293b"
+                  maxLength={25}
+                  className="w-full bg-transparent text-[11px] font-mono text-slate-200 outline-none uppercase"
                 />
-                <span className="text-[11px] font-mono text-slate-300">
-                  {element.fill || '#1e293b'}
-                </span>
               </div>
               {/* Document Colors Palette */}
               {documentColors.length > 0 && (
@@ -2040,16 +2045,21 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                       </button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
+                  <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 focus-within:border-indigo-500 rounded-lg px-2 py-1">
                     <input
                       type="color"
+                      value={element.color && element.color.startsWith('#') ? element.color : '#ffffff'}
+                      onChange={e => handleChange('color', e.target.value)}
+                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
+                    />
+                    <input
+                      type="text"
                       value={element.color || '#ffffff'}
                       onChange={e => handleChange('color', e.target.value)}
-                      className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                      placeholder="#ffffff"
+                      maxLength={25}
+                      className="w-full bg-transparent text-[11px] font-mono text-slate-200 outline-none uppercase"
                     />
-                    <span className="text-[11px] font-mono text-slate-300">
-                      {element.color || '#ffffff'}
-                    </span>
                   </div>
                   {/* Document Colors Palette for Text */}
                   {documentColors.length > 0 && (
@@ -2223,7 +2233,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     <Pipette className="w-3 h-3" />
                   </button>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
+                <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 focus-within:border-indigo-500 rounded-lg px-2 py-1">
                   <input
                     type="color"
                     value={element.stroke && element.stroke.startsWith('#') ? element.stroke : '#6366f1'}
@@ -2231,11 +2241,19 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                       handleChange('stroke', e.target.value);
                       if (!element.strokeWidth) handleChange('strokeWidth', 2);
                     }}
-                    className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent"
+                    className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent shrink-0"
                   />
-                  <span className="text-[11px] font-mono text-slate-300 truncate">
-                    {element.stroke || 'Tanpa Border'}
-                  </span>
+                  <input
+                    type="text"
+                    value={element.stroke || ''}
+                    onChange={e => {
+                      handleChange('stroke', e.target.value);
+                      if (!element.strokeWidth) handleChange('strokeWidth', 2);
+                    }}
+                    placeholder="Tanpa Border"
+                    maxLength={25}
+                    className="w-full bg-transparent text-[11px] font-mono text-slate-200 outline-none uppercase"
+                  />
                 </div>
               </div>
 

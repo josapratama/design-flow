@@ -1253,4 +1253,134 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+
+  // 15. KARTU 3 PILAR UTAMA / FITUR INTI
+  {
+    id: 'key-pillars-3-cards',
+    name: '3 Pilar Utama / Fitur Inti (3 Kolom)',
+    description: '3 kartu pilar strategis bernomor urut (01, 02, 03) dengan judul, uraian solusi, dan tombol aksi.',
+    icon: 'Layers',
+    category: 'all',
+    generateElements: (startX = 240, startY = 300) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+      const cardW = 440;
+      const cardH = 380;
+      const gap = 30;
+
+      const pillars = [
+        {
+          num: '01',
+          title: 'Arsitektur Skalabel',
+          desc: 'Dibangun di atas fondasi React 19 mutakhir dengan rendering kanvas sub-milidetik untuk alur kerja grafis tanpa lag.',
+          accent: '#6366f1',
+          bg: '#131b2e',
+        },
+        {
+          num: '02',
+          title: 'Privasi & Offline Pertama',
+          desc: 'Seluruh aset, slide, dan kode DSL tersimpan secara lokal di mesin Anda dengan IndexedDB aman tanpa risiko kebocoran data.',
+          accent: '#06b6d4',
+          bg: '#131b2e',
+        },
+        {
+          num: '03',
+          title: 'Ekspor Produksi Bersih',
+          desc: 'Hasilkan kode React + Tailwind CSS bersih, dokumen naskah cetak, serta presentasi PowerPoint .pptx dalam 1 klik.',
+          accent: '#10b981',
+          bg: '#131b2e',
+        },
+      ];
+
+      pillars.forEach((p, idx) => {
+        const xPos = startX + idx * (cardW + gap);
+
+        // Container Card
+        elements.push({
+          id: `el_${now}_pillar_card_${idx}`,
+          type: 'card',
+          name: `Pilar ${p.num} - ${p.title}`,
+          x: xPos,
+          y: startY,
+          width: cardW,
+          height: cardH,
+          zIndex: 1,
+          fill: p.bg,
+          stroke: p.accent,
+          strokeWidth: 1.5,
+          borderRadius: 22,
+          shadow: 'lg',
+        });
+
+        // Number Badge
+        elements.push({
+          id: `el_${now}_pillar_num_${idx}`,
+          type: 'text',
+          name: `Nomor ${p.num}`,
+          x: xPos + 24,
+          y: startY + 24,
+          width: 80,
+          height: 36,
+          zIndex: 2,
+          content: p.num,
+          fontSize: 32,
+          fontWeight: 'extrabold',
+          color: p.accent,
+        });
+
+        // Title Heading
+        elements.push({
+          id: `el_${now}_pillar_hdr_${idx}`,
+          type: 'heading',
+          name: `Judul Pilar ${p.num}`,
+          x: xPos + 24,
+          y: startY + 70,
+          width: cardW - 48,
+          height: 40,
+          zIndex: 2,
+          content: p.title,
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: '#ffffff',
+        });
+
+        // Description
+        elements.push({
+          id: `el_${now}_pillar_desc_${idx}`,
+          type: 'text',
+          name: `Uraian Pilar ${p.num}`,
+          x: xPos + 24,
+          y: startY + 120,
+          width: cardW - 48,
+          height: 160,
+          zIndex: 2,
+          content: p.desc,
+          fontSize: 15,
+          lineHeight: 1.6,
+          color: '#cbd5e1',
+        });
+
+        // Action Button
+        elements.push({
+          id: `el_${now}_pillar_btn_${idx}`,
+          type: 'button',
+          name: `Tombol Pilar ${p.num}`,
+          x: xPos + 24,
+          y: startY + 300,
+          width: cardW - 48,
+          height: 46,
+          zIndex: 2,
+          content: 'Pelajari Selengkapnya →',
+          fill: 'rgba(255, 255, 255, 0.06)',
+          stroke: p.accent,
+          color: '#ffffff',
+          borderRadius: 12,
+          fontSize: 13,
+          fontWeight: 'semibold',
+        });
+      });
+
+      return elements;
+    },
+  },
 ];

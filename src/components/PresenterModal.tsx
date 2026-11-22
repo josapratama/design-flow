@@ -135,6 +135,26 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
   });
 
+  const [isAutoScrollNotes, setIsAutoScrollNotes] = useState(false);
+  const podiumScrollRef = useRef<HTMLDivElement>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    if (!isAutoScrollNotes || !isPodiumMode) return;
+    const interval = setInterval(() => {
+      if (podiumScrollRef.current) {
+        podiumScrollRef.current.scrollTop += 1;
+      }
+    }, 45);
+    return () => clearInterval(interval);
+  }, [isAutoScrollNotes, isPodiumMode]);
+
+  useEffect(() => {
+    if (podiumScrollRef.current) {
+      podiumScrollRef.current.scrollTop = 0;
+    }
+  }, [currentIndex]);
+
   const slideAreaRef = useRef<HTMLDivElement>(null);
   const slideContainerRef = useRef<HTMLDivElement>(null);
   const penCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -1014,6 +1034,14 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         </div>
       </header>
 
+      {/* 2.5px Presentation Deck Progress Line */}
+      <div className="h-[2.5px] w-full bg-slate-900/80 overflow-hidden relative z-30 shrink-0">
+        <div
+          className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-cyan-400 transition-all duration-300 shadow-[0_0_8px_rgba(99,102,241,0.6)]"
+          style={{ width: `${Math.round(((currentIndex + 1) / slides.length) * 100)}%` }}
+        />
+      </div>
+
       {/* Main Slide Display + Notes Area */}
       {isPodiumMode ? (
         <div className="flex-1 flex flex-col bg-slate-950 text-white overflow-hidden p-4 sm:p-6 animate-in fade-in duration-150">
@@ -1104,6 +1132,17 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                     </button>
                   </div>
                   <button
+                    onClick={() => setIsAutoScrollNotes(!isAutoScrollNotes)}
+                    title={isAutoScrollNotes ? 'Jeda Auto-Scroll Naskah Teleprompter' : 'Mulai Auto-Scroll Naskah Teleprompter'}
+                    className={`px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 border transition-colors ${
+                      isAutoScrollNotes
+                        ? 'bg-indigo-600 text-white border-indigo-500 shadow-md shadow-indigo-600/30 animate-pulse'
+                        : 'bg-slate-950 border-slate-800 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    <span>{isAutoScrollNotes ? '⏸ Jeda Scroll' : '▶ Auto-Scroll'}</span>
+                  </button>
+                  <button
                     onClick={downloadSpeakerNotes}
                     title="Unduh Naskah (.md)"
                     className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg border border-slate-800"
@@ -1113,8 +1152,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 </div>
               </div>
 
-              {/* Editable Large Typography Textarea */}
-              <div className="flex-1 mt-3 overflow-y-auto">
+              {/* Editable Large Typography Textarea with Auto-Scroll ref */}
+              <div ref={podiumScrollRef} className="flex-1 mt-3 overflow-y-auto">
                 <textarea
                   value={currentSlide.notes || ''}
                   onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
@@ -1255,6 +1294,29 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           ref={slideAreaRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
+          onTouchStart={e => {
+            if (isPenActive) return;
+            const touch = e.touches[0];
+            if (touch) {
+              touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+            }
+          }}
+          onTouchEnd={e => {
+            if (isPenActive || !touchStartRef.current) return;
+            const touch = e.changedTouches[0];
+            if (touch) {
+              const diffX = touch.clientX - touchStartRef.current.x;
+              const diffY = touch.clientY - touchStartRef.current.y;
+              if (Math.abs(diffX) > 50 && Math.abs(diffX) > Math.abs(diffY)) {
+                if (diffX < 0) {
+                  goToNext();
+                } else {
+                  goToPrev();
+                }
+              }
+            }
+            touchStartRef.current = null;
+          }}
           className={`flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden ${isLaserActive ? 'cursor-none' : 'cursor-default'
             }`}
         >
