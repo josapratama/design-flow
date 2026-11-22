@@ -261,7 +261,8 @@ ${fontLink}  <style>
           'z-index:' + (el.zIndex || 1),
           el.opacity !== undefined ? 'opacity:' + el.opacity : '',
           el.borderRadius ? 'border-radius:' + el.borderRadius + 'px' : '',
-          el.fill ? 'background-color:' + el.fill : '',
+          el.fill ? (el.fill.includes('gradient') ? 'background:' + el.fill : 'background-color:' + el.fill) : '',
+          el.fill && (el.fill.includes('rgba') || el.fill === 'transparent') ? 'backdrop-filter: blur(12px)' : '',
           el.stroke ? 'border:' + (el.strokeWidth || 1) + 'px ' + (el.strokeDash || 'solid') + ' ' + el.stroke : '',
           transforms.length > 0 ? 'transform:' + transforms.join(' ') : '',
         ].filter(Boolean).join(';');
@@ -383,6 +384,27 @@ ${fontLink}  <style>
         }
       }
     });
+
+    // Mobile & Tablet Touch Swipe Navigation
+    let touchStartX = 0;
+    let touchStartY = 0;
+    window.addEventListener('touchstart', e => {
+      if (e.touches.length > 0) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', e => {
+      if (e.changedTouches.length > 0) {
+        const deltaX = e.changedTouches[0].clientX - touchStartX;
+        const deltaY = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
+          if (deltaX < 0) goToNext();
+          else goToPrev();
+        }
+      }
+    }, { passive: true });
 
     document.getElementById('prev-btn').addEventListener('click', goToPrev);
     document.getElementById('next-btn').addEventListener('click', goToNext);

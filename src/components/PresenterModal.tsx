@@ -83,6 +83,12 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [showPresenterOptions, setShowPresenterOptions] = useState(false);
   const [showReactionMenu, setShowReactionMenu] = useState(false);
   const [isControlsIdle, setIsControlsIdle] = useState(false);
+  const [isTeleprompterRunning, setIsTeleprompterRunning] = useState(false);
+  const [teleprompterSpeed, setTeleprompterSpeed] = useState<number>(1);
+  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const podiumTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
   const idleTimerRef = useRef<any>(null);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
   const reactionMenuRef = useRef<HTMLDivElement>(null);
@@ -386,6 +392,47 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     }
     return () => clearInterval(interval);
   }, [isTimerRunning, targetMinutes]);
+
+  // Teleprompter Auto-Scroll Effect for Speaker Notes
+  useEffect(() => {
+    let interval: any;
+    if (isTeleprompterRunning) {
+      interval = setInterval(() => {
+        if (isPodiumMode && podiumTextareaRef.current) {
+          podiumTextareaRef.current.scrollTop += teleprompterSpeed;
+        } else if (notesTextareaRef.current) {
+          notesTextareaRef.current.scrollTop += teleprompterSpeed;
+        }
+      }, 50);
+    }
+    return () => clearInterval(interval);
+  }, [isTeleprompterRunning, teleprompterSpeed, isPodiumMode]);
+
+  // Touch Swipe Handlers for Tablet / Mobile Presentation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (isPenActive) return;
+    if (e.touches.length > 0) {
+      touchStartXRef.current = e.touches[0].clientX;
+      touchStartYRef.current = e.touches[0].clientY;
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (isPenActive || touchStartXRef.current === null || touchStartYRef.current === null) return;
+    if (e.changedTouches.length > 0) {
+      const deltaX = e.changedTouches[0].clientX - touchStartXRef.current;
+      const deltaY = e.changedTouches[0].clientY - touchStartYRef.current;
+      touchStartXRef.current = null;
+      touchStartYRef.current = null;
+      if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+        if (deltaX < 0) {
+          goToNext();
+        } else {
+          goToPrev();
+        }
+      }
+    }
+  };
 
   // Window resize listener for responsive scaling
   useEffect(() => {
@@ -1091,6 +1138,29 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                   )}
                 </div>
                 <div className="flex items-center gap-2">
+                  {/* Teleprompter Auto-Scroll Button */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setIsTeleprompterRunning(!isTeleprompterRunning)}
+                      title={isTeleprompterRunning ? 'Jeda Gulir Otomatis Teleprompter' : 'Mulai Gulir Otomatis Teleprompter'}
+                      className={`px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${isTeleprompterRunning
+                        ? 'bg-emerald-600 text-white animate-pulse'
+                        : 'bg-slate-950 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                        }`}
+                    >
+                      {isTeleprompterRunning ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-emerald-400" />}
+                      <span>{isTeleprompterRunning ? 'Jeda' : 'Auto-Scroll'}</span>
+                    </button>
+                    {isTeleprompterRunning && (
+                      <button
+                        onClick={() => setTeleprompterSpeed(s => (s === 1 ? 2 : s === 2 ? 3 : 1))}
+                        title="Ubah Kecepatan Gulir Teleprompter"
+                        className="px-1.5 py-1 rounded text-[10px] font-mono font-bold bg-slate-950 border border-slate-800 text-indigo-300 hover:bg-slate-800"
+                      >
+                        {teleprompterSpeed}x
+                      </button>
+                    )}
+                  </div>
                   <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
                     <button
                       onClick={() => {
@@ -1129,6 +1199,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               {/* Editable Large Typography Textarea */}
               <div className="flex-1 mt-3 overflow-y-auto">
                 <textarea
+                  ref={podiumTextareaRef}
                   value={currentSlide.notes || ''}
                   onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
                   placeholder="Ketik poin penting, panduan berbicara, atau naskah presentasi untuk slide ini..."
@@ -1266,6 +1337,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             ref={slideAreaRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             className={`flex-1 flex items-center justify-center p-6 bg-slate-950 relative overflow-hidden ${isLaserActive ? 'cursor-none' : 'cursor-default'
               }`}
           >
@@ -1612,7 +1685,28 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 {/* Live Editable Textarea */}
                 <div className="space-y-1">
                   <div className="text-[10px] text-slate-500 flex items-center justify-between">
-                    <span>Dapat diedit langsung saat presentasi:</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setIsTeleprompterRunning(!isTeleprompterRunning)}
+                        title={isTeleprompterRunning ? 'Jeda Gulir Otomatis Teleprompter' : 'Mulai Gulir Otomatis Teleprompter'}
+                        className={`px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition-colors ${isTeleprompterRunning
+                          ? 'bg-emerald-600 text-white animate-pulse'
+                          : 'bg-slate-950 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+                          }`}
+                      >
+                        {isTeleprompterRunning ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-emerald-400" />}
+                        <span>{isTeleprompterRunning ? 'Jeda' : 'Auto-Scroll'}</span>
+                      </button>
+                      {isTeleprompterRunning && (
+                        <button
+                          onClick={() => setTeleprompterSpeed(s => (s === 1 ? 2 : s === 2 ? 3 : 1))}
+                          title="Ubah Kecepatan Gulir Teleprompter"
+                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-950 border border-slate-800 text-indigo-300 hover:bg-slate-800"
+                        >
+                          {teleprompterSpeed}x
+                        </button>
+                      )}
+                    </div>
                     <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5">
                       <button
                         onClick={() => {
@@ -1640,6 +1734,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                     </div>
                   </div>
                   <textarea
+                    ref={notesTextareaRef}
                     value={currentSlide.notes || ''}
                     onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
                     placeholder="Ketik poin penting, panduan berbicara, atau naskah presentasi untuk slide ini..."

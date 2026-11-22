@@ -2278,4 +2278,286 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+  // 18. PRICING & FEATURE COMPARISON MATRIX (3 TIERS)
+  {
+    id: 'pricing-3-tiers-table',
+    name: 'Tabel Harga & Perbandingan Paket (Pricing Matrix)',
+    description: 'Matriks harga 3 paket (Starter, Pro Studio, Enterprise) lengkap dengan badge rekomendasi, daftar centang fitur, dan tombol aksi.',
+    icon: 'CreditCard',
+    category: 'all',
+    generateElements: (startX = 160, startY = 80) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+
+      // Section Eyebrow Badge
+      elements.push({
+        id: `el_${now}_price_badge`,
+        type: 'badge-shape',
+        name: 'Badge Header Paket',
+        x: startX + 660,
+        y: startY,
+        width: 280,
+        height: 34,
+        zIndex: 2,
+        content: '💎 PILIHAN INVESTASI TERBAIK',
+        fill: 'rgba(99, 102, 241, 0.15)',
+        stroke: '#6366f1',
+        color: '#a5b4fc',
+        borderRadius: 9999,
+        fontSize: 11,
+        fontWeight: 'bold',
+      });
+
+      // Section Headline
+      elements.push({
+        id: `el_${now}_price_title`,
+        type: 'heading',
+        name: 'Judul Utama Harga',
+        x: startX + 200,
+        y: startY + 44,
+        width: 1200,
+        height: 52,
+        zIndex: 2,
+        content: 'Paket Transparan Sesuai Skala Pertumbuhan Anda',
+        fontSize: 34,
+        fontWeight: 'extrabold',
+        textAlign: 'center',
+        color: '#ffffff',
+      });
+
+      // Section Subtitle
+      elements.push({
+        id: `el_${now}_price_sub`,
+        type: 'text',
+        name: 'Deskripsi Subtitle Harga',
+        x: startX + 250,
+        y: startY + 102,
+        width: 1100,
+        height: 36,
+        zIndex: 2,
+        content: 'Mulai gratis tanpa kartu kredit. Upgrade kapan saja untuk kolaborasi tim dan fitur premium.',
+        fontSize: 16,
+        textAlign: 'center',
+        color: '#94a3b8',
+      });
+
+      const tiers = [
+        {
+          tierId: 'starter',
+          name: 'STARTER',
+          badge: 'GRATIS SELAMANYA',
+          badgeBg: 'rgba(255, 255, 255, 0.05)',
+          badgeColor: '#cbd5e1',
+          price: 'Rp 0',
+          period: 'gratis selamanya',
+          desc: 'Untuk kreator mandiri, mahasiswa, & eksplorasi konsep desain awal.',
+          features: [
+            '✓ Hingga 5 Proyek Aktif',
+            '✓ Ekspor Gambar PNG & PDF HD',
+            '✓ Akses 100+ Template Komunitas',
+            '✓ Editor Visual & Mode Kode DSL',
+            '✓ Smart Snapping & Center Guides',
+          ],
+          cta: 'Mulai Gratis Sekarang',
+          isPopular: false,
+          accent: '#94a3b8',
+          bg: '#0f172a',
+          stroke: 'rgba(255, 255, 255, 0.1)',
+        },
+        {
+          tierId: 'pro',
+          name: 'PRO STUDIO',
+          badge: '✨ PALING POPULER',
+          badgeBg: '#4f46e5',
+          badgeColor: '#ffffff',
+          price: 'Rp 99.000',
+          period: 'per pengguna / bulan',
+          desc: 'Pilihan utama desainer profesional, konsultan, & agensi bertumbuh.',
+          features: [
+            '✓ Semua Fitur Starter Termasuk',
+            '✓ Proyek Desain Tanpa Batas (Unlimited)',
+            '✓ Ekspor PPTX PowerPoint & React 19 JSX',
+            '✓ Seluruh Koleksi Google Web Fonts Bebas',
+            '✓ Mode Presenter Dual-Screen & Doodle Pen',
+            '✓ Fitur AI Color Harmony & Smart Contrast',
+          ],
+          cta: 'Coba Pro 14 Hari Bebas Risiko →',
+          isPopular: true,
+          accent: '#818cf8',
+          bg: 'linear-gradient(180deg, #1e1b4b 0%, #0f172a 100%)',
+          stroke: '#6366f1',
+        },
+        {
+          tierId: 'enterprise',
+          name: 'ENTERPRISE',
+          badge: 'SKALA PERUSAHAAN',
+          badgeBg: 'rgba(56, 189, 248, 0.15)',
+          badgeColor: '#38bdf8',
+          price: 'Kustom',
+          period: 'kontrak tahunan fleksibel',
+          desc: 'Keamanan data perbankan, SLA 99.99%, dan penyesuaian khusus skala besar.',
+          features: [
+            '✓ Seluruh Fitur Paket Pro Studio',
+            '✓ Dedicated Account Manager & Tim Khusus',
+            '✓ Integrasi Single Sign-On (SSO SAML / Okta)',
+            '✓ Custom Brand Kit & Domain Perusahaan',
+            '✓ Deployment On-Premise / Private Cloud',
+            '✓ Jaminan Waktu Aktif (SLA) 99.99%',
+          ],
+          cta: 'Hubungi Tim Bisnis & Demo',
+          isPopular: false,
+          accent: '#38bdf8',
+          bg: '#0f172a',
+          stroke: 'rgba(255, 255, 255, 0.1)',
+        },
+      ];
+
+      const cardW = 500;
+      const gap = 50;
+      const cardsStartY = startY + 160;
+
+      tiers.forEach((t, idx) => {
+        const cX = startX + idx * (cardW + gap);
+        const cardH = t.isPopular ? 740 : 700;
+        const cY = t.isPopular ? cardsStartY - 20 : cardsStartY;
+
+        // Container Card
+        elements.push({
+          id: `el_${now}_tier_card_${idx}`,
+          type: 'card',
+          name: `Kartu Paket ${t.name}`,
+          x: cX,
+          y: cY,
+          width: cardW,
+          height: cardH,
+          zIndex: t.isPopular ? 3 : 2,
+          fill: t.bg,
+          stroke: t.stroke,
+          strokeWidth: t.isPopular ? 2 : 1,
+          borderRadius: 24,
+          shadow: t.isPopular ? 'glow-indigo' : 'xl',
+        });
+
+        // Eyebrow Pill Badge
+        elements.push({
+          id: `el_${now}_tier_badge_${idx}`,
+          type: 'badge-shape',
+          name: `Badge ${t.name}`,
+          x: cX + 32,
+          y: cY + 30,
+          width: 170,
+          height: 30,
+          zIndex: 4,
+          content: t.badge,
+          fill: t.badgeBg,
+          stroke: t.isPopular ? '#818cf8' : 'rgba(255, 255, 255, 0.2)',
+          color: t.badgeColor,
+          borderRadius: 9999,
+          fontSize: 10,
+          fontWeight: 'extrabold',
+        });
+
+        // Tier Name
+        elements.push({
+          id: `el_${now}_tier_name_${idx}`,
+          type: 'heading',
+          name: `Nama Tier ${t.name}`,
+          x: cX + 32,
+          y: cY + 70,
+          width: cardW - 64,
+          height: 36,
+          zIndex: 4,
+          content: t.name,
+          fontSize: 22,
+          fontWeight: 'extrabold',
+          color: '#ffffff',
+        });
+
+        // Price
+        elements.push({
+          id: `el_${now}_tier_price_${idx}`,
+          type: 'heading',
+          name: `Harga ${t.name}`,
+          x: cX + 32,
+          y: cY + 112,
+          width: cardW - 64,
+          height: 48,
+          zIndex: 4,
+          content: t.price,
+          fontSize: 34,
+          fontWeight: 'extrabold',
+          color: t.isPopular ? '#a5b4fc' : '#ffffff',
+        });
+
+        // Billing Period
+        elements.push({
+          id: `el_${now}_tier_period_${idx}`,
+          type: 'text',
+          name: `Periode ${t.name}`,
+          x: cX + 32,
+          y: cY + 164,
+          width: cardW - 64,
+          height: 24,
+          zIndex: 4,
+          content: t.period,
+          fontSize: 12,
+          color: '#94a3b8',
+        });
+
+        // Description
+        elements.push({
+          id: `el_${now}_tier_desc_${idx}`,
+          type: 'text',
+          name: `Deskripsi ${t.name}`,
+          x: cX + 32,
+          y: cY + 194,
+          width: cardW - 64,
+          height: 52,
+          zIndex: 4,
+          content: t.desc,
+          fontSize: 13,
+          lineHeight: 1.5,
+          color: '#cbd5e1',
+        });
+
+        // Features Checklist
+        elements.push({
+          id: `el_${now}_tier_feats_${idx}`,
+          type: 'text',
+          name: `Daftar Fitur ${t.name}`,
+          x: cX + 32,
+          y: cY + 260,
+          width: cardW - 64,
+          height: 280,
+          zIndex: 4,
+          content: t.features.join('\n\n'),
+          fontSize: 14,
+          lineHeight: 1.6,
+          color: t.isPopular ? '#f1f5f9' : '#cbd5e1',
+        });
+
+        // Action Button
+        elements.push({
+          id: `el_${now}_tier_btn_${idx}`,
+          type: 'button',
+          name: `Tombol ${t.name}`,
+          x: cX + 32,
+          y: cY + cardH - 80,
+          width: cardW - 64,
+          height: 50,
+          zIndex: 4,
+          content: t.cta,
+          fill: t.isPopular ? '#4f46e5' : 'rgba(255, 255, 255, 0.05)',
+          stroke: t.isPopular ? undefined : 'rgba(255, 255, 255, 0.2)',
+          color: '#ffffff',
+          borderRadius: 12,
+          fontSize: 14,
+          fontWeight: 'bold',
+          shadow: t.isPopular ? 'lg' : undefined,
+        });
+      });
+
+      return elements;
+    },
+  },
 ];

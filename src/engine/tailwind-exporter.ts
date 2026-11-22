@@ -243,6 +243,11 @@ export function renderElementJSX(el: DesignElement): string {
     baseStyle.border = `${el.strokeWidth || 1}px ${el.strokeDash || 'solid'} ${el.stroke}`;
   }
 
+  const getFillStyle = (fillVal?: string, fallback: string = '#1e293b'): Record<string, string> => {
+    const val = fillVal || fallback;
+    return val.includes('gradient') ? { background: val } : { backgroundColor: val };
+  };
+
   const toStyleAttr = (extras: Record<string, string | number | undefined> = {}) => {
     const merged = { ...baseStyle };
     for (const [k, v] of Object.entries(extras)) {
@@ -319,7 +324,7 @@ export function renderElementJSX(el: DesignElement): string {
         type="button"
         className="absolute flex items-center justify-center font-medium transition-all active:scale-95 ${fontClass} ${getShadowClass(el.shadow)}"
         ${toStyleAttr({
-          backgroundColor: el.fill || '#6366f1',
+          ...getFillStyle(el.fill, '#6366f1'),
           color: el.color || '#ffffff',
           borderRadius: `${el.borderRadius || 12}px`,
         })}
@@ -330,7 +335,7 @@ export function renderElementJSX(el: DesignElement): string {
     case 'input':
       return `      {/* Input Field: ${el.name} */}
       <div 
-        className="absolute flex items-center px-4 bg-slate-900/80 border border-slate-700"
+        className="absolute flex items-center px-4 bg-slate-900/80 border border-slate-700 backdrop-blur-sm"
         ${toStyleAttr({ borderRadius: `${el.borderRadius || 10}px` })}
       >
         <input 
@@ -343,10 +348,11 @@ export function renderElementJSX(el: DesignElement): string {
     case 'metric-card':
       return `      {/* Metric Card: ${el.name} */}
       <div 
-        className="absolute p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 shadow-xl backdrop-blur-sm flex flex-col justify-between"
+        className="absolute p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 shadow-xl backdrop-blur-md flex flex-col justify-between"
         ${toStyleAttr({
-          backgroundColor: el.fill || '#1e293b',
+          ...getFillStyle(el.fill, '#1e293b'),
           borderRadius: `${el.borderRadius || 16}px`,
+          backdropFilter: 'blur(12px)',
         })}
       >
         <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
@@ -394,7 +400,7 @@ export function renderElementJSX(el: DesignElement): string {
       return `      {/* Circle Shape: ${el.name} */}
       <div 
         className="absolute rounded-full"
-        ${toStyleAttr({ backgroundColor: el.fill || '#3b82f6' })}
+        ${toStyleAttr(getFillStyle(el.fill, '#3b82f6'))}
       />`;
 
     case 'badge-shape':
@@ -402,7 +408,7 @@ export function renderElementJSX(el: DesignElement): string {
       <div 
         className="absolute inline-flex items-center justify-center font-semibold rounded-full select-none ${getShadowClass(el.shadow)}"
         ${toStyleAttr({
-          backgroundColor: el.fill || 'rgba(99, 102, 241, 0.2)',
+          ...getFillStyle(el.fill, 'rgba(99, 102, 241, 0.2)'),
           color: el.color || '#818cf8',
           border: el.stroke ? `${el.strokeWidth || 1}px solid ${el.stroke}` : '1px solid rgba(99, 102, 241, 0.4)',
           fontSize: `${el.fontSize || 12}px`,
@@ -506,7 +512,7 @@ ${innerChart}
       return `      {/* Divider Line: ${el.name} */}
       <div 
         className="absolute"
-        ${toStyleAttr({ backgroundColor: el.fill || '#475569' })}
+        ${toStyleAttr(getFillStyle(el.fill, '#475569'))}
       />`;
 
     case 'avatar':
@@ -514,7 +520,7 @@ ${innerChart}
       <div 
         className="absolute relative rounded-full overflow-hidden border-2 flex items-center justify-center select-none ${getShadowClass(el.shadow)}"
         ${toStyleAttr({
-          backgroundColor: el.fill || '#1e293b',
+          ...getFillStyle(el.fill, '#1e293b'),
           borderColor: el.stroke || '#6366f1',
           borderWidth: `${el.strokeWidth || 2}px`,
         })}
@@ -528,9 +534,7 @@ ${innerChart}
       return `      {/* Toggle Switch: ${el.name} */}
       <div 
         className="absolute rounded-full p-1 flex items-center cursor-pointer transition-colors duration-200 ${getShadowClass(el.shadow)}"
-        ${toStyleAttr({
-          backgroundColor: isActive ? (el.fill || '#10b981') : '#334155',
-        })}
+        ${toStyleAttr(getFillStyle(isActive ? (el.fill || '#10b981') : '#334155'))}
       >
         <div className="h-full aspect-square rounded-full bg-white shadow-md transition-transform duration-200 transform ${isActive ? 'translate-x-full' : 'translate-x-0'}" />
       </div>`;
@@ -552,9 +556,10 @@ ${innerChart}
     case 'navbar':
       return `      {/* Navigation Bar: ${el.name} */}
       <nav 
-        className="absolute px-6 flex items-center justify-between border-b border-slate-800"
+        className="absolute px-6 flex items-center justify-between border-b border-slate-800 backdrop-blur-md"
         ${toStyleAttr({
-          backgroundColor: el.fill || '#0f172a',
+          ...getFillStyle(el.fill, '#0f172a'),
+          backdropFilter: 'blur(12px)',
         })}
       >
         <div className="flex items-center gap-2 font-bold text-sm text-indigo-400">
@@ -572,9 +577,10 @@ ${innerChart}
     case 'bottom-nav':
       return `      {/* Mobile Bottom Navigation: ${el.name} */}
       <nav 
-        className="absolute px-6 flex items-center justify-around border-t border-slate-800 text-slate-400"
+        className="absolute px-6 flex items-center justify-around border-t border-slate-800 text-slate-400 backdrop-blur-md"
         ${toStyleAttr({
-          backgroundColor: el.fill || '#0f172a',
+          ...getFillStyle(el.fill, '#0f172a'),
+          backdropFilter: 'blur(12px)',
         })}
       >
         <button className="flex flex-col items-center gap-1 text-indigo-400 font-medium text-[10px]">
@@ -600,12 +606,15 @@ ${innerChart}
     default: {
       const hasCustomBorder = Boolean(el.stroke);
       const borderClass = hasCustomBorder ? '' : 'border border-slate-700/50';
+      const isSemiTransparent = Boolean(el.fill && (el.fill.includes('rgba') || el.fill === 'transparent'));
+      const blurClass = isSemiTransparent ? 'backdrop-blur-md' : '';
       return `      {/* Container Card: ${el.name} */}
       <div 
-        className="absolute ${borderClass} ${getShadowClass(el.shadow)}"
+        className="absolute ${borderClass} ${blurClass} ${getShadowClass(el.shadow)}"
         ${toStyleAttr({
-          backgroundColor: el.fill || '#1e293b',
+          ...getFillStyle(el.fill, '#1e293b'),
           borderRadius: `${el.borderRadius !== undefined ? el.borderRadius : 16}px`,
+          backdropFilter: isSemiTransparent ? 'blur(12px)' : undefined,
         })}
       >
         ${el.content ? `<div className="p-4 text-slate-200">${escapeJSX(el.content)}</div>` : ''}
