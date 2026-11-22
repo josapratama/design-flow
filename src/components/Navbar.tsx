@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   RotateCcw,
   Replace,
+  BarChart2,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -35,6 +36,7 @@ interface NavbarProps {
   onOpenExport: () => void;
   onOpenShortcuts?: () => void;
   onOpenFindReplace?: () => void;
+  onOpenStats?: () => void;
   onResetProject?: () => void;
   onSaveProject: () => void;
   onLoadProject: (project: DesignProject) => void;
@@ -57,6 +59,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenExport,
   onOpenShortcuts,
   onOpenFindReplace,
+  onOpenStats,
   onResetProject,
   onSaveProject,
   onLoadProject,
@@ -267,6 +270,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           <Download className="w-3.5 h-3.5" />
           <span>Ekspor</span>
         </button>
+
+        {onOpenStats && (
+          <button
+            onClick={onOpenStats}
+            title="Statistik & Kesiapan Dek Presentasi"
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded-xl transition-colors border border-slate-700/60 ml-0.5"
+          >
+            <BarChart2 className="w-4 h-4 text-indigo-400" />
+          </button>
+        )}
 
         {onOpenFindReplace && (
           <button

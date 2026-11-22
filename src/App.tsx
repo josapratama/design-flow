@@ -15,6 +15,7 @@ import { ContextMenu } from './components/ContextMenu';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { FindReplaceModal } from './components/FindReplaceModal';
 import { SlideSorterModal } from './components/SlideSorterModal';
+import { DeckStatsModal } from './components/DeckStatsModal';
 import { DesignElement } from './types';
 import { preloadCoreFonts } from './utils/fontLoader';
 import { AudienceScreen } from './components/AudienceScreen';
@@ -83,6 +84,7 @@ export default function App() {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false);
   const [isSlideSorterOpen, setIsSlideSorterOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [showSafeMargin, setShowSafeMargin] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isMobileLeftOpen, setIsMobileLeftOpen] = useState(false);
@@ -439,6 +441,7 @@ export default function App() {
         onOpenExport={() => setIsExportOpen(true)}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenFindReplace={() => setIsFindReplaceOpen(true)}
+        onOpenStats={() => setIsStatsOpen(true)}
         onResetProject={resetProjectToDefault}
         onSaveProject={saveProjectToFile}
         onLoadProject={loadProjectData}
@@ -681,6 +684,7 @@ export default function App() {
         onInvertSlideTheme={invertActiveSlideTheme}
         onOpenSlideSorter={() => setIsSlideSorterOpen(true)}
         onOpenCodeEditor={() => setIsCodeDrawerOpen(true)}
+        onOpenStats={() => setIsStatsOpen(true)}
         onSaveProject={saveProjectToFile}
       />
 
@@ -785,6 +789,16 @@ export default function App() {
         onReorderSlide={reorderSlide}
         onMoveSlideToIndex={moveSlideToIndex}
         onUpdateSlideTitle={(slideId, title) => updateSlideSettings(slideId, { title })}
+      />
+
+      {/* Presentation Deck Stats & Pacing Inspector */}
+      <DeckStatsModal
+        isOpen={isStatsOpen}
+        project={project}
+        onClose={() => setIsStatsOpen(false)}
+        onSelectSlide={slideId =>
+          setProject(prev => ({ ...prev, activeSlideId: slideId, selectedElementIds: [] }))
+        }
       />
     </div>
   );

@@ -56,6 +56,7 @@ interface QuickCommandPaletteProps {
   onOpenSlideSorter?: () => void;
   onOpenCodeEditor?: () => void;
   onSaveProject?: () => void;
+  onOpenStats?: () => void;
 }
 
 interface CommandItem {
@@ -84,6 +85,7 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
   onOpenSlideSorter,
   onOpenCodeEditor,
   onSaveProject,
+  onOpenStats,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -229,6 +231,18 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
             category: 'Aksi Studio',
             icon: <HardDrive className="w-4 h-4 text-emerald-400" />,
             action: () => onSaveProject(),
+          },
+        ]
+      : []),
+    ...(onOpenStats
+      ? [
+          {
+            id: 'action-stats',
+            title: 'Statistik & Kesiapan Dek Presentasi',
+            subtitle: 'Lihat estimasi durasi bicara, kepadatan elemen, dan checklist naskah',
+            category: 'Aksi Studio',
+            icon: <BarChart3 className="w-4 h-4 text-indigo-400" />,
+            action: () => onOpenStats(),
           },
         ]
       : []),
