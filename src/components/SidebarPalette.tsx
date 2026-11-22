@@ -42,6 +42,16 @@ import {
   Plus,
   ExternalLink,
   X,
+  Heart,
+  Diamond,
+  MessageSquare,
+  Code2,
+  Sliders,
+  ChevronRight,
+  AlertCircle,
+  Clock,
+  Award,
+  SlidersHorizontal,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -395,6 +405,32 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         return <MoveRight className="w-3.5 h-3.5 text-cyan-400" />;
       case 'hexagon':
         return <Hexagon className="w-3.5 h-3.5 text-emerald-400" />;
+      case 'heart':
+        return <Heart className="w-3.5 h-3.5 text-rose-400" />;
+      case 'diamond':
+        return <Diamond className="w-3.5 h-3.5 text-cyan-400" />;
+      case 'speech-bubble':
+        return <MessageSquare className="w-3.5 h-3.5 text-teal-400" />;
+      case 'rating':
+        return <Star className="w-3.5 h-3.5 text-amber-400" />;
+      case 'breadcrumb':
+        return <ChevronRight className="w-3.5 h-3.5 text-indigo-400" />;
+      case 'alert-box':
+        return <AlertCircle className="w-3.5 h-3.5 text-rose-400" />;
+      case 'accordion-item':
+        return <Sliders className="w-3.5 h-3.5 text-indigo-400" />;
+      case 'progress-bar':
+        return <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-400" />;
+      case 'pricing-card':
+        return <CreditCard className="w-3.5 h-3.5 text-purple-400" />;
+      case 'timeline-item':
+        return <Clock className="w-3.5 h-3.5 text-emerald-400" />;
+      case 'chat-bubble':
+        return <MessageSquare className="w-3.5 h-3.5 text-teal-400" />;
+      case 'code-snippet':
+        return <Code2 className="w-3.5 h-3.5 text-emerald-400" />;
+      case 'testimonial-card':
+        return <Award className="w-3.5 h-3.5 text-amber-400" />;
       case 'button':
         return <MousePointerClick className="w-3.5 h-3.5 text-amber-400" />;
       case 'input':
@@ -789,6 +825,231 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                   <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Tabel Data</span>
                 </button>
               )}
+
+              {(!uiSearch || 'rating ulasan bintang skor review kepuasan star'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('rating', 'Rating Bintang', 260, 52, {
+                        content: '4.9',
+                        subTitle: '(2.8k Ulasan)',
+                        fill: '#0f172a',
+                        stroke: '#1e293b',
+                        borderRadius: 12,
+                      })
+                    )
+                  }
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-400 group-hover:border-amber-500/40 transition-colors shrink-0">
+                    <Star className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Rating Bintang</span>
+                </button>
+              )}
+
+              {(!uiSearch || 'breadcrumb navigasi jejak rute link home'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('breadcrumb', 'Breadcrumb Nav', 340, 44, {
+                        content: 'Home / Proyek / Analisis Model',
+                        fill: '#0f172a',
+                        stroke: '#1e293b',
+                        borderRadius: 10,
+                      })
+                    )
+                  }
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 transition-colors shrink-0">
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Breadcrumb</span>
+                </button>
+              )}
+
+              {(!uiSearch || 'alert box banner peringatan info notifikasi alert-box'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('alert-box', 'Alert Banner', 380, 80, {
+                        variant: 'primary',
+                        subTitle: 'Sinkronisasi Otomatis Berhasil',
+                        content: 'Seluruh repositori aset dan data eksperimen telah diperbarui secara realtime.',
+                        fill: '#0f172a',
+                        stroke: '#0284c7',
+                        borderRadius: 12,
+                      })
+                    )
+                  }
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-sky-400 group-hover:border-sky-500/40 transition-colors shrink-0">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Alert Banner</span>
+                </button>
+              )}
+
+              {(!uiSearch || 'accordion faq dropdown pertanyaan collapse'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('accordion-item', 'Accordion FAQ', 420, 110, {
+                        subTitle: 'Bagaimana metode validasi model dievaluasi?',
+                        content: 'Metode pengujian menggunakan k-fold cross validation dengan 5 iterasi acak dan metrik F1-score.',
+                        fill: '#1e293b',
+                        stroke: '#334155',
+                        borderRadius: 12,
+                      })
+                    )
+                  }
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-400 group-hover:border-indigo-500/40 transition-colors shrink-0">
+                    <Sliders className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Accordion FAQ</span>
+                </button>
+              )}
+
+              {(!uiSearch || 'progress bar persentase loading proses capaian'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('progress-bar', 'Progress Bar', 320, 75, {
+                        content: '82',
+                        subTitle: 'Pencapaian Target Q3',
+                        fill: '#0f172a',
+                        stroke: '#334155',
+                        borderRadius: 12,
+                      })
+                    )
+                  }
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-teal-400 group-hover:border-teal-500/40 transition-colors shrink-0">
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Progress Bar</span>
+                </button>
+              )}
+
+              {(!uiSearch || 'pricing kartu harga paket langganan subscription plan'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('pricing-card', 'Pricing Card', 300, 360, {
+                        subTitle: 'Paket Profesional',
+                        content: 'Rp 99.000',
+                        fill: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+                        stroke: '#4f46e5',
+                        borderRadius: 18,
+                        shadow: 'xl',
+                      })
+                    )
+                  }
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-purple-400 group-hover:border-purple-500/40 transition-colors shrink-0">
+                    <CreditCard className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Kartu Harga</span>
+                </button>
+              )}
+
+              {(!uiSearch || 'timeline linimasa roadmap milestone langkah fase waktu'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('timeline-item', 'Milestone Timeline', 360, 110, {
+                        name: 'Rilis Versi 2.0 Beta',
+                        subTitle: 'Tahap 03 • September 2026',
+                        content: 'Integrasi sistem terdistribusi dan audit keamanan tingkat lanjut.',
+                        fill: '#0f172a',
+                        stroke: '#334155',
+                        borderRadius: 14,
+                      })
+                    )
+                  }
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-emerald-400 group-hover:border-emerald-500/40 transition-colors shrink-0">
+                    <Clock className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Timeline Item</span>
+                </button>
+              )}
+
+              {(!uiSearch || 'chat bubble pesan percakapan dialog whatsapp messenger'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('chat-bubble', 'Chat Bubble', 380, 95, {
+                        content: 'Apakah arsitektur backend sudah siap untuk load testing?',
+                        subTitle: '09:15',
+                        fill: '#1e293b',
+                        stroke: '#334155',
+                        color: '#f8fafc',
+                      })
+                    )
+                  }
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-teal-400 group-hover:border-teal-500/40 transition-colors shrink-0">
+                    <MessageSquare className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Chat Bubble</span>
+                </button>
+              )}
+
+              {(!uiSearch || 'code snippet blok kode syntax program editor terminal'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('code-snippet', 'Blok Kode', 420, 160, {
+                        subTitle: 'evaluate_pipeline.ts',
+                        content: '// Kalkulasi Skor Akurasi & Latensi\nconst metrics = await model.evaluate(testBatch);\nconsole.log(`F1: ${metrics.f1Score}, Latency: ${metrics.latencyMs}ms`);',
+                        fill: '#020617',
+                        stroke: '#334155',
+                        borderRadius: 14,
+                        shadow: 'lg',
+                      })
+                    )
+                  }
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-emerald-400 group-hover:border-emerald-500/40 transition-colors shrink-0">
+                    <Code2 className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Blok Kode</span>
+                </button>
+              )}
+
+              {(!uiSearch || 'testimonial ulasan review klien pengguna testimoni'.includes(uiSearch.toLowerCase())) && (
+                <button
+                  onClick={() =>
+                    onAddElement(
+                      createBaseElement('testimonial-card', 'Testimonial Card', 360, 210, {
+                        name: 'Prof. Bambang Sutrisno',
+                        subTitle: 'Ketua Penguji Sidang & Peneliti',
+                        content: 'Penyajian rancang bangun sistem ini sangat terstruktur, metodologis, dan implementatif untuk kebutuhan industri modern.',
+                        fill: '#1e293b',
+                        stroke: '#334155',
+                        borderRadius: 16,
+                        shadow: 'md',
+                      })
+                    )
+                  }
+                  className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-amber-400 group-hover:border-amber-500/40 transition-colors shrink-0">
+                    <Award className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Testimonial</span>
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -913,6 +1174,57 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                   <Hexagon className="w-3.5 h-3.5" />
                 </div>
                 <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Hexagon</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('heart', 'Hati (Heart)', 120, 110, {
+                      fill: '#f43f5e',
+                    })
+                  )
+                }
+                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-rose-400 transition-colors shrink-0">
+                  <Heart className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Hati</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('diamond', 'Belah Ketupat', 120, 120, {
+                      fill: '#06b6d4',
+                    })
+                  )
+                }
+                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-cyan-400 transition-colors shrink-0">
+                  <Diamond className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Diamond</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('speech-bubble', 'Gelembung Pesan', 220, 130, {
+                      content: 'Gagas ide Anda di sini!',
+                      fill: '#1e293b',
+                      stroke: '#475569',
+                      strokeWidth: 1.5,
+                    })
+                  )
+                }
+                className="p-2 bg-slate-950/70 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700 rounded-xl flex items-center gap-2 transition-all text-left group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 group-hover:text-teal-400 transition-colors shrink-0">
+                  <MessageSquare className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-[11px] font-medium text-slate-300 group-hover:text-white truncate">Callout</span>
               </button>
             </div>
           </div>

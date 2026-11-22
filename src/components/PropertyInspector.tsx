@@ -737,6 +737,27 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200 outline-none focus:border-indigo-500 text-xs leading-relaxed"
             />
           </div>
+
+          {/* Efek Transisi Slide Saat Presentasi */}
+          <div className="space-y-1.5 pt-2 border-t border-slate-800">
+            <span className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Transisi Slide Saat Presentasi</span>
+            </span>
+            <select
+              value={activeSlide.transition || 'fade'}
+              onChange={e => onUpdateSlide(activeSlide.id, { transition: e.target.value as any })}
+              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+            >
+              <option value="fade">Fade Lembut (Elegan & Bersih)</option>
+              <option value="slide">Slide Horizontal (Geser Kanan)</option>
+              <option value="slide-vertical">Slide Vertikal (Meluncur Naik)</option>
+              <option value="zoom">Zoom Membesar (Dinamis)</option>
+              <option value="flip-cube">Flip 3D (Modern)</option>
+              <option value="blur-fade">Blur Focus (Sinematik)</option>
+              <option value="none">Tanpa Efek (Instan)</option>
+            </select>
+          </div>
         </div>
       </aside>
     );
@@ -2434,6 +2455,108 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
             return borderControls;
           })()}
+
+          {/* Animasi Masuk & Gerakan Elemen (Collapsible) */}
+          <details className="group border border-slate-800/80 rounded-xl bg-slate-950/40 overflow-hidden">
+            <summary className="px-2.5 py-2 cursor-pointer flex items-center justify-between text-[10px] font-medium text-slate-400 hover:text-slate-200 select-none">
+              <span className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Animasi & Efek Masuk Elemen</span>
+              </span>
+              <div className="flex items-center gap-1.5">
+                {element.animation && element.animation !== 'none' && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-mono">
+                    {element.animation}
+                  </span>
+                )}
+                <span className="text-slate-500 text-[10px] group-open:rotate-180 transition-transform">▼</span>
+              </div>
+            </summary>
+            <div className="p-2.5 pt-1 border-t border-slate-800/60 space-y-2.5">
+              <div>
+                <label className="text-[10px] text-slate-500 block mb-1">Pilihan Efek Animasi</label>
+                <select
+                  value={element.animation || 'none'}
+                  onChange={e => handleChange('animation', e.target.value as any)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500"
+                >
+                  <option value="none">Tanpa Animasi (Statis)</option>
+                  <option value="fade-in">Fade In (Muncul Lembut)</option>
+                  <option value="slide-up">Slide Up (Meluncur dari Bawah)</option>
+                  <option value="slide-down">Slide Down (Meluncur dari Atas)</option>
+                  <option value="slide-left">Slide Left (Meluncur dari Kanan)</option>
+                  <option value="slide-right">Slide Right (Meluncur dari Kiri)</option>
+                  <option value="zoom-in">Zoom In (Membesar Tajam)</option>
+                  <option value="bounce-in">Bounce In (Pantulan Dinamis)</option>
+                  <option value="flip-in">Flip 3D (Putaran Sumbu)</option>
+                  <option value="pulse-glow">Pulse Glow (Denyut Pendaran)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="text-[10px] text-slate-500 block mb-1">Durasi</span>
+                  <div className="grid grid-cols-3 gap-1">
+                    {[
+                      { val: 0.3, label: '0.3s' },
+                      { val: 0.6, label: '0.6s' },
+                      { val: 1.0, label: '1.0s' },
+                    ].map(d => (
+                      <button
+                        key={d.val}
+                        type="button"
+                        onClick={() => handleChange('animationDuration', d.val)}
+                        className={`py-1 rounded text-[10px] font-mono border transition-all ${(element.animationDuration || 0.6) === d.val
+                          ? 'bg-slate-700 border-slate-500 text-white font-semibold'
+                          : 'bg-slate-950/70 border-slate-800 text-slate-400 hover:text-white'
+                          }`}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[10px] text-slate-500 block mb-1">Jeda (Delay)</span>
+                  <div className="grid grid-cols-3 gap-1">
+                    {[
+                      { val: 0, label: '0s' },
+                      { val: 0.2, label: '0.2s' },
+                      { val: 0.5, label: '0.5s' },
+                    ].map(dl => (
+                      <button
+                        key={dl.val}
+                        type="button"
+                        onClick={() => handleChange('animationDelay', dl.val)}
+                        className={`py-1 rounded text-[10px] font-mono border transition-all ${(element.animationDelay || 0) === dl.val
+                          ? 'bg-slate-700 border-slate-500 text-white font-semibold'
+                          : 'bg-slate-950/70 border-slate-800 text-slate-400 hover:text-white'
+                          }`}
+                      >
+                        {dl.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {element.animation && element.animation !== 'none' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = element.animation;
+                    handleChange('animation', 'none');
+                    setTimeout(() => handleChange('animation', current), 50);
+                    showToast('Memutar ulang animasi!');
+                  }}
+                  className="w-full py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 hover:text-white text-[11px] font-medium transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <span>▶ Putar Ulang Animasi</span>
+                </button>
+              )}
+            </div>
+          </details>
 
           {/* Susunan Layer */}
           <div className="space-y-2 pt-2 border-t border-slate-800">

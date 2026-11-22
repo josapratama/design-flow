@@ -34,6 +34,9 @@ export type ElementType =
   | 'triangle'
   | 'star'
   | 'hexagon'
+  | 'heart'
+  | 'diamond'
+  | 'speech-bubble'
   | 'arrow'
   | 'line'
   | 'card'
@@ -52,6 +55,16 @@ export type ElementType =
   | 'toggle'
   | 'table'
   | 'chart'
+  | 'rating'
+  | 'breadcrumb'
+  | 'alert-box'
+  | 'accordion-item'
+  | 'progress-bar'
+  | 'pricing-card'
+  | 'timeline-item'
+  | 'chat-bubble'
+  | 'code-snippet'
+  | 'testimonial-card'
   // Media & Icons
   | 'icon'
   | 'image';
@@ -69,6 +82,11 @@ export interface DesignElement {
   locked?: boolean;
   hidden?: boolean;
   opacity?: number;
+
+  // Animation & Entrance Effects
+  animation?: 'none' | 'fade-in' | 'slide-up' | 'slide-down' | 'slide-left' | 'slide-right' | 'zoom-in' | 'bounce-in' | 'pulse-glow' | 'flip-in';
+  animationDuration?: number; // e.g. 0.3, 0.6, 1.0 in seconds
+  animationDelay?: number; // e.g. 0, 0.2, 0.5 in seconds
 
   // Visual Styling
   fill?: string;
@@ -92,7 +110,7 @@ export interface DesignElement {
   lineHeight?: number;
 
   // Component specifics
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning' | 'info';
   placeholder?: string;
   value?: string;
   iconName?: string;
@@ -118,7 +136,8 @@ export interface Slide {
   background: string;
   wallpaper?: string;
   wallpaperOverlay?: number; // 0 to 0.9 (darkness dimming overlay)
-  transition?: 'fade' | 'slide' | 'zoom' | 'none';
+  transition?: 'fade' | 'slide' | 'slide-vertical' | 'zoom' | 'flip-cube' | 'blur-fade' | 'none';
+  transitionDuration?: number; // seconds
   elements: DesignElement[];
   width: number;
   height: number;

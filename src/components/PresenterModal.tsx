@@ -73,7 +73,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState(5);
   const [autoPlayRemaining, setAutoPlayRemaining] = useState(5);
-  const [transitionEffect, setTransitionEffect] = useState<'fade' | 'slide' | 'zoom'>('fade');
+  const [transitionEffect, setTransitionEffect] = useState<'fade' | 'slide' | 'slide-vertical' | 'zoom' | 'flip-cube' | 'blur-fade'>('fade');
   const [notesFontSize, setNotesFontSize] = useState<'sm' | 'base' | 'lg' | 'xl'>('base');
   const [jumpBuffer, setJumpBuffer] = useState<string>('');
   const jumpTimerRef = useRef<any>(null);
@@ -732,9 +732,15 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     ? ''
     : effectiveTransition === 'slide'
       ? 'animate-in slide-in-from-right-10 duration-300'
-      : effectiveTransition === 'zoom'
-        ? 'animate-in zoom-in-95 duration-200'
-        : 'animate-in fade-in duration-200';
+      : effectiveTransition === 'slide-vertical'
+        ? 'df-trans-slide-vertical'
+        : effectiveTransition === 'zoom'
+          ? 'animate-in zoom-in-95 duration-200'
+          : effectiveTransition === 'flip-cube'
+            ? 'df-trans-flip-cube'
+            : effectiveTransition === 'blur-fade'
+              ? 'df-trans-blur-fade'
+              : 'animate-in fade-in duration-200';
 
   return (
     <div className={`fixed inset-0 z-50 bg-slate-950 flex flex-col select-none text-slate-100 ${isControlsIdle && !isLaserActive && !isPenActive ? 'cursor-none' : ''
@@ -994,8 +1000,11 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 outline-none"
                   >
                     <option value="fade">Fade (Halus & Elegan)</option>
-                    <option value="slide">Slide (Geser Dinamis)</option>
+                    <option value="slide">Slide (Geser Horizontal)</option>
+                    <option value="slide-vertical">Slide Vertikal (Meluncur Naik)</option>
                     <option value="zoom">Zoom (Memperbesar)</option>
+                    <option value="flip-cube">Flip 3D (Putaran Modern)</option>
+                    <option value="blur-fade">Blur Focus (Sinematik)</option>
                   </select>
                 </div>
 
