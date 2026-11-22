@@ -17,12 +17,16 @@ import {
   Pen,
   Eraser,
   EyeOff,
+  ExternalLink,
+  FileDown,
+  Undo2,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../utils/audioEffects';
 
 interface PresenterModalProps {
   slides: Slide[];
+  projectTitle?: string;
   initialSlideIndex?: number;
   onUpdateSlideNotes?: (slideId: string, notes: string) => void;
   onClose: () => void;
@@ -30,6 +34,7 @@ interface PresenterModalProps {
 
 export const PresenterModal: React.FC<PresenterModalProps> = ({
   slides,
+  projectTitle,
   initialSlideIndex = 0,
   onUpdateSlideNotes,
   onClose,
@@ -59,7 +64,121 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const isDrawingRef = useRef(false);
   const lastPenPosRef = useRef<{ x: number; y: number } | null>(null);
 
+  // Doodle stroke history for Undo
+  interface DoodleStroke {
+    color: string;
+    points: Array<{ x: number; y: number }>;
+  }
+  const strokesRef = useRef<DoodleStroke[]>([]);
+  const currentStrokeRef = useRef<DoodleStroke | null>(null);
+
+  // Broadcast channel for dual-screen audience window
+  const channelRef = useRef<BroadcastChannel | null>(null);
+
+  useEffect(() => {
+    channelRef.current = new BroadcastChannel('designflow_presentation');
+
+    channelRef.current.onmessage = event => {
+      if (event.data?.type === 'REQUEST_SYNC') {
+        channelRef.current?.postMessage({
+          type: 'SYNC_PROJECT',
+          slides,
+          currentIndex,
+          blankMode,
+        });
+      }
+    };
+
+    try {
+      localStorage.setItem(
+        'designflow_audience_state',
+        JSON.stringify({ slides, currentIndex, blankMode })
+      );
+    } catch {}
+
+    channelRef.current.postMessage({
+      type: 'SYNC_PROJECT',
+      slides,
+      currentIndex,
+      blankMode,
+    });
+
+    return () => {
+      channelRef.current?.close();
+    };
+  }, [slides, currentIndex, blankMode]);
+
+  const openAudienceWindow = () => {
+    window.open(
+      '/?mode=audience',
+      'DesignFlowAudienceScreen',
+      'width=1280,height=720,menubar=no,toolbar=no'
+    );
+  };
+
+  const downloadSpeakerNotes = () => {
+    const title = projectTitle || 'Presentasi';
+    const lines = [
+      `# Naskah Pembicara: ${title}`,
+      `Total Slide: ${slides.length} | Dibuat dengan DesignFlow Studio`,
+      '',
+      '============================================================',
+      '',
+    ];
+
+    slides.forEach((s, idx) => {
+      lines.push(`## Slide ${idx + 1}: ${s.title}`);
+      lines.push(
+        s.notes && s.notes.trim()
+          ? s.notes.trim()
+          : '*(Tidak ada catatan khusus untuk slide ini)*'
+      );
+      lines.push('');
+      lines.push('------------------------------------------------------------');
+      lines.push('');
+    });
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_naskah_pembicara.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+    confetti({ particleCount: 40, spread: 45, origin: { y: 0.6 } });
+  };
+
+  const redrawCanvasStrokes = () => {
+    const canvas = penCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    strokesRef.current.forEach(stroke => {
+      if (stroke.points.length < 2) return;
+      ctx.strokeStyle = stroke.color;
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+      for (let i = 1; i < stroke.points.length; i++) {
+        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+      }
+      ctx.stroke();
+    });
+  };
+
+  const undoPenStroke = () => {
+    if (strokesRef.current.length === 0) return;
+    strokesRef.current.pop();
+    redrawCanvasStrokes();
+  };
+
   const clearPenCanvas = () => {
+    strokesRef.current = [];
+    currentStrokeRef.current = null;
     const canvas = penCanvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -81,6 +200,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     isDrawingRef.current = true;
     const coords = getCanvasCoords(e);
     lastPenPosRef.current = coords;
+    currentStrokeRef.current = {
+      color: penColor,
+      points: [coords],
+    };
   };
 
   const handlePenPointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -91,6 +214,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     if (!ctx) return;
 
     const coords = getCanvasCoords(e);
+    currentStrokeRef.current?.points.push(coords);
 
     ctx.strokeStyle = penColor;
     ctx.lineWidth = 4;
@@ -106,6 +230,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   };
 
   const handlePenPointerUp = () => {
+    if (currentStrokeRef.current && currentStrokeRef.current.points.length > 1) {
+      strokesRef.current.push(currentStrokeRef.current);
+    }
+    currentStrokeRef.current = null;
     isDrawingRef.current = false;
     lastPenPosRef.current = null;
   };
@@ -193,6 +321,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         });
       } else if (e.key.toLowerCase() === 'c') {
         clearPenCanvas();
+      } else if (e.key.toLowerCase() === 'u' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z')) {
+        undoPenStroke();
       } else if (e.key.toLowerCase() === 'n') {
         setShowNotes(prev => !prev);
       } else if (e.key.toLowerCase() === 'f') {
@@ -419,6 +549,13 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                   ))}
                 </div>
                 <button
+                  onClick={undoPenStroke}
+                  title="Batalkan Coretan Terakhir (Tekan 'U' atau 'Ctrl+Z')"
+                  className="p-1 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 rounded transition-colors"
+                >
+                  <Undo2 className="w-3.5 h-3.5" />
+                </button>
+                <button
                   onClick={clearPenCanvas}
                   title="Hapus Semua Coretan (Tekan 'C')"
                   className="p-1 hover:bg-slate-700 text-slate-400 hover:text-rose-400 rounded transition-colors"
@@ -452,6 +589,15 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               }`}
           >
             {showNotes ? 'Sembunyikan Catatan' : 'Lihat Catatan'}
+          </button>
+
+          <button
+            onClick={openAudienceWindow}
+            title="Buka Jendela Layar Audiens Terpisah untuk Proyektor / Monitor Kedua"
+            className="px-2.5 py-1.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-800 hover:border-indigo-500/40"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="hidden sm:inline">Layar Audiens</span>
           </button>
 
           <button
@@ -621,6 +767,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               <span>•</span>
               <span><kbd className="text-indigo-300">P</kbd> Pena</span>
               <span>•</span>
+              <span><kbd className="text-indigo-300">U</kbd> Undo</span>
+              <span>•</span>
               <span><kbd className="text-indigo-300">C</kbd> Hapus</span>
               <span>•</span>
               <span><kbd className="text-indigo-300">N</kbd> Notes</span>
@@ -641,7 +789,17 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                   </span>
                   <h4 className="text-sm font-semibold text-slate-200">{currentSlide.title}</h4>
                 </div>
-                <FileEdit className="w-4 h-4 text-slate-500" />
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={downloadSpeakerNotes}
+                    title="Unduh seluruh naskah pembicara sebagai file Markdown (.md)"
+                    className="p-1 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg text-xs flex items-center gap-1 border border-slate-800 hover:border-indigo-500/40 transition-colors"
+                  >
+                    <FileDown className="w-3.5 h-3.5 text-indigo-400" />
+                    <span className="text-[10px] font-mono">Unduh .md</span>
+                  </button>
+                  <FileEdit className="w-4 h-4 text-slate-500" />
+                </div>
               </div>
 
               {/* Live Editable Textarea */}

@@ -16,8 +16,14 @@ import { ShortcutsModal } from './components/ShortcutsModal';
 import { FindReplaceModal } from './components/FindReplaceModal';
 import { DesignElement } from './types';
 import { preloadCoreFonts } from './utils/fontLoader';
+import { AudienceScreen } from './components/AudienceScreen';
 
 export default function App() {
+  // If URL has ?mode=audience, render clean secondary projector screen
+  if (typeof window !== 'undefined' && window.location.search.includes('mode=audience')) {
+    return <AudienceScreen />;
+  }
+
   const {
     project,
     setProject,
@@ -570,6 +576,7 @@ export default function App() {
       {isPresenterOpen && (
         <PresenterModal
           slides={project.slides}
+          projectTitle={project.title}
           initialSlideIndex={project.slides.findIndex(s => s.id === project.activeSlideId)}
           onUpdateSlideNotes={(slideId, notes) => updateSlideSettings(slideId, { notes })}
           onClose={() => setIsPresenterOpen(false)}

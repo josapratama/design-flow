@@ -74,6 +74,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Ctrl', 'Y'], description: 'Ulangi tindakan (Redo)' },
         { keys: ['L'], description: 'Nyalakan / Matikan Laser Pointer saat presentasi' },
         { keys: ['P'], description: 'Nyalakan / Matikan Alat Pena Coretan (Doodle Annotation)' },
+        { keys: ['U'], description: 'Batalkan coretan pena terakhir (Undo Stroke)' },
         { keys: ['C'], description: 'Hapus seluruh coretan pena pada slide' },
         { keys: ['N'], description: 'Tampilkan / Sembunyikan Catatan Pembicara' },
         { keys: ['M'], description: 'Aktifkan / Matikan Efek Suara Slide' },
