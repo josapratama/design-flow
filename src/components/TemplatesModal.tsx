@@ -3,6 +3,8 @@ import { TEMPLATES, TemplateDefinition } from '../templates/template-library';
 import { Layout, Smartphone, Presentation, Instagram, Sparkles, X, Search, Plus, RefreshCw, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ElementRenderer } from './ElementRenderer';
 import { getSlideBackground } from '../utils/slideStyle';
+import { useDialog } from './dialogs/DialogProvider';
+import { useTranslation } from '../i18n/PolyglotContext';
 
 interface TemplatesModalProps {
   onSelectTemplate: (template: TemplateDefinition) => void;
@@ -41,12 +43,19 @@ export const TemplatesModal: React.FC<TemplatesModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [previewTemplate]);
 
-  const handleReplace = (template: TemplateDefinition) => {
+  const { confirm } = useDialog();
+  const { t } = useTranslation();
+
+  const handleReplace = async (template: TemplateDefinition) => {
     if (currentSlideCount > 1) {
-      const confirmReplace = window.confirm(
-        `Perhatian: Membuka template "${template.name}" akan menggantikan seluruh ${currentSlideCount} slide proyek saat ini. Lanjutkan?\n\n(Tip: Pilih "+ Tambah Slide" jika ingin menggabungkan tanpa menghapus pekerjaan lama).`
-      );
-      if (!confirmReplace) return;
+      const ok = await confirm({
+        title: t('dialog.replaceTemplateTitle'),
+        message: `Perhatian: Membuka template "${template.name}" akan menggantikan seluruh ${currentSlideCount} slide proyek saat ini. Lanjutkan?\n\n(Tip: Pilih "+ Tambah Slide" jika ingin menggabungkan tanpa menghapus pekerjaan lama).`,
+        confirmText: t('templates.useTemplate'),
+        cancelText: t('common.cancel'),
+        variant: 'warning',
+      });
+      if (!ok) return;
     }
     onSelectTemplate(template);
     onClose();
@@ -71,35 +80,35 @@ export const TemplatesModal: React.FC<TemplatesModalProps> = ({
   });
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
-      <div className="w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 md:p-8 select-none">
+      <div className="w-full max-w-4xl max-h-[calc(100vh-3.5rem)] sm:max-h-[calc(100vh-5rem)] my-auto bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40 shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-100">Pustaka Template Desain</h3>
-              <p className="text-xs text-slate-400">Pilih template awal untuk mempercepat pembuatan karya presentasi & UI</p>
+              <h3 className="text-base font-bold text-slate-100">{t('templates.title')}</h3>
+              <p className="text-xs text-slate-400">{t('templates.subtitle')}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg"
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Filter Bar & Search */}
-        <div className="px-6 py-3 border-b border-slate-800/80 bg-slate-950/20 flex flex-wrap items-center justify-between gap-3">
+        <div className="px-6 py-3 border-b border-slate-800/80 bg-slate-950/20 flex flex-wrap items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl p-1">
             {[
-              { id: 'all', label: 'Semua Template' },
-              { id: 'slide', label: 'Presentasi Slide' },
-              { id: 'uiux', label: 'UI / UX Wireframe' },
-              { id: 'graphic', label: 'Grafis & Cetak' },
+              { id: 'all', label: t('templates.allTemplates') },
+              { id: 'slide', label: t('templates.presentation') },
+              { id: 'uiux', label: t('templates.wireframe') },
+              { id: 'graphic', label: t('templates.graphic') },
             ].map(cat => (
               <button
                 key={cat.id}
@@ -123,7 +132,7 @@ export const TemplatesModal: React.FC<TemplatesModalProps> = ({
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Cari template (skripsi, startup)..."
+                placeholder={t('templates.searchPlaceholder')}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-7 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500 font-medium"
@@ -142,7 +151,7 @@ export const TemplatesModal: React.FC<TemplatesModalProps> = ({
         </div>
 
         {/* Template Cards Grid */}
-        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto">
+        <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0 overflow-y-auto">
           {filteredTemplates.length === 0 ? (
             <div className="col-span-3 py-12 text-center text-slate-500 text-xs">
               Tidak ada template yang cocok dengan pencarian "{searchQuery}".

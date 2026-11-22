@@ -2,6 +2,7 @@ import React from 'react';
 import { DesignElement } from '../types';
 import * as Icons from 'lucide-react';
 import { getFontFamilyStyle } from '../utils/fontLoader';
+import { getQrCodeUrl } from '../utils/qrGenerator';
 
 export function renderRichInlineText(text: string): React.ReactNode {
   if (!text) return null;
@@ -532,6 +533,29 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
             alt={name || 'Foto Media'}
             className="w-full h-full object-cover pointer-events-none"
           />
+        </div>
+      );
+
+    case 'qr-code':
+      return (
+        <div
+          className={`w-full h-full p-2.5 bg-white rounded-xl shadow-lg flex flex-col items-center justify-between select-none ${shadowClass}`}
+          style={{
+            background: fill || '#ffffff',
+            borderRadius: `${borderRadius !== undefined ? borderRadius : 16}px`,
+            border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          <img
+            src={getQrCodeUrl(content || 'https://designflow.app', Math.min(width, height) * 2, color || '000000', fill || 'ffffff')}
+            alt={name || 'QR Code'}
+            className="w-full h-full object-contain pointer-events-none"
+          />
+          {subTitle && (
+            <span className="text-[10px] font-semibold text-slate-800 text-center truncate w-full mt-1">
+              {subTitle}
+            </span>
+          )}
         </div>
       );
 

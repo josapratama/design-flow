@@ -19,6 +19,7 @@ import {
   ArrowUpDown,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { useDialog } from './dialogs/DialogProvider';
 
 interface SlideSorterModalProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
   onReverseSlides,
   onBatchUpdateTransitions,
 }) => {
+  const { confirm } = useDialog();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'notes' | 'wallpaper'>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -228,8 +230,13 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
           {/* Reverse Slide Order Button */}
           {onReverseSlides && slides.length > 1 && (
             <button
-              onClick={() => {
-                const confirmed = window.confirm('Balikkan urutan seluruh slide dari akhir ke awal?');
+              onClick={async () => {
+                const confirmed = await confirm({
+                  title: 'Balikkan Urutan Slide',
+                  message: 'Balikkan urutan seluruh slide dari akhir ke awal? Tindakan ini dapat dibatalkan dengan tombol urungkan.',
+                  variant: 'warning',
+                  confirmText: 'Balikkan Urutan',
+                });
                 if (confirmed) {
                   onReverseSlides();
                   confetti({ particleCount: 40, spread: 60, origin: { y: 0.2 } });
@@ -523,9 +530,15 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
                     </button>
                     {slides.length > 1 && (
                       <button
-                        onClick={e => {
+                        onClick={async e => {
                           e.stopPropagation();
-                          if (confirm(`Hapus slide "${slide.title}"?`)) {
+                          const ok = await confirm({
+                            title: 'Hapus Slide',
+                            message: `Apakah Anda yakin ingin menghapus slide "${slide.title}"?`,
+                            variant: 'danger',
+                            confirmText: 'Hapus Slide',
+                          });
+                          if (ok) {
                             onDeleteSlide(slide.id);
                           }
                         }}

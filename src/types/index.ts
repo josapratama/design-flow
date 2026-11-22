@@ -67,7 +67,8 @@ export type ElementType =
   | 'testimonial-card'
   // Media & Icons
   | 'icon'
-  | 'image';
+  | 'image'
+  | 'qr-code';
 
 export interface DesignElement {
   id: string;

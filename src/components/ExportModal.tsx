@@ -12,6 +12,15 @@ import jsPDF from 'jspdf';
 import JSZip from 'jszip';
 import { ElementRenderer } from './ElementRenderer';
 import { getSlideBackground } from '../utils/slideStyle';
+import { useDialog } from './dialogs/DialogProvider';
+import { useTranslation } from '../i18n/PolyglotContext';
+import { PptxExportTab } from './export/PptxExportTab';
+import { ImageExportTab } from './export/ImageExportTab';
+import { PdfExportTab } from './export/PdfExportTab';
+import { CodeExportTab } from './export/CodeExportTab';
+import { NotesExportTab } from './export/NotesExportTab';
+import { HtmlExportTab } from './export/HtmlExportTab';
+import { EmbedExportTab } from './export/EmbedExportTab';
 
 interface ExportModalProps {
   project: DesignProject;
@@ -26,6 +35,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   artboardRef,
   onClose,
 }) => {
+  const { alert: dialogAlert } = useDialog();
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'pptx' | 'image' | 'pdf' | 'code' | 'notes' | 'html' | 'embed'>('pptx');
   const [isExporting, setIsExporting] = useState(false);
   const [imageScale, setImageScale] = useState<number>(2);
@@ -178,7 +189,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       printWin.document.write(printHtml);
       printWin.document.close();
     } else {
-      alert('Izinkan pop-up peramban untuk mencetak handout presentasi.');
+      dialogAlert({
+        title: 'Pop-up Diblokir',
+        message: 'Izinkan pop-up peramban untuk mencetak handout presentasi.',
+        variant: 'warning',
+      });
     }
   };
 
@@ -277,7 +292,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
       confetti({ particleCount: 75, spread: 65, origin: { y: 0.7 } });
     } catch (err: any) {
-      alert('Gagal membuat paket ZIP: ' + err.message);
+      dialogAlert({
+        title: 'Gagal Membuat ZIP',
+        message: 'Gagal membuat paket ZIP: ' + (err?.message || 'Kesalahan tidak diketahui'),
+        variant: 'danger',
+      });
     } finally {
       setIsExporting(false);
       setExportProgress('');
@@ -291,7 +310,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       await exportToPowerPoint(project);
       confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
     } catch (err: any) {
-      alert('Gagal mengekspor ke PowerPoint: ' + err.message);
+      dialogAlert({
+        title: 'Gagal Ekspor PowerPoint',
+        message: 'Gagal mengekspor ke PowerPoint: ' + (err?.message || 'Kesalahan tidak diketahui'),
+        variant: 'danger',
+      });
     } finally {
       setIsExporting(false);
       setExportProgress('');
@@ -306,7 +329,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       await exportArtboardToImage(artboardRef.current, format, activeSlide.title.toLowerCase().replace(/\s+/g, '_'), imageScale);
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
     } catch (err: any) {
-      alert('Gagal mengekspor gambar: ' + err.message);
+      dialogAlert({
+        title: 'Gagal Ekspor Gambar',
+        message: 'Gagal mengekspor gambar: ' + (err?.message || 'Kesalahan tidak diketahui'),
+        variant: 'danger',
+      });
     } finally {
       setIsExporting(false);
       setExportProgress('');
@@ -324,10 +351,18 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         confetti({ particleCount: 35, spread: 50, origin: { y: 0.7 } });
         setTimeout(() => setCopiedImage(false), 2500);
       } else {
-        alert('Browser Anda tidak mendukung penulisan gambar ke clipboard.');
+        dialogAlert({
+          title: 'Fitur Tidak Didukung',
+          message: 'Browser Anda tidak mendukung penulisan gambar langsung ke clipboard.',
+          variant: 'warning',
+        });
       }
     } catch (err: any) {
-      alert('Gagal menyalin gambar: ' + err.message);
+      dialogAlert({
+        title: 'Gagal Menyalin Gambar',
+        message: 'Gagal menyalin gambar: ' + (err?.message || 'Kesalahan tidak diketahui'),
+        variant: 'danger',
+      });
     } finally {
       setIsExporting(false);
       setExportProgress('');
@@ -364,7 +399,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       setTimeout(() => setCopiedSvg(false), 2500);
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
     } catch (err: any) {
-      alert('Gagal menyalin kode SVG: ' + err.message);
+      dialogAlert({
+        title: 'Gagal Menyalin SVG',
+        message: 'Gagal menyalin kode SVG: ' + (err?.message || 'Kesalahan tidak diketahui'),
+        variant: 'danger',
+      });
     } finally {
       setIsExporting(false);
       setExportProgress('');
@@ -404,7 +443,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       pdf.save(fileName);
       confetti({ particleCount: 70, spread: 60, origin: { y: 0.7 } });
     } catch (err: any) {
-      alert('Gagal mengekspor PDF: ' + err.message);
+      dialogAlert({
+        title: 'Gagal Ekspor PDF',
+        message: 'Gagal mengekspor PDF: ' + (err?.message || 'Kesalahan tidak diketahui'),
+        variant: 'danger',
+      });
     } finally {
       setIsExporting(false);
       setExportProgress('');
@@ -432,8 +475,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
-      <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 md:p-8 select-none">
+      <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-3.5rem)] sm:max-h-[calc(100vh-5rem)] my-auto animate-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
           <div className="flex items-center gap-3">
@@ -454,7 +497,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex border-b border-slate-800 bg-slate-950/20 px-5 gap-2 pt-2">
+        <div className="flex border-b border-slate-800 bg-slate-950/20 px-3 sm:px-5 gap-1 sm:gap-2 pt-2 overflow-x-auto scrollbar-none shrink-0">
           <button
             onClick={() => setActiveTab('pptx')}
             className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all ${activeTab === 'pptx'
@@ -534,480 +577,88 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         </div>
 
         {/* Tab Body */}
-        <div className="p-6">
-          {/* TAB 1: PPTX */}
+        <div className="p-4 sm:p-6 flex-1 min-h-0 overflow-y-auto">
           {activeTab === 'pptx' && (
-            <div className="space-y-4">
-              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-start gap-3">
-                <Sparkles className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-300 leading-relaxed">
-                  <strong className="text-white block mb-0.5">Format Asli PowerPoint Microsoft (.pptx)</strong>
-                  Semua slide ({project.slides.length} slide) diekspor sebagai bentuk shape, teks, gambar, dan kotak asli yang dapat diedit kembali di MS PowerPoint, Google Slides, maupun Keynote.
-                </div>
-              </div>
-
-              <div className="text-xs text-slate-400 space-y-1">
-                <p>• Resolusi: 16:9 Widescreen (1920x1080)</p>
-                <p>• Catatan Pembicara: Ikut disertakan di setiap slide</p>
-                <p>• Jumlah slide: {project.slides.length} slide terdaftar</p>
-              </div>
-
-              <button
-                onClick={handleExportPPTX}
-                disabled={isExporting}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-[0.98]"
-              >
-                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                <span>{isExporting ? (exportProgress || 'Menyusun Berkas PPTX...') : 'Unduh PowerPoint (.pptx)'}</span>
-              </button>
-            </div>
+            <PptxExportTab
+              project={project}
+              isExporting={isExporting}
+              exportProgress={exportProgress}
+              onExport={handleExportPPTX}
+            />
           )}
 
-          {/* TAB 2: IMAGE */}
           {activeTab === 'image' && (
-            <div className="space-y-4">
-              <p className="text-xs text-slate-400">
-                Ekspor artboard aktif ({activeSlide.title}) menjadi berkas gambar berkualitas tinggi.
-              </p>
-
-              {/* Resolution Options */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-                  Pilihan Skala Resolusi
-                </span>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { scale: 1, label: '1x Web', desc: 'Ringan (72 DPI)' },
-                    { scale: 2, label: '2x Retina', desc: 'Tajam HD (144 DPI)' },
-                    { scale: 3, label: '3x Ultra', desc: 'Cetak Poster (300 DPI)' },
-                  ].map(opt => (
-                    <button
-                      key={opt.scale}
-                      onClick={() => setImageScale(opt.scale)}
-                      className={`p-2 rounded-xl border text-left transition-colors ${imageScale === opt.scale
-                        ? 'bg-indigo-600/20 border-indigo-500 text-white'
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                        }`}
-                    >
-                      <div className="font-bold text-xs">{opt.label}</div>
-                      <div className="text-[10px] text-slate-500">{opt.desc}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Quick Copy Artboard to OS Clipboard */}
-              <div className="p-3 bg-slate-900/90 border border-slate-800 rounded-xl flex items-center justify-between gap-3 shadow-inner">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
-                    <Copy className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold text-white block">Salin Gambar Slide Langsung</span>
-                    <span className="text-[10px] text-slate-400">Salin PNG ke clipboard untuk ditempel langsung (Ctrl+Shift+C)</span>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCopyImageToClipboard}
-                  disabled={isExporting}
-                  className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md active:scale-95 shrink-0"
-                >
-                  {copiedImage ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedImage ? 'Gambar Tersalin!' : 'Salin ke Clipboard'}</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-4 gap-2">
-                <button
-                  onClick={() => handleExportImage('png')}
-                  disabled={isExporting}
-                  className="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-1.5 transition-all hover:border-indigo-500"
-                >
-                  <span className="font-bold text-sm text-slate-100">PNG</span>
-                  <span className="text-[9px] text-slate-400">Transparan / Tajam</span>
-                </button>
-
-                <button
-                  onClick={() => handleExportImage('jpeg')}
-                  disabled={isExporting}
-                  className="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-1.5 transition-all hover:border-indigo-500"
-                >
-                  <span className="font-bold text-sm text-slate-100">JPEG</span>
-                  <span className="text-[9px] text-slate-400">Kompresi Ringan</span>
-                </button>
-
-                <button
-                  onClick={() => handleExportImage('webp')}
-                  disabled={isExporting}
-                  className="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-1.5 transition-all hover:border-indigo-500 group"
-                >
-                  <span className="font-bold text-sm text-indigo-400 group-hover:text-white">WebP</span>
-                  <span className="text-[9px] text-slate-400">Super Cepat Web</span>
-                </button>
-
-                <button
-                  onClick={() => handleExportImage('svg')}
-                  disabled={isExporting}
-                  className="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-1.5 transition-all hover:border-indigo-500 relative group"
-                >
-                  <span className="absolute -top-1.5 right-1 px-1.5 py-0.5 bg-indigo-500 text-[8px] font-bold text-white rounded-full">
-                    Vector
-                  </span>
-                  <span className="font-bold text-sm text-indigo-300 group-hover:text-white">SVG</span>
-                  <span className="text-[9px] text-slate-400">Vektor Scalable</span>
-                </button>
-              </div>
-
-              {/* 1-Click SVG Vector Clipboard & Download Box */}
-              <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-between gap-3 mt-1">
-                <div className="flex items-center gap-2.5">
-                  <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
-                  <div>
-                    <span className="text-xs font-semibold text-white block">Berkas & Kode Vektor SVG Murni</span>
-                    <span className="text-[10px] text-slate-400">Siap diimpor ke Figma, Illustrator, Inkscape, atau web</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => handleExportImage('svg')}
-                    disabled={isExporting}
-                    className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-indigo-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-700 active:scale-95 shadow-sm"
-                    title="Unduh berkas .svg ke perangkat Anda"
-                  >
-                    <Download className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Unduh .SVG</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleCopySvgCode}
-                    disabled={isExporting}
-                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm active:scale-95"
-                    title="Salin markup SVG ke clipboard"
-                  >
-                    {copiedSvg ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedSvg ? 'Tersalin!' : 'Salin Kode'}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ImageExportTab
+              activeSlide={activeSlide}
+              imageScale={imageScale}
+              isExporting={isExporting}
+              copiedImage={copiedImage}
+              copiedSvg={copiedSvg}
+              onScaleChange={setImageScale}
+              onExportImage={handleExportImage}
+              onCopyImage={handleCopyImageToClipboard}
+              onCopySvg={handleCopySvgCode}
+            />
           )}
 
-          {/* TAB 3: PDF */}
           {activeTab === 'pdf' && (
-            <div className="space-y-4">
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Pilih cakupan dokumen PDF yang ingin Anda cetak:
-              </p>
-
-              {/* PDF Scope Selector */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPdfScope('all')}
-                  className={`p-3 rounded-xl border text-left transition-all ${pdfScope === 'all'
-                    ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                >
-                  <div className="font-bold text-xs">Seluruh Slide Deck</div>
-                  <div className="text-[10px] text-slate-500">Total {project.slides.length} halaman terpadu</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setPdfScope('active')}
-                  className={`p-3 rounded-xl border text-left transition-all ${pdfScope === 'active'
-                    ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                >
-                  <div className="font-bold text-xs truncate">Slide Aktif Saja</div>
-                  <div className="text-[10px] text-slate-500 truncate">Hanya: {activeSlide.title}</div>
-                </button>
-              </div>
-
-              <button
-                onClick={handleExportPDF}
-                disabled={isExporting}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-[0.98]"
-              >
-                {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                <span>
-                  {isExporting
-                    ? (exportProgress || 'Menyusun Dokumen PDF...')
-                    : pdfScope === 'active'
-                      ? 'Unduh PDF (1 Halaman Slide Ini)'
-                      : `Unduh Dokumen PDF (${project.slides.length} Halaman)`}
-                </span>
-              </button>
-            </div>
+            <PdfExportTab
+              project={project}
+              activeSlide={activeSlide}
+              pdfScope={pdfScope}
+              isExporting={isExporting}
+              exportProgress={exportProgress}
+              onPdfScopeChange={setPdfScope}
+              onExport={handleExportPDF}
+            />
           )}
 
-          {/* TAB 4: REACT + TAILWIND CODE */}
           {activeTab === 'code' && (
-            <div className="space-y-3">
-              {/* Code Scope Selector */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCodeScope('active')}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${codeScope === 'active'
-                    ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                >
-                  <div className="font-bold text-xs truncate">Slide Aktif Saja</div>
-                  <div className="text-[10px] text-slate-500 truncate">Komponen: {activeSlide.title}</div>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setCodeScope('deck')}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${codeScope === 'deck'
-                    ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-sm'
-                    : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                >
-                  <div className="font-bold text-xs">Seluruh Deck Interaktif ({project.slides.length} Slide)</div>
-                  <div className="text-[10px] text-slate-500">Navigasi keyboard, state & progress bar</div>
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-xs text-slate-400">
-                  Kode komponen React 19 + Tailwind CSS siap pakai:
-                </span>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleDownloadCodeFile}
-                    title="Unduh file komponen .tsx langsung ke komputer"
-                    className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-lg shadow-indigo-600/20 active:scale-95"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>{codeScope === 'deck' ? 'Unduh Deck .tsx' : 'Unduh Slide .tsx'}</span>
-                  </button>
-                  <button
-                    onClick={handleCopyCode}
-                    className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                  >
-                    {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Code2 className="w-3.5 h-3.5" />}
-                    <span>{copiedCode ? 'Tersalin ke Clipboard!' : 'Salin Kode'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Code Box with Gutter Line Numbers */}
-              <div className="max-h-60 overflow-y-auto bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono flex">
-                <div className="w-10 py-3 pr-2 text-right bg-slate-950/90 text-slate-600 select-none border-r border-slate-800/80 shrink-0 leading-5 pointer-events-none">
-                  {tailwindCode.split('\n').map((_, idx) => (
-                    <div key={idx} className="text-[10px]">{idx + 1}</div>
-                  ))}
-                </div>
-                <pre className="p-3 pl-3 text-emerald-400 overflow-x-auto flex-1 leading-5 select-text font-mono">
-                  {tailwindCode}
-                </pre>
-              </div>
-            </div>
+            <CodeExportTab
+              project={project}
+              activeSlide={activeSlide}
+              codeScope={codeScope}
+              tailwindCode={tailwindCode}
+              copiedCode={copiedCode}
+              onCodeScopeChange={setCodeScope}
+              onDownloadCode={handleDownloadCodeFile}
+              onCopyCode={handleCopyCode}
+            />
           )}
 
-          {/* TAB 5: NOTES & BACKUP */}
           {activeTab === 'notes' && (
-            <div className="space-y-4">
-              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-start gap-3">
-                <Sparkles className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-300 leading-relaxed">
-                  <strong className="text-white block mb-0.5">Naskah Pembicara & Cadangan Proyek Lengkap</strong>
-                  Unduh seluruh catatan narasi presentasi dalam format Markdown atau simpan cadangan kode proyek yang dapat dimuat kembali sewaktu-waktu.
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                {/* Speaker Notes (.md) */}
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between space-y-3">
-                  <div>
-                    <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs mb-1">
-                      <BookOpen className="w-4 h-4" />
-                      <span>Contekan & Outline Pembicara (.md)</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
-                      Kompilasi judul slide, poin teks layar, durasi pacing bicara, dan catatan narasi lengkap untuk panduan presentasi offline.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleDownloadSpeakerNotes}
-                      className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-600/30"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Unduh .md</span>
-                    </button>
-                    <button
-                      onClick={handleCopyOutline}
-                      className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-colors"
-                      title="Salin Markdown Outline ke Clipboard"
-                    >
-                      {copiedOutline ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copiedOutline ? 'Tersalin' : 'Salin'}</span>
-                    </button>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handlePrintHandout}
-                    className="w-full py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
-                    title="Cetak atau simpan handout naskah presentasi sebagai PDF siap cetak"
-                  >
-                    <Printer className="w-3.5 h-3.5" />
-                    <span>Cetak Lembar Naskah (Print)</span>
-                  </button>
-                </div>
-
-                {/* Declarative DSL (.dflow) */}
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between space-y-3">
-                  <div>
-                    <div className="flex items-center gap-2 text-cyan-400 font-bold text-xs mb-1">
-                      <FileCode className="w-4 h-4" />
-                      <span>Kode DSL (.dflow)</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
-                      Sintaks teks deklaratif ringkas yang dapat disinkronkan kembali lewat Code Drawer (<kbd className="font-mono text-[10px]">Alt+C</kbd>).
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleDownloadDSL}
-                    className="w-full py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-cyan-600/30"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Unduh .dflow</span>
-                  </button>
-                </div>
-
-                {/* Full JSON Project (.json) */}
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between space-y-3">
-                  <div>
-                    <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs mb-1">
-                      <HardDrive className="w-4 h-4" />
-                      <span>Cadangan JSON (.json)</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
-                      Arsip data mentah proyek 100% lengkap untuk dicadangkan ke Google Drive atau perangkat offline.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleDownloadJSON}
-                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-emerald-600/30"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Unduh .json</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Live Markdown Outline Preview Box */}
-              <div className="space-y-1.5 pt-2">
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="font-semibold text-slate-300 flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Pratinjau Outline Dokumen ({project.slides.length} Slide):</span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleCopyOutline}
-                    className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1"
-                  >
-                    {copiedOutline ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                    <span>{copiedOutline ? 'Tersalin ke Clipboard' : 'Salin Semua Teks'}</span>
-                  </button>
-                </div>
-                <pre className="p-3 bg-slate-950 border border-slate-800 rounded-xl font-mono text-[11px] text-slate-300 max-h-48 overflow-y-auto whitespace-pre-wrap leading-relaxed select-text">
-                  {generateOutlineMarkdown()}
-                </pre>
-              </div>
-            </div>
+            <NotesExportTab
+              project={project}
+              copiedOutline={copiedOutline}
+              onDownloadSpeakerNotes={handleDownloadSpeakerNotes}
+              onCopyOutline={handleCopyOutline}
+              onPrintHandout={handlePrintHandout}
+              onDownloadDSL={handleDownloadDSL}
+              onDownloadJSON={handleDownloadJSON}
+              generateOutlineMarkdown={generateOutlineMarkdown}
+            />
           )}
 
-          {/* TAB 6: STANDALONE OFFLINE HTML SLIDESHOW */}
           {activeTab === 'html' && (
-            <div className="space-y-4">
-              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-start gap-3">
-                <Sparkles className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-300 leading-relaxed">
-                  <strong className="text-white block mb-0.5">Slideshow HTML Mandiri & Offline (.html)</strong>
-                  Menghasilkan 1 berkas presentasi HTML utuh berukuran ringan tanpa dependensi eksternal. Dapat dibuka langsung di semua web browser (Chrome, Edge, Safari, Firefox) di laptop, tablet, atau proyektor offline tanpa perlu menginstal aplikasi apa pun.
-                </div>
-              </div>
-
-              <div className="text-xs text-slate-400 space-y-1">
-                <p>• Navigasi Presenter Bawaan: Spasi / Panah untuk pindah slide</p>
-                <p>• Fitur Layar Penuh: Tekan <strong>F</strong> untuk Fullscreen, <strong>B</strong> untuk Blank Hitam, <strong>N</strong> untuk Catatan</p>
-                <p>• Skala Responsif Otomatis: Menyesuaikan resolusi layar apa pun secara proporsional</p>
-                <p>• Total slide disertakan: {project.slides.length} slide</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <button
-                  onClick={handleDownloadStandaloneHTML}
-                  disabled={isExporting}
-                  className="py-3 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-[0.98]"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Unduh 1 Berkas HTML (.html)</span>
-                </button>
-
-                <button
-                  onClick={handleDownloadWebBundleZip}
-                  disabled={isExporting}
-                  className="py-3 px-4 bg-slate-800 hover:bg-slate-700 hover:border-indigo-500/60 border border-slate-700 disabled:opacity-50 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]"
-                >
-                  <Archive className="w-4 h-4 text-cyan-400" />
-                  <span>Unduh Paket Lengkap (.zip)</span>
-                </button>
-              </div>
-            </div>
+            <HtmlExportTab
+              project={project}
+              isExporting={isExporting}
+              onDownloadHtml={handleDownloadStandaloneHTML}
+              onDownloadZip={handleDownloadWebBundleZip}
+            />
           )}
 
-          {/* TAB 7: EMBED & WEB WIDGET */}
           {activeTab === 'embed' && (
-            <div className="space-y-4">
-              <div className="p-4 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-start gap-3">
-                <Sparkles className="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-300 leading-relaxed">
-                  <strong className="text-white block mb-0.5">Kode Semat Iframe Responsif (Embed Widget)</strong>
-                  Salin potongan kode HTML Iframe berikut untuk menyematkan presentasi atau wireframe Anda langsung ke dalam Notion, Medium, WordPress, Webflow, atau situs dokumentasi tim.
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                    <Code2 className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Kode Semat Iframe Responsif (Rasio 16:9):</span>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const iframeSnippet = `<div style="position: relative; width: 100%; height: 0; padding-top: 56.25%; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">\n  <iframe src="presentation.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>\n</div>`;
-                      navigator.clipboard.writeText(iframeSnippet);
-                      setCopiedEmbed(true);
-                      setTimeout(() => setCopiedEmbed(false), 2000);
-                      confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
-                    }}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
-                  >
-                    {copiedEmbed ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedEmbed ? 'Tersalin ke Clipboard!' : 'Salin Kode Iframe'}</span>
-                  </button>
-                </div>
-
-                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-emerald-400 select-text overflow-x-auto leading-relaxed">
-                  <code>{`<div style="position: relative; width: 100%; height: 0; padding-top: 56.25%; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">\n  <iframe src="presentation.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>\n</div>`}</code>
-                </div>
-                <p className="text-[11px] text-slate-500">
-                  Tip: Ganti <code>presentation.html</code> dengan URL tempat berkas HTML diunggah, atau unduh berkas HTML dari tab <strong>HTML Slideshow</strong> dan letakkan di hosting web Anda.
-                </p>
-              </div>
-            </div>
+            <EmbedExportTab
+              copiedEmbed={copiedEmbed}
+              onCopyEmbed={() => {
+                const iframeSnippet = `<div style="position: relative; width: 100%; height: 0; padding-top: 56.25%; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">\n  <iframe src="presentation.html" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" allowfullscreen></iframe>\n</div>`;
+                navigator.clipboard.writeText(iframeSnippet);
+                setCopiedEmbed(true);
+                setTimeout(() => setCopiedEmbed(false), 2000);
+                confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
+              }}
+            />
           )}
         </div>
       </div>

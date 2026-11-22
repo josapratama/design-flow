@@ -70,10 +70,10 @@ export const DeckStatsModal: React.FC<DeckStatsModalProps> = ({
     totalSlides > 0 ? Math.round(((totalSlides - slidesWithoutNotes.length) / totalSlides) * 100) : 0;
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
-      <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 md:p-8 select-none">
+      <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[calc(100vh-3.5rem)] sm:max-h-[calc(100vh-5rem)] my-auto animate-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+        <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/40 shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
               <BarChart2 className="w-5 h-5" />
@@ -94,7 +94,7 @@ export const DeckStatsModal: React.FC<DeckStatsModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 space-y-6 flex-1 min-h-0 overflow-y-auto">
           {/* Top 3 High-Impact KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
             <div className="p-4 bg-slate-950/80 border border-slate-800 rounded-2xl flex flex-col justify-between">

@@ -16,6 +16,7 @@ import { ShortcutsModal } from './components/ShortcutsModal';
 import { FindReplaceModal } from './components/FindReplaceModal';
 import { SlideSorterModal } from './components/SlideSorterModal';
 import { DeckStatsModal } from './components/DeckStatsModal';
+import { VersionHistoryModal } from './components/VersionHistoryModal';
 import { DesignElement } from './types';
 import { preloadCoreFonts } from './utils/fontLoader';
 import { AudienceScreen } from './components/AudienceScreen';
@@ -92,6 +93,7 @@ export default function App() {
   const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false);
   const [isSlideSorterOpen, setIsSlideSorterOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [showSafeMargin, setShowSafeMargin] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isMobileLeftOpen, setIsMobileLeftOpen] = useState(false);
@@ -460,6 +462,7 @@ export default function App() {
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
         onOpenFindReplace={() => setIsFindReplaceOpen(true)}
         onOpenStats={() => setIsStatsOpen(true)}
+        onOpenVersionHistory={() => setIsVersionHistoryOpen(true)}
         onResetProject={resetProjectToDefault}
         onSaveProject={saveProjectToFile}
         onLoadProject={loadProjectData}
@@ -862,6 +865,22 @@ export default function App() {
           setProject(prev => ({ ...prev, activeSlideId: slideId, selectedElementIds: [] }))
         }
       />
+
+      {/* Project Version History & Snapshots Modal */}
+      {isVersionHistoryOpen && (
+        <VersionHistoryModal
+          project={project}
+          onRestoreVersion={restoredSlides => {
+            setProject(prev => ({
+              ...prev,
+              slides: restoredSlides,
+              activeSlideId: restoredSlides[0]?.id || prev.activeSlideId,
+              selectedElementIds: [],
+            }));
+          }}
+          onClose={() => setIsVersionHistoryOpen(false)}
+        />
+      )}
     </div>
   );
 }

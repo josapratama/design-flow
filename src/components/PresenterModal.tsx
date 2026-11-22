@@ -33,9 +33,14 @@ import {
   Lightbulb,
   Tv,
   BookOpen,
+  Mic,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../utils/audioEffects';
+import { PresenterPodiumMode } from './presenter/PresenterPodiumMode';
+import { PresenterNotesDrawer } from './presenter/PresenterNotesDrawer';
+import { PresenterShortcutsHud } from './presenter/PresenterShortcutsHud';
+import { PresenterAudioRecorder } from './presenter/PresenterAudioRecorder';
 
 interface PresenterModalProps {
   slides: Slide[];
@@ -82,6 +87,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [reactions, setReactions] = useState<Array<{ id: number; emoji: string; left: number }>>([]);
   const [showPresenterOptions, setShowPresenterOptions] = useState(false);
   const [showReactionMenu, setShowReactionMenu] = useState(false);
+  const [showAudioRecorder, setShowAudioRecorder] = useState(false);
   const [isControlsIdle, setIsControlsIdle] = useState(false);
   const [isTeleprompterRunning, setIsTeleprompterRunning] = useState(false);
   const [teleprompterSpeed, setTeleprompterSpeed] = useState<number>(1);
@@ -977,6 +983,19 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             <span className="hidden sm:inline">Podium</span>
           </button>
 
+          {/* Audio Narration Recording Button */}
+          <button
+            onClick={() => setShowAudioRecorder(!showAudioRecorder)}
+            title="Rekam Narasi Suara Presentasi"
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${showAudioRecorder
+              ? 'bg-rose-600 border-rose-500 text-white shadow-md shadow-rose-600/30'
+              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+          >
+            <Mic className="w-3.5 h-3.5 text-rose-400" />
+            <span className="hidden sm:inline">Rekam</span>
+          </button>
+
           {/* Presenter Settings & Secondary Tools Popover */}
           <div ref={optionsMenuRef} className="relative">
             <button
@@ -1127,261 +1146,42 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         </div>
       </header>
 
+      {/* Floating Audio Narration Recorder */}
+      {showAudioRecorder && (
+        <PresenterAudioRecorder
+          currentSlideIndex={currentIndex}
+          totalSlides={slides.length}
+          onClose={() => setShowAudioRecorder(false)}
+        />
+      )}
+
       {/* Main Slide Display + Notes Area */}
       {isPodiumMode ? (
-        <div className="flex-1 flex flex-col bg-slate-950 text-white overflow-hidden p-4 sm:p-6 animate-in fade-in duration-150">
-          {/* Podium Top Bar */}
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800 shrink-0">
-            <div className="flex items-center gap-3">
-              <span className="px-3 py-1 bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold tracking-wide flex items-center gap-1.5">
-                <Tv className="w-3.5 h-3.5 text-indigo-400" />
-                <span>PODIUM & TELEPROMPTER</span>
-              </span>
-              <h2 className="text-base sm:text-lg font-bold text-slate-100 truncate max-w-md">
-                Slide {currentIndex + 1} / {slides.length}: {currentSlide.title}
-              </h2>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Giant Timer */}
-              <div className="flex items-center gap-2.5 bg-slate-900 border border-slate-800 px-4 py-1.5 rounded-2xl shadow-inner">
-                <Clock className="w-4 h-4 text-indigo-400" />
-                <span className="font-mono text-xl font-bold tracking-wider text-slate-100">
-                  {formatTimer(secondsElapsed)}
-                </span>
-                {targetMinutes > 0 && (
-                  <span
-                    className={`text-xs font-mono px-2 py-0.5 rounded-lg border font-bold ${secondsElapsed > targetMinutes * 60
-                      ? 'bg-rose-500/20 text-rose-300 border-rose-500/50 animate-pulse'
-                      : 'bg-slate-800 text-slate-400 border-slate-700'
-                      }`}
-                  >
-                    Target {targetMinutes}m
-                  </span>
-                )}
-              </div>
-
-              {/* Close Podium Button */}
-              <button
-                onClick={() => setIsPodiumMode(false)}
-                title="Kembali ke Tampilan Standar (Esc)"
-                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
-              >
-                <span>Keluar Podium</span>
-                <kbd className="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded font-mono text-slate-400">Esc</kbd>
-              </button>
-            </div>
-          </div>
-
-          {/* Podium Content Split: Giant Teleprompter Notes (Left) + Slide Monitors (Right) */}
-          <div className="flex-1 flex flex-col lg:flex-row gap-6 py-4 overflow-hidden min-h-0">
-            {/* Left: Giant Teleprompter Notes */}
-            <div className="flex-1 flex flex-col bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 sm:p-6 backdrop-blur-md overflow-hidden shadow-2xl">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800/80 shrink-0">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-                    Naskah & Panduan Berbicara
-                  </span>
-                  {speechEstimateBadge && (
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                      {speechEstimateBadge}
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  {/* Teleprompter Auto-Scroll Button */}
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setIsTeleprompterRunning(!isTeleprompterRunning)}
-                      title={isTeleprompterRunning ? 'Jeda Gulir Otomatis Teleprompter' : 'Mulai Gulir Otomatis Teleprompter'}
-                      className={`px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${isTeleprompterRunning
-                        ? 'bg-emerald-600 text-white animate-pulse'
-                        : 'bg-slate-950 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-                        }`}
-                    >
-                      {isTeleprompterRunning ? <Pause className="w-3.5 h-3.5 text-white" /> : <Play className="w-3.5 h-3.5 text-emerald-400" />}
-                      <span>{isTeleprompterRunning ? 'Jeda' : 'Auto-Scroll'}</span>
-                    </button>
-                    {isTeleprompterRunning && (
-                      <button
-                        onClick={() => setTeleprompterSpeed(s => (s === 1 ? 2 : s === 2 ? 3 : 1))}
-                        title="Ubah Kecepatan Gulir Teleprompter"
-                        className="px-1.5 py-1 rounded text-[10px] font-mono font-bold bg-slate-950 border border-slate-800 text-indigo-300 hover:bg-slate-800"
-                      >
-                        {teleprompterSpeed}x
-                      </button>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
-                    <button
-                      onClick={() => {
-                        if (notesFontSize === 'xl') setNotesFontSize('lg');
-                        else if (notesFontSize === 'lg') setNotesFontSize('base');
-                        else if (notesFontSize === 'base') setNotesFontSize('sm');
-                      }}
-                      title="Perkecil Ukuran Font Catatan (A-)"
-                      className="text-xs text-slate-400 hover:text-white px-1 font-semibold"
-                    >
-                      A-
-                    </button>
-                    <span className="text-[10px] text-slate-500 font-mono uppercase px-1">{notesFontSize}</span>
-                    <button
-                      onClick={() => {
-                        if (notesFontSize === 'sm') setNotesFontSize('base');
-                        else if (notesFontSize === 'base') setNotesFontSize('lg');
-                        else if (notesFontSize === 'lg') setNotesFontSize('xl');
-                      }}
-                      title="Perbesar Ukuran Font Catatan (A+)"
-                      className="text-xs text-slate-400 hover:text-white px-1 font-bold"
-                    >
-                      A+
-                    </button>
-                  </div>
-                  <button
-                    onClick={downloadSpeakerNotes}
-                    title="Unduh Naskah (.md)"
-                    className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg border border-slate-800"
-                  >
-                    <FileDown className="w-3.5 h-3.5 text-indigo-400" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Editable Large Typography Textarea */}
-              <div className="flex-1 mt-3 overflow-y-auto">
-                <textarea
-                  ref={podiumTextareaRef}
-                  value={currentSlide.notes || ''}
-                  onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
-                  placeholder="Ketik poin penting, panduan berbicara, atau naskah presentasi untuk slide ini..."
-                  className={`w-full h-full bg-transparent border-none focus:outline-none text-slate-100 placeholder-slate-600 leading-relaxed resize-none font-sans ${notesFontSize === 'sm'
-                    ? 'text-base'
-                    : notesFontSize === 'base'
-                      ? 'text-xl'
-                      : notesFontSize === 'lg'
-                        ? 'text-2xl font-medium'
-                        : 'text-3xl font-semibold'
-                    }`}
-                />
-              </div>
-
-              <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-500 shrink-0">
-                <span>Tip: Anda dapat mengedit teks ini langsung saat presentasi.</span>
-                <span className="font-mono">
-                  {currentSlide.notes ? `${currentSlide.notes.trim().split(/\s+/).filter(Boolean).length} kata` : '0 kata'}
-                </span>
-              </div>
-            </div>
-
-            {/* Right: Stage Slide Monitors */}
-            <div className="w-full lg:w-96 flex flex-col gap-4 shrink-0 overflow-y-auto">
-              {/* Current Live Slide Monitor */}
-              <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-xl flex flex-col gap-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-300 flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Layar Audiens (Aktif)</span>
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-mono">16:9 FHD</span>
-                </div>
-                {/* Scaled Mini Preview */}
-                <div className="w-full aspect-video bg-slate-950 rounded-xl border border-slate-800/80 overflow-hidden relative shadow-inner flex items-center justify-center">
-                  <div
-                    style={{
-                      width: `${currentSlide.width}px`,
-                      height: `${currentSlide.height}px`,
-                      background: getSlideBackground(currentSlide),
-                      transform: `scale(${Math.min(320 / currentSlide.width, 180 / currentSlide.height)})`,
-                      transformOrigin: 'center center',
-                    }}
-                    className="relative pointer-events-none select-none"
-                  >
-                    {currentSlide.elements.map(el => (
-                      <div
-                        key={el.id}
-                        className="absolute"
-                        style={{
-                          left: `${el.x}px`,
-                          top: `${el.y}px`,
-                          width: `${el.width}px`,
-                          height: `${el.height}px`,
-                          zIndex: el.zIndex,
-                        }}
-                      >
-                        <ElementRenderer element={el} isSelected={false} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Next Slide Preview */}
-              <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md shadow-xl flex flex-col gap-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-400 flex items-center gap-1.5">
-                    <ChevronRight className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Slide Berikutnya ({currentIndex < slides.length - 1 ? `${currentIndex + 2}/${slides.length}` : 'Selesai'})</span>
-                  </span>
-                </div>
-                {currentIndex < slides.length - 1 ? (
-                  <div className="space-y-2">
-                    <div className="text-sm font-semibold text-slate-200 truncate">
-                      {slides[currentIndex + 1].title}
-                    </div>
-                    {slides[currentIndex + 1].notes && (
-                      <p className="text-xs text-slate-400 line-clamp-3 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/60 italic font-mono">
-                        "{slides[currentIndex + 1].notes}"
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="py-4 text-center text-xs text-slate-500 font-mono">
-                    🏁 Ini adalah slide terakhir
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Podium Bottom Controls */}
-          <div className="pt-3 border-t border-slate-800 flex items-center justify-between shrink-0">
-            <button
-              onClick={goToPrev}
-              disabled={currentIndex === 0}
-              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-25 border border-slate-800 rounded-xl text-sm font-bold text-slate-200 hover:text-white flex items-center gap-2 transition-all shadow"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Slide Sebelumnya</span>
-            </button>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setBlankMode(prev => (prev === 'black' ? 'none' : 'black'))}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border ${blankMode === 'black' ? 'bg-purple-600 border-purple-500 text-white' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
-              >
-                Layar Hitam (B)
-              </button>
-              <button
-                onClick={triggerCelebration}
-                className="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-amber-400 hover:text-amber-300 rounded-xl"
-                title="Confetti"
-              >
-                <PartyPopper className="w-4 h-4" />
-              </button>
-            </div>
-
-            <button
-              onClick={goToNext}
-              disabled={currentIndex === slides.length - 1}
-              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-25 border border-indigo-500 rounded-xl text-sm font-bold text-white flex items-center gap-2 transition-all shadow-lg shadow-indigo-600/30"
-            >
-              <span>Slide Selanjutnya</span>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+        <PresenterPodiumMode
+          currentIndex={currentIndex}
+          slides={slides}
+          currentSlide={currentSlide}
+          secondsElapsed={secondsElapsed}
+          targetMinutes={targetMinutes}
+          formatTimer={formatTimer}
+          setIsPodiumMode={setIsPodiumMode}
+          speechEstimateBadge={speechEstimateBadge}
+          isTeleprompterRunning={isTeleprompterRunning}
+          setIsTeleprompterRunning={setIsTeleprompterRunning}
+          teleprompterSpeed={teleprompterSpeed}
+          setTeleprompterSpeed={setTeleprompterSpeed}
+          notesFontSize={notesFontSize}
+          setNotesFontSize={setNotesFontSize}
+          downloadSpeakerNotes={downloadSpeakerNotes}
+          podiumTextareaRef={podiumTextareaRef}
+          onUpdateSlideNotes={onUpdateSlideNotes}
+          onGoToSlide={setCurrentIndex}
+          goToPrev={goToPrev}
+          goToNext={goToNext}
+          blankMode={blankMode}
+          setBlankMode={setBlankMode}
+          triggerCelebration={triggerCelebration}
+        />
       ) : (
         <div className="flex-1 flex overflow-hidden min-h-0 relative">
           {/* Slide Canvas Area */}
@@ -1775,188 +1575,25 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           </div>
 
           {/* Presenter Speaker Notes Sidebar (Docked on tablet/desktop, slide-over on small mobile) */}
-          {showNotes && (
-            <>
-              {/* Backdrop on extra-small mobile screen */}
-              <div
-                onClick={() => setShowNotes(false)}
-                className="fixed inset-0 bg-black/60 z-30 sm:hidden animate-in fade-in"
-              />
-              <aside className="w-80 sm:w-88 border-l border-slate-800/80 bg-slate-900/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col justify-between shrink-0 fixed sm:static right-0 top-14 sm:top-0 bottom-0 z-30 sm:z-10 shadow-2xl sm:shadow-none animate-in slide-in-from-right duration-150 h-full overflow-y-auto">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">
-                        Catatan Pembicara
-                      </span>
-                      {speechEstimateBadge && (
-                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
-                          {speechEstimateBadge}
-                        </span>
-                      )}
-                    </div>
-                    <h4 className="text-sm font-semibold text-slate-200 mt-1">{currentSlide.title}</h4>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setIsPodiumMode(true)}
-                      title="Buka Mode Teleprompter & Podium (Layar Naskah Panggung)"
-                      className="p-1 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg text-xs flex items-center gap-1 border border-slate-800 hover:border-indigo-500/40 transition-colors"
-                    >
-                      <Tv className="w-3.5 h-3.5 text-indigo-400" />
-                      <span className="text-[10px] font-mono">Podium</span>
-                    </button>
-                    <button
-                      onClick={downloadSpeakerNotes}
-                      title="Unduh seluruh naskah pembicara sebagai file Markdown (.md)"
-                      className="p-1 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg text-xs flex items-center gap-1 border border-slate-800 hover:border-indigo-500/40 transition-colors"
-                    >
-                      <FileDown className="w-3.5 h-3.5 text-indigo-400" />
-                      <span className="text-[10px] font-mono">Unduh .md</span>
-                    </button>
-                    <button
-                      onClick={() => setShowNotes(false)}
-                      title="Tutup Catatan"
-                      className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg lg:hidden"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Live Editable Textarea */}
-                <div className="space-y-1">
-                  <div className="text-[10px] text-slate-500 flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => setIsTeleprompterRunning(!isTeleprompterRunning)}
-                        title={isTeleprompterRunning ? 'Jeda Gulir Otomatis Teleprompter' : 'Mulai Gulir Otomatis Teleprompter'}
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition-colors ${isTeleprompterRunning
-                          ? 'bg-emerald-600 text-white animate-pulse'
-                          : 'bg-slate-950 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
-                          }`}
-                      >
-                        {isTeleprompterRunning ? <Pause className="w-3 h-3 text-white" /> : <Play className="w-3 h-3 text-emerald-400" />}
-                        <span>{isTeleprompterRunning ? 'Jeda' : 'Auto-Scroll'}</span>
-                      </button>
-                      {isTeleprompterRunning && (
-                        <button
-                          onClick={() => setTeleprompterSpeed(s => (s === 1 ? 2 : s === 2 ? 3 : 1))}
-                          title="Ubah Kecepatan Gulir Teleprompter"
-                          className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-slate-950 border border-slate-800 text-indigo-300 hover:bg-slate-800"
-                        >
-                          {teleprompterSpeed}x
-                        </button>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5">
-                      <button
-                        onClick={() => {
-                          if (notesFontSize === 'xl') setNotesFontSize('lg');
-                          else if (notesFontSize === 'lg') setNotesFontSize('base');
-                          else if (notesFontSize === 'base') setNotesFontSize('sm');
-                        }}
-                        title="Perkecil Ukuran Font Catatan (A-)"
-                        className="text-[10px] text-slate-400 hover:text-white px-0.5"
-                      >
-                        A-
-                      </button>
-                      <span className="text-[9px] text-slate-500 font-mono uppercase">{notesFontSize}</span>
-                      <button
-                        onClick={() => {
-                          if (notesFontSize === 'sm') setNotesFontSize('base');
-                          else if (notesFontSize === 'base') setNotesFontSize('lg');
-                          else if (notesFontSize === 'lg') setNotesFontSize('xl');
-                        }}
-                        title="Perbesar Ukuran Font Catatan (A+)"
-                        className="text-[10px] text-slate-400 hover:text-white px-0.5 font-bold"
-                      >
-                        A+
-                      </button>
-                    </div>
-                  </div>
-                  <textarea
-                    ref={notesTextareaRef}
-                    value={currentSlide.notes || ''}
-                    onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
-                    placeholder="Ketik poin penting, panduan berbicara, atau naskah presentasi untuk slide ini..."
-                    className={`w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl p-3 text-slate-200 outline-none leading-relaxed min-h-[170px] resize-none font-sans ${notesFontSize === 'sm'
-                      ? 'text-xs'
-                      : notesFontSize === 'base'
-                        ? 'text-sm'
-                        : notesFontSize === 'lg'
-                          ? 'text-base'
-                          : 'text-lg font-medium'
-                      }`}
-                  />
-                </div>
-              </div>
-
-              {/* Next Slide Preview thumbnail (Interactive Mini Canvas Preview) */}
-              {currentIndex < slides.length - 1 && (() => {
-                const nextSlide = slides[currentIndex + 1];
-                const miniScale = Math.min(270 / nextSlide.width, 140 / nextSlide.height);
-                return (
-                  <div className="pt-3 border-t border-slate-800 space-y-1.5 shrink-0">
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-semibold text-slate-500 uppercase tracking-wider">
-                        Slide Selanjutnya ({currentIndex + 2}/{slides.length})
-                      </span>
-                      <span className="text-indigo-400 font-mono text-[9px]">Klik untuk Maju →</span>
-                    </div>
-                    <button
-                      onClick={goToNext}
-                      title="Klik untuk berpindah ke slide berikutnya"
-                      className="w-full text-left group bg-slate-950/80 hover:bg-slate-950 border border-slate-800 hover:border-indigo-500/70 rounded-xl p-2 transition-all shadow hover:shadow-indigo-500/10"
-                    >
-                      {/* Visual scaled miniature */}
-                      <div className="w-full h-24 bg-slate-950 rounded-lg border border-slate-800/80 overflow-hidden relative mb-2 flex items-center justify-center">
-                        <div
-                          style={{
-                            width: `${nextSlide.width}px`,
-                            height: `${nextSlide.height}px`,
-                            background: getSlideBackground(nextSlide),
-                            transform: `scale(${miniScale})`,
-                            transformOrigin: 'center center',
-                          }}
-                          className="relative pointer-events-none select-none"
-                        >
-                          {nextSlide.elements.map(el => (
-                            <div
-                              key={el.id}
-                              className="absolute"
-                              style={{
-                                left: `${el.x}px`,
-                                top: `${el.y}px`,
-                                width: `${el.width}px`,
-                                height: `${el.height}px`,
-                                zIndex: el.zIndex,
-                              }}
-                            >
-                              <ElementRenderer element={el} isSelected={false} />
-                            </div>
-                          ))}
-                        </div>
-                        <div className="absolute inset-0 bg-transparent group-hover:bg-indigo-500/5 transition-colors" />
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs font-semibold text-slate-300 group-hover:text-white">
-                        <span className="truncate pr-1">{nextSlide.title}</span>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-indigo-400 shrink-0 group-hover:translate-x-0.5 transition-transform" />
-                      </div>
-                      {nextSlide.notes && nextSlide.notes.trim() && (
-                        <p className="text-[10px] text-slate-400 font-mono italic truncate mt-0.5 line-clamp-1 text-slate-500">
-                          "{nextSlide.notes.trim()}"
-                        </p>
-                      )}
-                    </button>
-                  </div>
-                );
-              })()}
-            </aside>
-            </>
-          )}
+          <PresenterNotesDrawer
+            showNotes={showNotes}
+            setShowNotes={setShowNotes}
+            currentSlide={currentSlide}
+            currentIndex={currentIndex}
+            slides={slides}
+            speechEstimateBadge={speechEstimateBadge}
+            setIsPodiumMode={setIsPodiumMode}
+            downloadSpeakerNotes={downloadSpeakerNotes}
+            isTeleprompterRunning={isTeleprompterRunning}
+            setIsTeleprompterRunning={setIsTeleprompterRunning}
+            teleprompterSpeed={teleprompterSpeed}
+            setTeleprompterSpeed={setTeleprompterSpeed}
+            notesFontSize={notesFontSize}
+            setNotesFontSize={setNotesFontSize}
+            notesTextareaRef={notesTextareaRef}
+            onUpdateSlideNotes={onUpdateSlideNotes}
+            goToNext={goToNext}
+          />
         </div>
       )}
 
@@ -1969,121 +1606,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       )}
 
       {/* In-Show Presenter Shortcut HUD Modal (? / H) */}
-      {showHelpOverlay && (
-        <div
-          onClick={() => setShowHelpOverlay(false)}
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-150"
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl text-slate-200 animate-in zoom-in-95 duration-150 space-y-4"
-          >
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
-                  <HelpCircle className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white">Panduan Tombol Pintas Presentasi</h3>
-                  <p className="text-[11px] text-slate-400">Pintasan keyboard cepat saat mode slideshow aktif</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowHelpOverlay(false)}
-                className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1.5">
-                <span className="text-[10px] uppercase font-bold text-indigo-400 tracking-wider">Navigasi Slide</span>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Slide Berikutnya</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">Spasi / →</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Slide Sebelumnya</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">← / Backspace</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Slide Awal / Akhir</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">Home / End</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Lompat ke Slide X</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">0-9 + Enter</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Laci Kisi & Cari Slide</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300">G</kbd>
-                </div>
-              </div>
-
-              <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1.5">
-                <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">Layar & Interaksi</span>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Laser Pointer</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">L</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Spotlight Sorot Panggung</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">S</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Pena Coretan Doodle</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">P</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Undo Coretan</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">U / Ctrl+Z</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Hapus Semua Coretan</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">C</kbd>
-                </div>
-              </div>
-
-              <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1.5">
-                <span className="text-[10px] uppercase font-bold text-rose-400 tracking-wider">Fokus Audiens</span>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Layar Hitam (Black)</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-rose-300">B / .</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Layar Putih (White)</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-rose-300">W / ,</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Layar Penuh (Toggle)</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-rose-300">F / F11</kbd>
-                </div>
-              </div>
-
-              <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800/80 space-y-1.5">
-                <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Presenter & Audio</span>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Panel Catatan Naskah</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-emerald-300">N</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Mute / Unmute Suara</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-emerald-300">M</kbd>
-                </div>
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Tutup Panduan / Keluar</span>
-                  <kbd className="font-mono bg-slate-800 px-1.5 py-0.5 rounded text-emerald-300">Esc</kbd>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-center pt-1 text-[11px] text-slate-500 font-mono">
-              Tekan <kbd className="text-indigo-400">Esc</kbd> atau klik di luar untuk menutup
-            </div>
-          </div>
-        </div>
-      )}
+      <PresenterShortcutsHud
+        isOpen={showHelpOverlay}
+        onClose={() => setShowHelpOverlay(false)}
+      />
       {/* Floating Audience Reactions Overlay */}
       <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
         {reactions.map(r => (

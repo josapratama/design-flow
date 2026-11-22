@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { DesignMode, DesignProject } from '../types';
+import { useDialog } from './dialogs/DialogProvider';
+import { useTranslation } from '../i18n/PolyglotContext';
 import {
   Undo2,
   Redo2,
@@ -21,6 +23,8 @@ import {
   ChevronDown,
   Layers,
   Sliders,
+  Globe,
+  History,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -41,6 +45,7 @@ interface NavbarProps {
   onOpenShortcuts?: () => void;
   onOpenFindReplace?: () => void;
   onOpenStats?: () => void;
+  onOpenVersionHistory?: () => void;
   onResetProject?: () => void;
   onSaveProject: () => void;
   onLoadProject: (project: DesignProject) => void;
@@ -69,6 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenShortcuts,
   onOpenFindReplace,
   onOpenStats,
+  onOpenVersionHistory,
   onResetProject,
   onSaveProject,
   onLoadProject,
@@ -97,22 +103,33 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const { confirm, alert } = useDialog();
+  const { t, locale, toggleLocale } = useTranslation();
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = ev => {
+    reader.onload = async ev => {
       try {
         const json = JSON.parse(ev.target?.result as string);
         if (json && Array.isArray(json.slides)) {
           onLoadProject(json);
           setIsFileMenuOpen(false);
         } else {
-          alert('Format berkas tidak valid. Harap pilih berkas .designflow.json yang benar.');
+          await alert({
+            title: t('dialog.invalidFileTitle'),
+            message: t('dialog.invalidFileMessage'),
+            variant: 'danger',
+          });
         }
       } catch (err: any) {
-        alert('Gagal memuat berkas proyek: ' + err.message);
+        await alert({
+          title: t('dialog.loadErrorTitle'),
+          message: `${t('dialog.loadErrorMessage')} ${err.message}`,
+          variant: 'danger',
+        });
       }
     };
     reader.readAsText(file);
@@ -192,18 +209,44 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               </button>
 
-              {onResetProject && (
+              {/* Version History Checkpoints */}
+              {onOpenVersionHistory && (
                 <button
                   onClick={() => {
                     setIsFileMenuOpen(false);
-                    if (window.confirm('Reset proyek dan kembali ke template awal? Perubahan yang belum disimpan akan hilang.')) {
+                    onOpenVersionHistory();
+                  }}
+                  className="w-full px-2.5 py-1.5 text-left rounded-lg text-xs text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-2 transition-colors"
+                >
+                  <History className="w-3.5 h-3.5 text-indigo-400" />
+                  <div className="flex-1 flex items-center justify-between">
+                    <span>Riwayat Versi</span>
+                    <span className="text-[9px] font-mono px-1 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+                      Snapshots
+                    </span>
+                  </div>
+                </button>
+              )}
+
+              {onResetProject && (
+                <button
+                  onClick={async () => {
+                    setIsFileMenuOpen(false);
+                    const ok = await confirm({
+                      title: t('dialog.resetTitle'),
+                      message: t('dialog.resetMessage'),
+                      confirmText: t('dialog.resetTitle'),
+                      cancelText: t('common.cancel'),
+                      variant: 'danger',
+                    });
+                    if (ok) {
                       onResetProject();
                     }
                   }}
                   className="w-full px-2.5 py-1.5 text-left rounded-lg text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 flex items-center gap-2 transition-colors mt-0.5"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Reset ke Template Awal</span>
+                  <span>{t('navbar.resetProject')}</span>
                 </button>
               )}
 
@@ -341,6 +384,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span>Ekspor</span>
         </button>
 
+        {/* Language Switcher Pill */}
+        <button
+          onClick={toggleLocale}
+          title={locale === 'id' ? 'Switch language to English' : 'Ganti bahasa ke Bahasa Indonesia'}
+          className="px-2 py-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 border border-slate-800 transition-colors shadow-sm"
+        >
+          <Globe className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-mono text-[10px] font-bold uppercase">{locale.toUpperCase()}</span>
+        </button>
+
         {/* 4. Overflow "..." (More Options) Dropdown */}
         <div ref={moreMenuRef} className="relative">
           <button
@@ -360,6 +413,29 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-800/80 mb-1">
                 Alat & Ekstensi
               </div>
+
+              {/* Language Switcher inside dropdown */}
+              <button
+                onClick={() => {
+                  toggleLocale();
+                  setIsMoreMenuOpen(false);
+                }}
+                className="w-full px-2.5 py-1.5 text-left rounded-lg text-xs flex items-center justify-between text-slate-300 hover:text-white hover:bg-slate-800 transition-colors mb-1"
+              >
+                <div className="flex items-center gap-2">
+                  <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>
+                    {locale === 'id'
+                      ? 'Bahasa: Indonesia (ID)'
+                      : locale === 'ja'
+                      ? '言語: 日本語 (JA)'
+                      : 'Language: English (EN)'}
+                  </span>
+                </div>
+                <span className="font-mono text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-indigo-300 font-bold uppercase">
+                  {locale}
+                </span>
+              </button>
 
               {/* Code DSL Toggle */}
               <button

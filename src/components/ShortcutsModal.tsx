@@ -106,10 +106,10 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 select-none">
-      <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150 max-h-[90vh]">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 md:p-8 select-none">
+      <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-150 max-h-[calc(100vh-3.5rem)] sm:max-h-[calc(100vh-5rem)] my-auto">
         {/* Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40">
+        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/40 shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
               <Keyboard className="w-5 h-5" />
@@ -128,7 +128,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         </div>
 
         {/* Shortcuts Categories Grid */}
-        <div className="p-5 overflow-y-auto space-y-5 text-xs">
+        <div className="p-4 sm:p-5 flex-1 min-h-0 overflow-y-auto space-y-5 text-xs">
           {categories.map((cat, idx) => (
             <div key={idx} className="space-y-2">
               <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block border-b border-slate-800 pb-1">
