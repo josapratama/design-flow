@@ -93,7 +93,6 @@ function renderElementJSX(el: DesignElement): string {
       </h1>`;
 
     case 'text':
-    case 'quote':
       return `      {/* Paragraph: ${el.name} */}
       <p 
         className="absolute leading-relaxed whitespace-pre-wrap ${fontClass} ${getTextAlignClass(el.textAlign)}"
@@ -104,6 +103,19 @@ function renderElementJSX(el: DesignElement): string {
       >
         ${escapeJSX(el.content || 'Konten teks deskriptif')}
       </p>`;
+
+    case 'quote':
+      return `      {/* Blockquote: ${el.name} */}
+      <blockquote 
+        className="absolute border-l-4 border-indigo-500 pl-4 py-1 italic leading-relaxed whitespace-pre-wrap ${fontClass} ${getTextAlignClass(el.textAlign)}"
+        ${toStyleAttr({
+          color: el.color || '#e2e8f0',
+          fontSize: `${el.fontSize || 20}px`,
+        })}
+      >
+        “${escapeJSX(el.content || 'Kutipan inspiratif')}”
+        ${el.subTitle ? `\n        <footer className="text-sm not-italic text-slate-400 mt-2 font-normal">— ${escapeJSX(el.subTitle)}</footer>` : ''}
+      </blockquote>`;
 
     case 'button':
       return `      {/* Button: ${el.name} */}

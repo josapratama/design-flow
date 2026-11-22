@@ -549,4 +549,117 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+
+  // 8. TESTIMONIAL & KUTIPAN KONSUMEN
+  {
+    id: 'testimonial-quote-card',
+    name: 'Kutipan & Testimonial Tokoh',
+    description: 'Kartu testimonial dengan kutipan inspiratif, nama tokoh, avatar, dan badge kepuasan 5 bintang.',
+    icon: 'Quote',
+    category: 'all',
+    generateElements: (startX = 360, startY = 260) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+      const cardW = 1200;
+      const cardH = 460;
+
+      // Card container
+      elements.push({
+        id: `el_${now}_quote_bg`,
+        type: 'card',
+        name: 'Wadah Testimonial',
+        x: startX,
+        y: startY,
+        width: cardW,
+        height: cardH,
+        zIndex: 1,
+        fill: '#131b2e',
+        stroke: '#3b82f6',
+        strokeWidth: 1.5,
+        borderRadius: 24,
+        shadow: 'xl',
+      });
+
+      // Rating badge 5 stars
+      elements.push({
+        id: `el_${now}_quote_rating`,
+        type: 'button',
+        name: 'Rating Bintang',
+        x: startX + 60,
+        y: startY + 45,
+        width: 180,
+        height: 36,
+        zIndex: 2,
+        content: '★★★★★ 5.0 RATING',
+        fill: '#172554',
+        stroke: '#3b82f6',
+        color: '#fbbf24',
+        borderRadius: 9999,
+        fontSize: 12,
+      });
+
+      // Quote element
+      elements.push({
+        id: `el_${now}_quote_text`,
+        type: 'quote',
+        name: 'Kutipan Testimonial',
+        x: startX + 60,
+        y: startY + 105,
+        width: cardW - 120,
+        height: 180,
+        zIndex: 2,
+        content:
+          'DesignFlow Studio mengubah cara tim kami mempresentasikan arsitektur sistem ke dewan direksi. Slide terstruktur, rendering kode instan, dan ekspor PowerPoint asli membuat produktivitas melonjak hingga 4 kali lipat.',
+        subTitle: 'Dr. Michael Hansen — VP of Engineering, Global Tech Labs',
+        fontSize: 24,
+        color: '#f8fafc',
+      });
+
+      // Avatar
+      elements.push({
+        id: `el_${now}_quote_avatar`,
+        type: 'avatar',
+        name: 'Avatar Tokoh',
+        x: startX + 60,
+        y: startY + 320,
+        width: 72,
+        height: 72,
+        zIndex: 2,
+        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+        borderRadius: 9999,
+      });
+
+      // Name & Title
+      elements.push({
+        id: `el_${now}_quote_name`,
+        type: 'heading',
+        name: 'Nama Tokoh',
+        x: startX + 150,
+        y: startY + 325,
+        width: 600,
+        height: 32,
+        zIndex: 2,
+        content: 'Dr. Michael Hansen',
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#ffffff',
+      });
+
+      elements.push({
+        id: `el_${now}_quote_role`,
+        type: 'text',
+        name: 'Jabatan Tokoh',
+        x: startX + 150,
+        y: startY + 360,
+        width: 600,
+        height: 28,
+        zIndex: 2,
+        content: 'VP of Engineering, Global Tech Labs • Mantan Riset AI',
+        fontSize: 15,
+        color: '#94a3b8',
+      });
+
+      return elements;
+    },
+  },
 ];

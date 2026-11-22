@@ -55,6 +55,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [autoPlayInterval, setAutoPlayInterval] = useState(5);
   const [transitionEffect, setTransitionEffect] = useState<'fade' | 'slide' | 'zoom'>('fade');
   const [notesFontSize, setNotesFontSize] = useState<'sm' | 'base' | 'lg' | 'xl'>('base');
+  const [jumpBuffer, setJumpBuffer] = useState<string>('');
+  const jumpTimerRef = useRef<any>(null);
   const [windowDimensions, setWindowDimensions] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
@@ -292,6 +294,33 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         return;
       }
 
+      // Quick Slide Jumping by Numbers (e.g. "3" + Enter)
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        setJumpBuffer(prev => {
+          const next = (prev + e.key).slice(0, 3);
+          clearTimeout(jumpTimerRef.current);
+          jumpTimerRef.current = setTimeout(() => {
+            setJumpBuffer('');
+          }, 2500);
+          return next;
+        });
+        return;
+      }
+
+      if (e.key === 'Enter' && jumpBuffer) {
+        e.preventDefault();
+        const target = parseInt(jumpBuffer, 10);
+        if (target >= 1 && target <= slides.length) {
+          clearPenCanvas();
+          setCurrentIndex(target - 1);
+          soundEffects.playSlideTransition();
+        }
+        setJumpBuffer('');
+        clearTimeout(jumpTimerRef.current);
+        return;
+      }
+
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
         goToNext();
       } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
@@ -335,7 +364,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, slides.length, blankMode]);
+  }, [currentIndex, slides.length, blankMode, jumpBuffer]);
 
   const toggleSound = () => {
     const nextState = !isSoundMuted;
@@ -764,6 +793,17 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             </div>
           )}
 
+          {/* Quick Slide Number Jump HUD Overlay */}
+          {jumpBuffer && (
+            <div className="absolute top-8 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 bg-slate-900/95 border-2 border-indigo-500 text-white rounded-2xl shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in zoom-in-95 duration-100">
+              <span className="text-xs text-indigo-300 font-medium">Lompat ke Slide:</span>
+              <span className="font-mono font-extrabold text-xl tracking-wider text-white bg-indigo-600/40 px-3 py-0.5 rounded-lg border border-indigo-500/50">
+                {jumpBuffer}
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">(Tekan Enter)</span>
+            </div>
+          )}
+
           {/* Floating Navigation Controls & Keyboard Hints */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-40">
             <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 px-3 py-1.5 rounded-full shadow-2xl backdrop-blur-md">
@@ -804,6 +844,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               <span><kbd className="text-indigo-300">C</kbd> Hapus</span>
               <span>•</span>
               <span><kbd className="text-indigo-300">N</kbd> Notes</span>
+              <span>•</span>
+              <span><kbd className="text-indigo-300">0-9+Enter</kbd> Lompat Slide</span>
               <span>•</span>
               <span><kbd className="text-indigo-300">F</kbd> Layar Penuh</span>
             </div>

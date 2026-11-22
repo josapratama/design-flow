@@ -20,6 +20,7 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
 }) => {
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [fileSuccessInfo, setFileSuccessInfo] = useState<{ fileName: string; slideCount: number } | null>(null);
   const [copied, setCopied] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
@@ -78,7 +79,14 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
       const content = ev.target?.result as string;
       if (content) {
         setCode(content);
-        setError(null);
+        try {
+          const parsed = parseDesignDSL(content, project.mode);
+          setFileSuccessInfo({ fileName: file.name, slideCount: parsed.slides.length });
+          setError(null);
+        } catch (err: any) {
+          setError('File berhasil dimuat namun memiliki kesalahan sintaks: ' + err.message);
+          setFileSuccessInfo(null);
+        }
       }
     };
     reader.readAsText(file);
@@ -202,6 +210,27 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
           className="flex-1 h-full p-4 pl-3 bg-transparent text-emerald-400 placeholder-slate-600 outline-none resize-none leading-5 selection:bg-indigo-600 selection:text-white font-mono overflow-y-auto whitespace-pre"
         />
       </div>
+
+      {/* File Upload Success Feedback Banner */}
+      {fileSuccessInfo && (
+        <div className="p-2.5 bg-emerald-500/15 border-t border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between px-3.5 animate-in slide-in-from-bottom duration-150">
+          <div className="flex items-center gap-1.5 truncate">
+            <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="truncate">
+              <b>{fileSuccessInfo.fileName}</b> ({fileSuccessInfo.slideCount} slide terdeteksi)
+            </span>
+          </div>
+          <button
+            onClick={() => {
+              handleApply();
+              setFileSuccessInfo(null);
+            }}
+            className="ml-2 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-[11px] shrink-0 transition-colors shadow-sm"
+          >
+            Terapkan Sekarang
+          </button>
+        </div>
+      )}
 
       {/* Error Alert if any */}
       {error && (

@@ -25,6 +25,8 @@ import {
   Focus,
   Maximize,
   Image as ImageIcon,
+  LayoutGrid,
+  SunMoon,
 } from 'lucide-react';
 import { DesignElement } from '../types';
 
@@ -53,6 +55,8 @@ interface ContextMenuProps {
   onZoomToSelection?: () => void;
   onZoomToFit?: () => void;
   onCopyArtboardImage?: () => void;
+  onOpenSlideSorter?: () => void;
+  onInvertSlideTheme?: () => void;
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -80,6 +84,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onZoomToSelection,
   onZoomToFit,
   onCopyArtboardImage,
+  onOpenSlideSorter,
+  onInvertSlideTheme,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -486,6 +492,37 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 <span>Batas Area Aman</span>
               </span>
               <kbd className="text-[10px] text-slate-500 font-mono">Shift+M</kbd>
+            </button>
+          )}
+
+          {onOpenSlideSorter && (
+            <button
+              onClick={() => {
+                onOpenSlideSorter();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Pengatur Kisi Slide</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Alt+S</kbd>
+            </button>
+          )}
+
+          {onInvertSlideTheme && (
+            <button
+              onClick={() => {
+                onInvertSlideTheme();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <SunMoon className="w-3.5 h-3.5 text-amber-400" />
+                <span>Invert Tema (Gelap ⇄ Terang)</span>
+              </span>
             </button>
           )}
         </>

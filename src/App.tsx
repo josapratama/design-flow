@@ -626,6 +626,8 @@ export default function App() {
           onZoomToSelection={handleZoomToSelection}
           onZoomToFit={handleZoomToFit}
           onCopyArtboardImage={handleCopyArtboardToClipboard}
+          onOpenSlideSorter={() => setIsSlideSorterOpen(true)}
+          onInvertSlideTheme={invertActiveSlideTheme}
         />
       )}
 

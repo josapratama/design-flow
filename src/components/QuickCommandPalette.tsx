@@ -32,6 +32,7 @@ import {
   TrendingUp,
   Split,
   LayoutGrid,
+  Quote,
 } from 'lucide-react';
 import { DesignElement, ElementType } from '../types';
 import { SMART_BLOCKS } from '../templates/smart-blocks';
@@ -246,6 +247,22 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
             content: 'Deskripsi konten yang jelas dan informatif untuk audiens.',
             fontSize: 18,
             color: '#cbd5e1',
+          })
+        ),
+    },
+    {
+      id: 'quote',
+      title: 'Kutipan / Blockquote',
+      subtitle: 'Teks kutipan dengan garis aksen dan tokoh/sumber',
+      category: 'Tipografi',
+      icon: <Quote className="w-4 h-4 text-purple-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('quote', 'Kutipan Inspiratif', 520, 110, {
+            content: 'Inovasi membedakan antara seorang pemimpin dan pengikut.',
+            subTitle: 'Steve Jobs — Pendiri Apple',
+            fontSize: 22,
+            color: '#e2e8f0',
           })
         ),
     },
@@ -533,6 +550,17 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
       action: () => {
         const block = SMART_BLOCKS.find(b => b.id === 'problem-solution-comparison');
         if (block) onAddElements(block.generateElements(120, 240));
+      },
+    },
+    {
+      id: 'block-testimonial',
+      title: 'Blok: Kutipan & Testimonial Tokoh',
+      subtitle: 'Kartu testimonial berwibawa dengan rating bintang 5 dan avatar',
+      category: 'Blok AI',
+      icon: <Quote className="w-4 h-4 text-purple-400" />,
+      action: () => {
+        const block = SMART_BLOCKS.find(b => b.id === 'testimonial-quote-card');
+        if (block) onAddElements(block.generateElements(360, 260));
       },
     },
   ];

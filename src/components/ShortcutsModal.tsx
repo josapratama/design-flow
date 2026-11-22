@@ -69,6 +69,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
       title: 'Riwayat & Mode Presentasi',
       items: [
         { keys: ['F5'], description: 'Mulai Mode Slideshow Presentasi Interaktif' },
+        { keys: ['0-9', 'Enter'], description: 'Lompat langsung ke nomor slide tertentu saat Q&A (misal: 4 + Enter)' },
         { keys: ['Home', 'End'], description: 'Lompat langsung ke slide pertama atau terakhir' },
         { keys: ['B'], description: 'Layar Kosong Hitam (Black Screen) untuk fokus audiens' },
         { keys: ['W'], description: 'Layar Kosong Putih (White Screen) untuk diskusi' },

@@ -984,11 +984,11 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
         {/* Konten Teks */}
         {(element.content !== undefined ||
-          ['heading', 'text', 'button', 'card'].includes(element.type)) && (
+          ['heading', 'text', 'quote', 'button', 'card'].includes(element.type)) && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                  Konten Teks
+                  {element.type === 'quote' ? 'Isi Kutipan / Petikan' : 'Konten Teks'}
                 </span>
                 <span className="text-[10px] font-mono text-indigo-400 font-medium">
                   {(element.content || '').trim().split(/\s+/).filter(Boolean).length} kata • {(element.content || '').length} karakter
@@ -999,14 +999,30 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 value={element.content || ''}
                 onChange={e => handleChange('content', e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
-                placeholder="Ketik teks konten..."
+                placeholder={element.type === 'quote' ? 'Ketik kalimat kutipan di sini...' : 'Ketik teks konten...'}
               />
             </div>
           )}
 
+        {/* Pengaturan Khusus Quote: Tokoh / Sumber Kutipan */}
+        {element.type === 'quote' && (
+          <div className="space-y-1.5 p-3 bg-slate-950 border border-slate-800 rounded-xl">
+            <label className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+              Tokoh / Sumber Kutipan (Author)
+            </label>
+            <input
+              type="text"
+              value={element.subTitle || ''}
+              onChange={e => handleChange('subTitle', e.target.value)}
+              placeholder="Contoh: Albert Einstein, Fisikawan Teoritis"
+              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none focus:border-indigo-500 text-xs"
+            />
+          </div>
+        )}
+
         {/* Tipografi */}
         {(element.fontSize !== undefined ||
-          ['heading', 'text', 'button', 'card'].includes(element.type)) && (
+          ['heading', 'text', 'quote', 'button', 'card'].includes(element.type)) && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">

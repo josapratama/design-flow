@@ -36,6 +36,7 @@ import {
   Table,
   TrendingUp,
   Split,
+  Quote,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -410,6 +411,28 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                 <div>
                   <div className="font-medium text-slate-200 text-xs">Paragraf Standar</div>
                   <div className="text-[10px] text-slate-400">Ukuran 18px paragraf naskah</div>
+                </div>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('quote', 'Kutipan Inspiratif', 520, 110, {
+                      content: 'Inovasi membedakan antara seorang pemimpin dan pengikut.',
+                      subTitle: 'Steve Jobs — Pendiri Apple',
+                      fontSize: 22,
+                      color: '#e2e8f0',
+                    })
+                  )
+                }
+                className="w-full text-left p-3 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 transition-all flex items-center gap-3 group"
+              >
+                <div className="p-2 rounded bg-indigo-500/10 text-indigo-400 group-hover:scale-110 transition-transform">
+                  <Quote className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-semibold text-slate-200 text-xs">Kutipan / Blockquote</div>
+                  <div className="text-[10px] text-slate-400">Garis aksen, italic & tokoh</div>
                 </div>
               </button>
             </div>
@@ -828,7 +851,8 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       {block.icon === 'CreditCard' && <CreditCard className="w-4 h-4 text-pink-400" />}
                       {block.icon === 'TrendingUp' && <TrendingUp className="w-4 h-4 text-sky-400" />}
                       {block.icon === 'Split' && <Split className="w-4 h-4 text-rose-400" />}
-                      {!['GitCommit', 'Users', 'Grid', 'CreditCard', 'TrendingUp', 'Split'].includes(block.icon) && (
+                      {block.icon === 'Quote' && <Quote className="w-4 h-4 text-purple-400" />}
+                      {!['GitCommit', 'Users', 'Grid', 'CreditCard', 'TrendingUp', 'Split', 'Quote'].includes(block.icon) && (
                         <Sparkles className="w-4 h-4 text-indigo-400" />
                       )}
                     </div>

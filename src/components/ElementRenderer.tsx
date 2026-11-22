@@ -435,7 +435,6 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
 
     case 'heading':
     case 'text':
-    case 'quote':
       return (
         <div
           className={`w-full h-full flex flex-col justify-center select-none overflow-hidden ${shadowClass}`}
@@ -443,13 +442,42 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
             fontFamily: resolvedFontFamily,
             color: color || '#ffffff',
             fontSize: `${fontSize || 24}px`,
-            fontWeight: fontWeight === 'extrabold' ? 800 : fontWeight === 'bold' ? 700 : fontWeight === 'semibold' ? 600 : 400,
+            fontWeight:
+              fontWeight === 'extrabold'
+                ? 800
+                : fontWeight === 'bold'
+                  ? 700
+                  : fontWeight === 'semibold'
+                    ? 600
+                    : 400,
             textAlign: textAlign || 'left',
             lineHeight: 1.25,
             whiteSpace: 'pre-wrap',
           }}
         >
           {content || (type === 'heading' ? 'Judul Teks' : 'Teks Paragraf')}
+        </div>
+      );
+
+    case 'quote':
+      return (
+        <div
+          className={`w-full h-full flex flex-col justify-center border-l-4 border-indigo-500 pl-4 py-1 select-none overflow-hidden ${shadowClass}`}
+          style={{
+            fontFamily: resolvedFontFamily,
+            color: color || '#e2e8f0',
+            fontSize: `${fontSize || 22}px`,
+            fontStyle: 'italic',
+            textAlign: textAlign || 'left',
+            lineHeight: 1.35,
+          }}
+        >
+          <div className="whitespace-pre-wrap">“{content || 'Kutipan inspiratif atau testimonial pelanggan.'}”</div>
+          {subTitle && (
+            <div className="text-xs not-italic text-slate-400 mt-2 font-normal">
+              — {subTitle}
+            </div>
+          )}
         </div>
       );
 

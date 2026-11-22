@@ -96,8 +96,7 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
         }
 
         case 'heading':
-        case 'text':
-        case 'quote': {
+        case 'text': {
           slide.addText(el.content || '', {
             x: posX,
             y: posY,
@@ -106,6 +105,51 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
             fontSize: el.fontSize ? Math.round(el.fontSize * 0.5) : 18,
             bold: el.fontWeight === 'bold' || el.fontWeight === 'extrabold',
             color: cleanHex(el.color || '#FFFFFF'),
+            align: (el.textAlign as any) || 'left',
+            valign: 'top',
+          });
+          break;
+        }
+
+        case 'quote': {
+          // Add accent vertical bar
+          slide.addShape(pptx.ShapeType.rect, {
+            x: posX,
+            y: posY,
+            w: 0.08,
+            h: h,
+            fill: { color: '6366F1' },
+            line: { color: '6366F1', width: 0 },
+          });
+
+          const quoteTextRuns: any[] = [
+            {
+              text: `“${el.content || 'Kutipan'}”`,
+              options: {
+                italic: true,
+                fontSize: el.fontSize ? Math.round(el.fontSize * 0.45) : 16,
+                color: cleanHex(el.color || '#E2E8F0'),
+                breakLine: !!el.subTitle,
+              },
+            },
+          ];
+
+          if (el.subTitle) {
+            quoteTextRuns.push({
+              text: `\n— ${el.subTitle}`,
+              options: {
+                italic: false,
+                fontSize: el.fontSize ? Math.round(el.fontSize * 0.35) : 12,
+                color: '94A3B8',
+              },
+            });
+          }
+
+          slide.addText(quoteTextRuns, {
+            x: posX + 0.18,
+            y: posY,
+            w: Math.max(0.5, w - 0.2),
+            h: h,
             align: (el.textAlign as any) || 'left',
             valign: 'top',
           });
