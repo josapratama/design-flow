@@ -49,6 +49,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
     e: React.PointerEvent,
     direction: 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w'
   ) => {
+    if (element.locked) return;
     e.stopPropagation();
     e.preventDefault();
 
@@ -119,7 +120,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
 
   // 2. Drag element position (moves ALL selected elements together + Magnetic Center Guides)
   const handleDragPointerDown = (e: React.PointerEvent) => {
-    if (isRotating) return;
+    if (isRotating || element.locked) return;
     e.stopPropagation();
 
     // Alt + Drag quick duplication (Figma / Illustrator style)
@@ -300,6 +301,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
 
   // 3. Rotation handle
   const handleRotatePointerDown = (e: React.PointerEvent) => {
+    if (element.locked) return;
     e.stopPropagation();
     e.preventDefault();
     setIsRotating(true);
@@ -344,6 +346,24 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
     height: `${handleSize}px`,
     cursor,
   });
+
+  if (element.locked) {
+    return (
+      <div
+        className="transform-handles absolute inset-0 pointer-events-auto border-2 border-dashed border-amber-500/80 rounded-[2px]"
+        data-export-ignore="true"
+        style={{ outline: '1px solid rgba(245, 158, 11, 0.3)', cursor: 'not-allowed' }}
+      >
+        <div
+          className="absolute -top-7 left-0 px-2 py-0.5 text-[10px] font-mono text-amber-300 bg-amber-950/95 border border-amber-500/50 rounded shadow-lg pointer-events-none whitespace-nowrap flex items-center gap-1.5"
+          data-export-ignore="true"
+        >
+          <span>🔒 Terkunci</span>
+          <span className="text-amber-400/80 font-sans text-[9px]">(Buka kunci di panel untuk mengedit)</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

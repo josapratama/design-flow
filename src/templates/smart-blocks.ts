@@ -2044,4 +2044,238 @@ export const SMART_BLOCKS: SmartBlockDefinition[] = [
       return elements;
     },
   },
+  // 17. CALL TO ACTION & FINAL SLIDE BANNER (PENUTUP PRESENTASI)
+  {
+    id: 'cta-banner-final-slide',
+    name: 'Banner Penutup & Panggilan Aksi (Final Slide CTA)',
+    description: 'Tata letak penutup presentasi premium lengkap dengan ucapan terima kasih, pesan penutup, tombol aksi ganda, dan kartu kontak tim.',
+    icon: 'Sparkles',
+    category: 'all',
+    generateElements: (startX = 160, startY = 130) => {
+      const now = Date.now();
+      const elements: DesignElement[] = [];
+      const bannerW = 1600;
+      const bannerH = 800;
+
+      // Outer Container Card
+      elements.push({
+        id: `el_${now}_cta_bg`,
+        type: 'card',
+        name: 'Wadah Utama Penutup (CTA)',
+        x: startX,
+        y: startY,
+        width: bannerW,
+        height: bannerH,
+        zIndex: 1,
+        fill: '#0b1120',
+        stroke: '#3b82f6',
+        strokeWidth: 2,
+        borderRadius: 32,
+        shadow: '2xl',
+      });
+
+      // Accent Top Decorative Bar
+      elements.push({
+        id: `el_${now}_cta_bar`,
+        type: 'card',
+        name: 'Garis Aksen Atas',
+        x: startX + 40,
+        y: startY + 2,
+        width: bannerW - 80,
+        height: 6,
+        zIndex: 2,
+        fill: '#38bdf8',
+        borderRadius: 9999,
+      });
+
+      // Eyebrow Pill Badge
+      elements.push({
+        id: `el_${now}_cta_badge`,
+        type: 'badge-shape',
+        name: 'Badge Sesi Tanya Jawab',
+        x: startX + 60,
+        y: startY + 60,
+        width: 320,
+        height: 36,
+        zIndex: 2,
+        content: '✨ TERIMA KASIH • SESI Q&A DIBUKA',
+        fill: '#1e293b',
+        stroke: '#38bdf8',
+        color: '#7dd3fc',
+        borderRadius: 9999,
+        fontSize: 12,
+        fontWeight: 'bold',
+      });
+
+      // Big Title / Headline
+      elements.push({
+        id: `el_${now}_cta_title`,
+        type: 'heading',
+        name: 'Judul Utama Penutup',
+        x: startX + 60,
+        y: startY + 116,
+        width: bannerW - 120,
+        height: 90,
+        zIndex: 2,
+        content: 'Mari Bangun Masa Depan Digital Bersama Kami',
+        fontSize: 46,
+        fontWeight: 'extrabold',
+        color: '#ffffff',
+      });
+
+      // Subheading / Lead Paragraph
+      elements.push({
+        id: `el_${now}_cta_desc`,
+        type: 'text',
+        name: 'Pesan Deskripsi Penutup',
+        x: startX + 60,
+        y: startY + 215,
+        width: 1200,
+        height: 70,
+        zIndex: 2,
+        content:
+          'Kami siap mewujudkan konsep produk digital Anda menjadi kenyataan yang berdampak tinggi. Diskusikan kebutuhan bisnis Anda atau jadwalkan sesi konsultasi teknologi hari ini.',
+        fontSize: 20,
+        lineHeight: 1.6,
+        color: '#94a3b8',
+      });
+
+      // Action Button 1: Primary CTA
+      elements.push({
+        id: `el_${now}_cta_btn_primary`,
+        type: 'button',
+        name: 'Tombol Aksi Utama (Konsultasi)',
+        x: startX + 60,
+        y: startY + 310,
+        width: 280,
+        height: 56,
+        zIndex: 2,
+        content: 'Jadwalkan Konsultasi Gratis →',
+        fill: '#2563eb',
+        color: '#ffffff',
+        borderRadius: 14,
+        fontSize: 15,
+        fontWeight: 'bold',
+        shadow: 'lg',
+      });
+
+      // Action Button 2: Secondary / Pitch Deck
+      elements.push({
+        id: `el_${now}_cta_btn_secondary`,
+        type: 'button',
+        name: 'Tombol Aksi Kedua (Pitch Deck)',
+        x: startX + 360,
+        y: startY + 310,
+        width: 250,
+        height: 56,
+        zIndex: 2,
+        content: 'Unduh Pitch Deck (PDF)',
+        fill: 'rgba(255, 255, 255, 0.06)',
+        stroke: 'rgba(255, 255, 255, 0.2)',
+        color: '#f1f5f9',
+        borderRadius: 14,
+        fontSize: 15,
+        fontWeight: 'semibold',
+      });
+
+      // Contact Info Cards (3 Columns)
+      const contactCards = [
+        {
+          label: 'SUREL BISNIS',
+          val: 'halo@designflow.id',
+          sub: 'Waktu respon < 24 jam',
+          accent: '#38bdf8',
+        },
+        {
+          label: 'TELEPON & WHATSAPP',
+          val: '+62 812-3456-7890',
+          sub: 'Senin - Jumat (09:00 - 18:00 WIB)',
+          accent: '#34d399',
+        },
+        {
+          label: 'KANTOR & SITUS WEB',
+          val: 'www.designflow.id',
+          sub: 'SCBD Lot 28, Senayan, Jakarta Selatan',
+          accent: '#818cf8',
+        },
+      ];
+
+      const cardW = 460;
+      const cardGap = 50;
+      const contactStartY = startY + 410;
+
+      contactCards.forEach((c, idx) => {
+        const cX = startX + 60 + idx * (cardW + cardGap);
+
+        // Card Container
+        elements.push({
+          id: `el_${now}_contact_box_${idx}`,
+          type: 'card',
+          name: `Kartu Kontak ${c.label}`,
+          x: cX,
+          y: contactStartY,
+          width: cardW,
+          height: 180,
+          zIndex: 2,
+          fill: '#0f172a',
+          stroke: 'rgba(255, 255, 255, 0.08)',
+          strokeWidth: 1,
+          borderRadius: 20,
+        });
+
+        // Eyebrow Label
+        elements.push({
+          id: `el_${now}_contact_lbl_${idx}`,
+          type: 'badge-shape',
+          name: `Label Kontak ${idx + 1}`,
+          x: cX + 24,
+          y: contactStartY + 24,
+          width: 170,
+          height: 26,
+          zIndex: 3,
+          content: c.label,
+          fill: 'rgba(255, 255, 255, 0.05)',
+          stroke: c.accent,
+          color: c.accent,
+          fontSize: 10,
+          fontWeight: 'extrabold',
+          borderRadius: 6,
+        });
+
+        // Main Contact Value
+        elements.push({
+          id: `el_${now}_contact_val_${idx}`,
+          type: 'heading',
+          name: `Isi Kontak ${idx + 1}`,
+          x: cX + 24,
+          y: contactStartY + 62,
+          width: cardW - 48,
+          height: 38,
+          zIndex: 3,
+          content: c.val,
+          fontSize: 20,
+          fontWeight: 'bold',
+          color: '#ffffff',
+        });
+
+        // Subtitle / Note
+        elements.push({
+          id: `el_${now}_contact_sub_${idx}`,
+          type: 'text',
+          name: `Keterangan Kontak ${idx + 1}`,
+          x: cX + 24,
+          y: contactStartY + 110,
+          width: cardW - 48,
+          height: 44,
+          zIndex: 3,
+          content: c.sub,
+          fontSize: 13,
+          lineHeight: 1.4,
+          color: '#94a3b8',
+        });
+      });
+
+      return elements;
+    },
+  },
 ];

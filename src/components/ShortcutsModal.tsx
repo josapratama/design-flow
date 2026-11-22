@@ -91,6 +91,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Kuas (2/4/8px)'], description: 'Pilih ketebalan garis kuas pena coretan saat presentasi' },
         { keys: ['U'], description: 'Batalkan coretan pena terakhir (Undo Stroke)' },
         { keys: ['C'], description: 'Hapus seluruh coretan pena pada slide' },
+        { keys: ['G'], description: 'Buka laci kisi miniatur slide & pencarian cepat di mode presentasi' },
         { keys: ['Laci Slide'], description: 'Buka laci miniatur slide pada kontrol untuk lompat langsung 1-klik' },
         { keys: ['N'], description: 'Tampilkan / Sembunyikan Catatan Pembicara' },
         { keys: ['M'], description: 'Aktifkan / Matikan Efek Suara Slide' },
