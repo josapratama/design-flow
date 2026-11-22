@@ -38,6 +38,22 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
       slide.addNotes(slideData.notes);
     }
 
+    // Slide Transitions (Native PowerPoint transition)
+    if (slideData.transition && slideData.transition !== 'none') {
+      try {
+        (slide as any).transition = {
+          type:
+            slideData.transition === 'slide'
+              ? 'push'
+              : slideData.transition === 'zoom'
+                ? 'wheel'
+                : 'fade',
+        };
+      } catch (err) {
+        console.warn('Gagal set slide transition pptx:', err);
+      }
+    }
+
     // Scale factors: PPTX 16:9 is 10 x 5.625 inches in pptxgenjs
     // Screen width is slideData.width (default 1920 x 1080)
     const scaleX = 10 / slideData.width;

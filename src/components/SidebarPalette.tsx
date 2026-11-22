@@ -34,6 +34,8 @@ import {
   Tag,
   Image as ImageIcon,
   Table,
+  TrendingUp,
+  Split,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -824,6 +826,11 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       {block.icon === 'Users' && <Users className="w-4 h-4 text-cyan-400" />}
                       {block.icon === 'Grid' && <Grid className="w-4 h-4 text-amber-400" />}
                       {block.icon === 'CreditCard' && <CreditCard className="w-4 h-4 text-pink-400" />}
+                      {block.icon === 'TrendingUp' && <TrendingUp className="w-4 h-4 text-sky-400" />}
+                      {block.icon === 'Split' && <Split className="w-4 h-4 text-rose-400" />}
+                      {!['GitCommit', 'Users', 'Grid', 'CreditCard', 'TrendingUp', 'Split'].includes(block.icon) && (
+                        <Sparkles className="w-4 h-4 text-indigo-400" />
+                      )}
                     </div>
                     <div>
                       <div className="font-bold text-slate-200 text-xs group-hover:text-indigo-300 transition-colors">

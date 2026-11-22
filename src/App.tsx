@@ -577,6 +577,8 @@ export default function App() {
         onOpenTemplates={() => setIsTemplatesOpen(true)}
         onOpenFindReplace={() => setIsFindReplaceOpen(true)}
         onDuplicateActiveSlide={() => duplicateSlide(project.activeSlideId)}
+        onCopyArtboardImage={handleCopyArtboardToClipboard}
+        onInvertSlideTheme={invertActiveSlideTheme}
       />
 
       {/* Floating Right-Click Context Menu */}

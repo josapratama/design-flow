@@ -448,6 +448,37 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             );
           })()}
 
+          {/* Visual Target Countdown Remaining Badge */}
+          {targetMinutes > 0 && (() => {
+            const targetSeconds = targetMinutes * 60;
+            const diff = targetSeconds - secondsElapsed;
+            const isOver = diff < 0;
+            const remainingAbs = Math.abs(diff);
+            return (
+              <div
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold border transition-all ${
+                  isOver
+                    ? 'bg-rose-500/25 border-rose-500 text-rose-300 animate-pulse'
+                    : diff <= 120
+                      ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                      : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                }`}
+                title={
+                  isOver
+                    ? 'Waktu presentasi telah melewati batas target!'
+                    : 'Sisa waktu presentasi menuju batas target'
+                }
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    isOver ? 'bg-rose-400' : diff <= 120 ? 'bg-amber-400' : 'bg-emerald-400'
+                  }`}
+                />
+                <span>{isOver ? `+${formatTimer(remainingAbs)} Lewat` : `Sisa ${formatTimer(remainingAbs)}`}</span>
+              </div>
+            );
+          })()}
+
           {/* Target Duration Selector */}
           <select
             value={targetMinutes}

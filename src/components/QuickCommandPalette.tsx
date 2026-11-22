@@ -26,6 +26,11 @@ import {
   Play,
   Download,
   LayoutTemplate,
+  Table as TableIcon,
+  SunMoon,
+  ClipboardCopy,
+  TrendingUp,
+  Split,
 } from 'lucide-react';
 import { DesignElement, ElementType } from '../types';
 import { SMART_BLOCKS } from '../templates/smart-blocks';
@@ -42,6 +47,8 @@ interface QuickCommandPaletteProps {
   onOpenTemplates?: () => void;
   onOpenFindReplace?: () => void;
   onDuplicateActiveSlide?: () => void;
+  onCopyArtboardImage?: () => void;
+  onInvertSlideTheme?: () => void;
 }
 
 interface CommandItem {
@@ -65,6 +72,8 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
   onOpenTemplates,
   onOpenFindReplace,
   onDuplicateActiveSlide,
+  onCopyArtboardImage,
+  onInvertSlideTheme,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -150,6 +159,30 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
             category: 'Aksi Studio',
             icon: <Copy className="w-4 h-4 text-purple-400" />,
             action: () => onDuplicateActiveSlide(),
+          },
+        ]
+      : []),
+    ...(onCopyArtboardImage
+      ? [
+          {
+            id: 'action-copy-artboard',
+            title: 'Salin Gambar Slide ke Clipboard (Ctrl+Shift+C)',
+            subtitle: 'Render slide saat ini sebagai PNG dan salin langsung ke clipboard',
+            category: 'Aksi Studio',
+            icon: <ClipboardCopy className="w-4 h-4 text-emerald-400" />,
+            action: () => onCopyArtboardImage(),
+          },
+        ]
+      : []),
+    ...(onInvertSlideTheme
+      ? [
+          {
+            id: 'action-invert-theme',
+            title: 'Invert Tema Slide (Gelap ⇄ Terang)',
+            subtitle: 'Tukar palet warna latar & teks slide antara mode gelap dan terang',
+            category: 'Aksi Studio',
+            icon: <SunMoon className="w-4 h-4 text-amber-400" />,
+            action: () => onInvertSlideTheme(),
           },
         ]
       : []),
@@ -270,6 +303,25 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
             color: '#38bdf8',
             borderRadius: 16,
             shadow: 'lg',
+          })
+        ),
+    },
+    {
+      id: 'table',
+      title: 'Tabel Data & Matriks',
+      subtitle: 'Tabel komparasi terstruktur dengan header dan zebra striping',
+      category: 'UI Kit',
+      icon: <TableIcon className="w-4 h-4 text-emerald-400" />,
+      action: () =>
+        onAddElement(
+          createBaseElement('table', 'Tabel Data', 520, 240, {
+            content:
+              'Fitur | Standar | Enterprise\nKapasitas | 10 GB | Unlimited\nIntegrasi API | Terbatas | Full Access\nDukungan 24/7 | Email | Dedicated SLA',
+            fill: '#0f172a',
+            stroke: '#334155',
+            color: '#e2e8f0',
+            borderRadius: 12,
+            shadow: 'md',
           })
         ),
     },
@@ -431,7 +483,7 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
       category: 'Blok AI',
       icon: <Grid className="w-4 h-4 text-amber-400" />,
       action: () => {
-        const block = SMART_BLOCKS.find(b => b.id === 'swot-analysis');
+        const block = SMART_BLOCKS.find(b => b.id === 'swot-matrix' || b.id === 'swot-analysis');
         if (block) onAddElements(block.generateElements(240, 260));
       },
     },
@@ -444,6 +496,28 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
       action: () => {
         const block = SMART_BLOCKS.find(b => b.id === 'pricing-3-tiers');
         if (block) onAddElements(block.generateElements(180, 280));
+      },
+    },
+    {
+      id: 'block-kpi',
+      title: 'Blok: Dashboard 4 KPI & Metrik',
+      subtitle: 'Empat kartu metrik statistik dan pertumbuhan persentase',
+      category: 'Blok AI',
+      icon: <TrendingUp className="w-4 h-4 text-sky-400" />,
+      action: () => {
+        const block = SMART_BLOCKS.find(b => b.id === 'kpi-dashboard-4-metrics');
+        if (block) onAddElements(block.generateElements(80, 320));
+      },
+    },
+    {
+      id: 'block-problem-solution',
+      title: 'Blok: Komparasi Masalah vs Solusi',
+      subtitle: 'Dua kartu berdampingan untuk pitch deck masalah dan solusi',
+      category: 'Blok AI',
+      icon: <Split className="w-4 h-4 text-rose-400" />,
+      action: () => {
+        const block = SMART_BLOCKS.find(b => b.id === 'problem-solution-comparison');
+        if (block) onAddElements(block.generateElements(120, 240));
       },
     },
   ];
