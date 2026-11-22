@@ -4,6 +4,7 @@ import { ElementRenderer } from './ElementRenderer';
 import { getSlideBackground } from '../utils/slideStyle';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../utils/audioEffects';
+import { LivePollState } from './presenter/PresenterLivePollModal';
 
 interface DoodleStroke {
   color: string;
@@ -27,6 +28,7 @@ export const AudienceScreen: React.FC = () => {
   const [strokes, setStrokes] = useState<DoodleStroke[]>([]);
   const [showHint, setShowHint] = useState(true);
   const [reactions, setReactions] = useState<Array<{ id: number; emoji: string; left: number }>>([]);
+  const [livePoll, setLivePoll] = useState<LivePollState | null>(null);
 
   const triggerFloatingReaction = (emoji: string) => {
     const id = Date.now() + Math.random();
@@ -143,6 +145,8 @@ export const AudienceScreen: React.FC = () => {
         confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
       } else if (data.type === 'REACTION' && data.emoji) {
         triggerFloatingReaction(data.emoji);
+      } else if (data.type === 'SYNC_POLL' && data.poll) {
+        setLivePoll(data.poll);
       }
     };
 
@@ -293,6 +297,61 @@ export const AudienceScreen: React.FC = () => {
       {blankMode === 'white' && (
         <div className="absolute inset-0 bg-white z-40 transition-opacity duration-300 animate-in fade-in" />
       )}
+
+      {/* Live Poll Audience Overlay */}
+      {livePoll && livePoll.isOpen && (() => {
+        const totalVotes = livePoll.options.reduce((acc, o) => acc + o.votes, 0);
+        return (
+          <div className="absolute inset-0 z-45 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-200">
+            <div className="w-full max-w-2xl bg-slate-900 border border-indigo-500/40 rounded-2xl p-6 shadow-2xl space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  📊 Live Poll Audiens
+                </span>
+                <span className="text-xs text-slate-400 font-mono">
+                  Total Suara: <strong className="text-white">{totalVotes}</strong>
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-extrabold text-white leading-snug">
+                {livePoll.question}
+              </h2>
+              <div className="space-y-3">
+                {livePoll.options.map(opt => {
+                  const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+                  const isWin = livePoll.winnerId === opt.id;
+                  return (
+                    <div
+                      key={opt.id}
+                      className={`p-3.5 rounded-xl border relative overflow-hidden ${
+                        isWin ? 'bg-indigo-950/70 border-amber-400 ring-2 ring-amber-400/40' : 'bg-slate-950/80 border-slate-800'
+                      }`}
+                    >
+                      <div
+                        className="absolute inset-y-0 left-0 opacity-25 transition-all duration-500"
+                        style={{ width: `${pct}%`, backgroundColor: opt.color }}
+                      />
+                      <div className="relative z-10 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span
+                            className="w-7 h-7 rounded-lg flex items-center justify-center font-mono font-extrabold text-xs text-white shrink-0"
+                            style={{ backgroundColor: opt.color }}
+                          >
+                            {opt.label}
+                          </span>
+                          <span className="text-sm font-bold text-slate-100 truncate">{opt.text}</span>
+                        </div>
+                        <span className="text-sm font-mono font-extrabold text-white shrink-0">
+                          {pct}% ({opt.votes})
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Slide Canvas Container */}
       <div

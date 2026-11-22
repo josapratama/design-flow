@@ -1,5 +1,6 @@
 import pptxgen from 'pptxgenjs';
 import { DesignProject } from '../types';
+import { getQrCodePngDataUrl } from '../utils/qrGenerator';
 
 /**
  * Generates and downloads a real, editable Microsoft PowerPoint presentation (.pptx).
@@ -725,6 +726,49 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
             align: 'left',
             valign: 'top',
           });
+          break;
+        }
+
+        case 'qr-code': {
+          const qrPng = getQrCodePngDataUrl(
+            el.content || 'https://designflow.app',
+            320,
+            el.color || '#000000',
+            el.fill || '#FFFFFF'
+          );
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: { color: cleanHex(el.fill || '#FFFFFF') },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
+            rectRadius: 0.12,
+          });
+          const captionHeight = el.subTitle ? 0.22 : 0;
+          const qrSize = Math.max(0.3, Math.min(w - 0.16, h - 0.16 - captionHeight));
+          try {
+            slide.addImage({
+              data: qrPng,
+              x: posX + (w - qrSize) / 2,
+              y: posY + 0.08,
+              w: qrSize,
+              h: qrSize,
+            });
+          } catch {}
+          if (el.subTitle) {
+            slide.addText(el.subTitle, {
+              x: posX + 0.05,
+              y: posY + h - 0.24,
+              w: w - 0.1,
+              h: 0.2,
+              fontSize: 9,
+              bold: true,
+              color: cleanHex(el.color || '#0F172A'),
+              align: 'center',
+              valign: 'middle',
+            });
+          }
           break;
         }
 

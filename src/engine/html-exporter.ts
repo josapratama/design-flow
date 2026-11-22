@@ -1,4 +1,5 @@
 import { DesignProject, Slide } from '../types';
+import { getQrCodeUrl } from '../utils/qrGenerator';
 
 /**
  * Generates a self-contained, standalone offline HTML presentation file.
@@ -6,7 +7,21 @@ import { DesignProject, Slide } from '../types';
  */
 export function generateStandaloneHtmlPresentation(project: DesignProject): string {
   const title = project.title || 'Presentasi';
-  const slidesDataJson = JSON.stringify(project.slides);
+  const enrichedSlides = project.slides.map(s => ({
+    ...s,
+    elements: s.elements.map(el =>
+      el.type === 'qr-code'
+        ? {
+            ...el,
+            meta: {
+              ...(el.meta || {}),
+              qrDataUri: getQrCodeUrl(el.content || 'https://designflow.app', 300, el.color || '#000000', el.fill || '#ffffff'),
+            },
+          }
+        : el
+    ),
+  }));
+  const slidesDataJson = JSON.stringify(enrichedSlides);
 
   const allGoogleFonts = Array.from(
     new Set(
@@ -320,6 +335,26 @@ ${fontLink}  <style>
           innerContent = '<svg viewBox="0 0 100 100" style="width:100%;height:100%;"><polygon points="50,5 95,50 50,95 5,50" fill="' + (el.fill || '#6366f1') + '" stroke="' + (el.stroke || 'none') + '" stroke-width="' + (el.strokeWidth || 0) + '"/></svg>';
         } else if (el.type === 'speech-bubble') {
           innerContent = '<svg viewBox="0 0 100 100" style="width:100%;height:100%;"><path d="M10 20 C10 10, 20 10, 30 10 L70 10 C80 10, 90 10, 90 20 L90 60 C90 70, 80 70, 70 70 L35 70 L20 85 L20 70 L20 70 C10 70, 10 60, 10 50 Z" fill="' + (el.fill || '#1e293b') + '" stroke="' + (el.stroke || '#6366f1') + '" stroke-width="' + (el.strokeWidth || 2) + '"/></svg>';
+        } else if (el.type === 'qr-code') {
+          const qrUri = (el.meta && el.meta.qrDataUri) || '';
+          innerContent = '<div style="width:100%;height:100%;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:' + (el.fill || '#ffffff') + ';border-radius:inherit;">' +
+            '<img src="' + qrUri + '" style="width:100%;height:' + (el.subTitle ? '82%' : '100%') + ';object-fit:contain;" />' +
+            (el.subTitle ? '<span style="font-size:10px;font-weight:700;color:#0f172a;text-align:center;">' + escapeHtml(el.subTitle) + '</span>' : '') +
+            '</div>';
+        } else if (el.type === 'pricing-card') {
+          innerContent = '<div style="width:100%;height:100%;padding:16px;display:flex;flex-direction:column;justify-content:space-between;">' +
+            '<div><div style="font-size:11px;font-weight:700;color:#818cf8;text-transform:uppercase;">' + escapeHtml(el.subTitle || 'Paket Pro') + '</div>' +
+            '<div style="font-size:22px;font-weight:900;color:#ffffff;margin:6px 0;">' + escapeHtml(el.content || 'Rp 99.000') + '</div></div>' +
+            '<div style="padding:6px;background:#4f46e5;color:#fff;border-radius:8px;text-align:center;font-size:11px;font-weight:700;">Pilih Paket →</div></div>';
+        } else if (el.type === 'timeline-item') {
+          innerContent = '<div style="width:100%;height:100%;padding:14px;display:flex;flex-direction:column;justify-content:center;">' +
+            '<span style="font-size:10px;color:#818cf8;font-family:monospace;font-weight:700;">' + escapeHtml(el.subTitle || 'Fase 01') + '</span>' +
+            '<div style="font-size:13px;font-weight:700;color:#fff;margin:3px 0;">' + escapeHtml(el.name || 'Milestone') + '</div>' +
+            '<div style="font-size:11px;color:#94a3b8;">' + escapeHtml(el.content || '') + '</div></div>';
+        } else if (el.type === 'testimonial-card') {
+          innerContent = '<div style="width:100%;height:100%;padding:14px;display:flex;flex-direction:column;justify-content:space-between;">' +
+            '<div style="font-size:12px;font-style:italic;color:#e2e8f0;">"' + escapeHtml(el.content || '') + '"</div>' +
+            '<div style="font-size:11px;font-weight:700;color:#818cf8;">' + escapeHtml(el.name || 'Reviewer') + ' • <span style="font-weight:400;color:#94a3b8;">' + escapeHtml(el.subTitle || '') + '</span></div></div>';
         } else if (el.content) {
           innerContent = '<div style="' + fontStyle + '; padding: 4px 6px;">' + escapeHtml(el.content) + '</div>';
         }

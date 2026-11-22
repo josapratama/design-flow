@@ -1,5 +1,49 @@
 import { DesignElement, DesignMode, ElementType, PRESET_SIZES, Slide } from '../types';
 
+const ALL_ELEMENT_TYPES: ElementType[] = [
+  'rect',
+  'circle',
+  'triangle',
+  'star',
+  'hexagon',
+  'heart',
+  'diamond',
+  'speech-bubble',
+  'arrow',
+  'line',
+  'card',
+  'badge-shape',
+  'heading',
+  'text',
+  'quote',
+  'button',
+  'input',
+  'navbar',
+  'bottom-nav',
+  'avatar',
+  'metric-card',
+  'toggle',
+  'table',
+  'chart',
+  'rating',
+  'breadcrumb',
+  'alert-box',
+  'accordion-item',
+  'progress-bar',
+  'pricing-card',
+  'timeline-item',
+  'chat-bubble',
+  'code-snippet',
+  'testimonial-card',
+  'icon',
+  'image',
+  'qr-code',
+];
+
+const ELEMENT_REGEX = new RegExp(
+  `^(${ALL_ELEMENT_TYPES.join('|')})\\s+([a-zA-Z0-9_-]+)\\s*\\{`
+);
+
 /**
  * Parses DesignFlow DSL back into structured Slides and Elements.
  */
@@ -20,12 +64,10 @@ export function parseDesignDSL(dsl: string, currentMode: DesignMode = 'slide'): 
     const rawLine = lines[i];
     const line = rawLine.trim();
 
-    // Skip empty lines & comments
     if (!line || line.startsWith('//') || line.startsWith('#')) {
       continue;
     }
 
-    // Top-level @design directive
     if (line.startsWith('@design')) {
       const titleMatch = line.match(/title="([^"]+)"/);
       if (titleMatch) title = unescapeString(titleMatch[1]);
@@ -35,7 +77,6 @@ export function parseDesignDSL(dsl: string, currentMode: DesignMode = 'slide'): 
       continue;
     }
 
-    // Artboard / Slide declaration
     const artboardMatch = line.match(/^(?:artboard|slide)\s+"([^"]+)"\s*\{/);
     if (artboardMatch) {
       const defaultPreset = PRESET_SIZES.find(p => p.mode === mode) || PRESET_SIZES[0];
@@ -52,10 +93,7 @@ export function parseDesignDSL(dsl: string, currentMode: DesignMode = 'slide'): 
       continue;
     }
 
-    // Element declaration inside artboard
-    const elementMatch = line.match(
-      /^(heading|text|quote|rect|circle|triangle|star|hexagon|arrow|line|card|badge-shape|button|input|navbar|bottom-nav|avatar|metric-card|toggle|table|chart|icon|image)\s+([a-zA-Z0-9_-]+)\s*\{/
-    );
+    const elementMatch = line.match(ELEMENT_REGEX);
     if (elementMatch && currentSlide) {
       const type = elementMatch[1] as ElementType;
       const rawName = elementMatch[2];
@@ -65,14 +103,13 @@ export function parseDesignDSL(dsl: string, currentMode: DesignMode = 'slide'): 
         name: rawName,
         x: 100,
         y: 100,
-        width: type === 'button' ? 180 : type === 'heading' ? 600 : 200,
-        height: type === 'button' ? 48 : type === 'heading' ? 64 : 100,
+        width: type === 'button' ? 180 : type === 'heading' ? 600 : type === 'qr-code' ? 180 : 200,
+        height: type === 'button' ? 48 : type === 'heading' ? 64 : type === 'qr-code' ? 180 : 100,
         zIndex: currentSlide.elements.length + 1,
       };
       continue;
     }
 
-    // Closing braces
     if (line === '}') {
       if (currentElement && currentSlide) {
         currentSlide.elements.push(currentElement as DesignElement);
@@ -83,7 +120,6 @@ export function parseDesignDSL(dsl: string, currentMode: DesignMode = 'slide'): 
       continue;
     }
 
-    // Parse Properties
     if (currentElement) {
       parseElementProperty(line, currentElement);
     } else if (currentSlide) {
@@ -91,7 +127,6 @@ export function parseDesignDSL(dsl: string, currentMode: DesignMode = 'slide'): 
     }
   }
 
-  // Fallback if no artboard was defined
   if (slides.length === 0) {
     const defaultPreset = PRESET_SIZES.find(p => p.mode === mode) || PRESET_SIZES[0];
     slides.push({
@@ -151,10 +186,15 @@ function parseSlideProperty(line: string, slide: Slide) {
     slide.transition = transitionMatch[1] as any;
     return;
   }
+
+  const transitionDurMatch = line.match(/transitionDuration:\s*([0-9.]+)/);
+  if (transitionDurMatch) {
+    slide.transitionDuration = parseFloat(transitionDurMatch[1]);
+    return;
+  }
 }
 
 function parseElementProperty(line: string, el: Partial<DesignElement>) {
-  // Chart Data JSON array parsing
   const chartDataMatch = line.match(/chartData:\s*(\[.+\])/);
   if (chartDataMatch) {
     try {
@@ -162,6 +202,7 @@ function parseElementProperty(line: string, el: Partial<DesignElement>) {
     } catch {}
     return;
   }
+
   const posMatch = line.match(/position:\s*\[(-?\d+),\s*(-?\d+)\]/);
   if (posMatch) {
     el.x = parseInt(posMatch[1], 10);
@@ -176,14 +217,19 @@ function parseElementProperty(line: string, el: Partial<DesignElement>) {
     return;
   }
 
-  // Icon alias mapping
-  const iconMatch = line.match(/icon:\s*"([^"]+)"/);
+  // Legacy aliases support
+  const iconMatch = line.match(/^icon:\s*"([^"]+)"/);
   if (iconMatch) {
     el.iconName = unescapeString(iconMatch[1]);
     return;
   }
 
-  // Boolean flags
+  const badgeAliasMatch = line.match(/^badge:\s*"([^"]+)"/);
+  if (badgeAliasMatch) {
+    el.badgeText = unescapeString(badgeAliasMatch[1]);
+    return;
+  }
+
   if (line.startsWith('locked:')) {
     el.locked = line.includes('true');
     return;
@@ -202,13 +248,32 @@ function parseElementProperty(line: string, el: Partial<DesignElement>) {
   }
 
   const strProps: (keyof DesignElement)[] = [
-    'content', 'color', 'fill', 'stroke', 'variant', 'placeholder', 
-    'iconName', 'subTitle', 'badgeText', 'shadow', 'strokeDash', 
-    'fontWeight', 'fontStyle', 'textDecoration', 'textTransform', 'textAlign', 'imageUrl', 'groupId', 'fontFamily', 'chartType'
+    'content',
+    'color',
+    'fill',
+    'stroke',
+    'variant',
+    'placeholder',
+    'iconName',
+    'subTitle',
+    'badgeText',
+    'shadow',
+    'strokeDash',
+    'fontWeight',
+    'fontStyle',
+    'textDecoration',
+    'textTransform',
+    'textAlign',
+    'imageUrl',
+    'groupId',
+    'fontFamily',
+    'chartType',
+    'linkToSlideId',
+    'animation',
   ];
 
   for (const prop of strProps) {
-    const match = line.match(new RegExp(`${prop}:\\s*"([^"]+)"`));
+    const match = line.match(new RegExp(`^${prop}:\\s*"([^"]*)"`));
     if (match) {
       (el as any)[prop] = unescapeString(match[1]);
       return;
@@ -216,11 +281,20 @@ function parseElementProperty(line: string, el: Partial<DesignElement>) {
   }
 
   const numProps: (keyof DesignElement)[] = [
-    'zIndex', 'rotation', 'opacity', 'fontSize', 'strokeWidth', 'borderRadius', 'letterSpacing', 'lineHeight'
+    'zIndex',
+    'rotation',
+    'opacity',
+    'fontSize',
+    'strokeWidth',
+    'borderRadius',
+    'letterSpacing',
+    'lineHeight',
+    'animationDuration',
+    'animationDelay',
   ];
 
   for (const prop of numProps) {
-    const match = line.match(new RegExp(`${prop}:\\s*(-?[0-9.]+)`));
+    const match = line.match(new RegExp(`^${prop}:\\s*(-?[0-9.]+)`));
     if (match) {
       (el as any)[prop] = parseFloat(match[1]);
       return;

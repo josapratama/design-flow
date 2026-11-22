@@ -2,45 +2,21 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
 import { getSlideBackground } from '../utils/slideStyle';
-import {
-  Play,
-  Pause,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Maximize2,
-  Minimize2,
-  CircleDot,
-  Volume2,
-  VolumeX,
-  FileEdit,
-  RotateCcw,
-  Pen,
-  Eraser,
-  EyeOff,
-  ExternalLink,
-  FileDown,
-  Undo2,
-  HelpCircle,
-  PartyPopper,
-  LayoutGrid,
-  Search,
-  SlidersHorizontal,
-  Smile,
-  Check,
-  Clock,
-  Sparkles,
-  Lightbulb,
-  Tv,
-  BookOpen,
-  Mic,
-} from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../utils/audioEffects';
 import { PresenterPodiumMode } from './presenter/PresenterPodiumMode';
 import { PresenterNotesDrawer } from './presenter/PresenterNotesDrawer';
 import { PresenterShortcutsHud } from './presenter/PresenterShortcutsHud';
 import { PresenterAudioRecorder } from './presenter/PresenterAudioRecorder';
+import { PresenterTopBar } from './presenter/PresenterTopBar';
+import { PresenterPenToolbar } from './presenter/PresenterPenToolbar';
+import { PresenterSlideNavigator } from './presenter/PresenterSlideNavigator';
+import { PresenterFloatingHud } from './presenter/PresenterFloatingHud';
+import {
+  PresenterLivePollModal,
+  LivePollState,
+  DEFAULT_POLL_STATE,
+} from './presenter/PresenterLivePollModal';
 
 interface PresenterModalProps {
   slides: Slide[];
@@ -48,6 +24,12 @@ interface PresenterModalProps {
   initialSlideIndex?: number;
   onUpdateSlideNotes?: (slideId: string, notes: string) => void;
   onClose: () => void;
+}
+
+interface DoodleStroke {
+  color: string;
+  width: number;
+  points: Array<{ x: number; y: number }>;
 }
 
 export const PresenterModal: React.FC<PresenterModalProps> = ({
@@ -78,7 +60,9 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState(5);
   const [autoPlayRemaining, setAutoPlayRemaining] = useState(5);
-  const [transitionEffect, setTransitionEffect] = useState<'fade' | 'slide' | 'slide-vertical' | 'zoom' | 'flip-cube' | 'blur-fade'>('fade');
+  const [transitionEffect, setTransitionEffect] = useState<
+    'fade' | 'slide' | 'slide-vertical' | 'zoom' | 'flip-cube' | 'blur-fade'
+  >('fade');
   const [notesFontSize, setNotesFontSize] = useState<'sm' | 'base' | 'lg' | 'xl'>('base');
   const [jumpBuffer, setJumpBuffer] = useState<string>('');
   const jumpTimerRef = useRef<any>(null);
@@ -88,9 +72,11 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [showPresenterOptions, setShowPresenterOptions] = useState(false);
   const [showReactionMenu, setShowReactionMenu] = useState(false);
   const [showAudioRecorder, setShowAudioRecorder] = useState(false);
+  const [livePoll, setLivePoll] = useState<LivePollState>(DEFAULT_POLL_STATE);
   const [isControlsIdle, setIsControlsIdle] = useState(false);
   const [isTeleprompterRunning, setIsTeleprompterRunning] = useState(false);
   const [teleprompterSpeed, setTeleprompterSpeed] = useState<number>(1);
+
   const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
   const podiumTextareaRef = useRef<HTMLTextAreaElement>(null);
   const touchStartXRef = useRef<number | null>(null);
@@ -98,17 +84,47 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const idleTimerRef = useRef<any>(null);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
   const reactionMenuRef = useRef<HTMLDivElement>(null);
+  const slideAreaRef = useRef<HTMLDivElement>(null);
+  const slideContainerRef = useRef<HTMLDivElement>(null);
+  const penCanvasRef = useRef<HTMLCanvasElement>(null);
+  const isDrawingRef = useRef(false);
+  const lastPenPosRef = useRef<{ x: number; y: number } | null>(null);
+  const strokesRef = useRef<DoodleStroke[]>([]);
+  const currentStrokeRef = useRef<DoodleStroke | null>(null);
+  const channelRef = useRef<BroadcastChannel | null>(null);
+
+  const [windowDimensions, setWindowDimensions] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+    height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+  });
+  const [slideAreaBounds, setSlideAreaBounds] = useState<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
 
   const resetIdleTimer = useCallback(() => {
     setIsControlsIdle(false);
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     if (isPodiumMode) return;
     idleTimerRef.current = setTimeout(() => {
-      if (!showPresenterOptions && !showReactionMenu && !showSlideNavigator && !showHelpOverlay) {
+      if (
+        !showPresenterOptions &&
+        !showReactionMenu &&
+        !showSlideNavigator &&
+        !showHelpOverlay &&
+        !livePoll.isOpen
+      ) {
         setIsControlsIdle(true);
       }
     }, 3000);
-  }, [isPodiumMode, showPresenterOptions, showReactionMenu, showSlideNavigator, showHelpOverlay]);
+  }, [
+    isPodiumMode,
+    showPresenterOptions,
+    showReactionMenu,
+    showSlideNavigator,
+    showHelpOverlay,
+    livePoll.isOpen,
+  ]);
 
   useEffect(() => {
     const handleActivity = () => resetIdleTimer();
@@ -145,16 +161,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       setReactions(prev => prev.filter(r => r.id !== id));
     }, 2200);
   };
-  const [windowDimensions, setWindowDimensions] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 1920,
-    height: typeof window !== 'undefined' ? window.innerHeight : 1080,
-  });
-  const [slideAreaBounds, setSlideAreaBounds] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
-  const slideAreaRef = useRef<HTMLDivElement>(null);
-  const slideContainerRef = useRef<HTMLDivElement>(null);
-
-  // ResizeObserver to measure exact slide viewport space and prevent slide clipping
   useEffect(() => {
     const el = slideAreaRef.current;
     if (!el) return;
@@ -169,21 +176,14 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     ro.observe(el);
     return () => ro.disconnect();
   }, [showNotes, isFullscreen, isPodiumMode]);
-  const penCanvasRef = useRef<HTMLCanvasElement>(null);
-  const isDrawingRef = useRef(false);
-  const lastPenPosRef = useRef<{ x: number; y: number } | null>(null);
 
-  // Doodle stroke history for Undo
-  interface DoodleStroke {
-    color: string;
-    width: number;
-    points: Array<{ x: number; y: number }>;
-  }
-  const strokesRef = useRef<DoodleStroke[]>([]);
-  const currentStrokeRef = useRef<DoodleStroke | null>(null);
-
-  // Broadcast channel for dual-screen audience window
-  const channelRef = useRef<BroadcastChannel | null>(null);
+  const handleUpdatePoll = (nextPoll: LivePollState) => {
+    setLivePoll(nextPoll);
+    channelRef.current?.postMessage({
+      type: 'SYNC_POLL',
+      poll: nextPoll,
+    });
+  };
 
   useEffect(() => {
     channelRef.current = new BroadcastChannel('designflow_presentation');
@@ -196,6 +196,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           currentIndex,
           blankMode,
           transitionEffect,
+        });
+        channelRef.current?.postMessage({
+          type: 'SYNC_POLL',
+          poll: livePoll,
         });
       } else if (event.data?.type === 'SLIDE_CHANGE' && typeof event.data.index === 'number') {
         setCurrentIndex(event.data.index);
@@ -212,7 +216,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         'designflow_audience_state',
         JSON.stringify({ slides, currentIndex, blankMode, transitionEffect })
       );
-    } catch { }
+    } catch {}
 
     channelRef.current.postMessage({
       type: 'SYNC_PROJECT',
@@ -225,7 +229,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     return () => {
       channelRef.current?.close();
     };
-  }, [slides, currentIndex, blankMode, transitionEffect]);
+  }, [slides, currentIndex, blankMode, transitionEffect, livePoll]);
 
   useEffect(() => {
     if (!isLaserActive && !isSpotlightActive) {
@@ -257,9 +261,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     slides.forEach((s, idx) => {
       lines.push(`## Slide ${idx + 1}: ${s.title}`);
       lines.push(
-        s.notes && s.notes.trim()
-          ? s.notes.trim()
-          : '*(Tidak ada catatan khusus untuk slide ini)*'
+        s.notes && s.notes.trim() ? s.notes.trim() : '*(Tidak ada catatan khusus untuk slide ini)*'
       );
       lines.push('');
       lines.push('------------------------------------------------------------');
@@ -377,12 +379,10 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     lastPenPosRef.current = null;
   };
 
-  // Reset auto-play countdown whenever slide or auto-play interval changes
   useEffect(() => {
     setAutoPlayRemaining(autoPlayInterval);
   }, [currentIndex, autoPlayInterval, isAutoPlay]);
 
-  // Auto-play interval with countdown
   useEffect(() => {
     let timer: any;
     if (isAutoPlay) {
@@ -399,7 +399,6 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     return () => clearInterval(timer);
   }, [isAutoPlay, autoPlayInterval, slides.length, currentIndex]);
 
-  // Timer interval & Target Minutes Alert
   useEffect(() => {
     let interval: any;
     if (isTimerRunning) {
@@ -410,7 +409,9 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             const warningSec = Math.round(targetMinutes * 60 * 0.8);
             const limitSec = targetMinutes * 60;
             if (nextSec === warningSec) {
-              setSoundToast(`⏱️ Waktu Presentasi Tersisa 20% (~${Math.round((limitSec - nextSec) / 60)} menit)`);
+              setSoundToast(
+                `⏱️ Waktu Presentasi Tersisa 20% (~${Math.round((limitSec - nextSec) / 60)} menit)`
+              );
               setTimeout(() => setSoundToast(null), 3000);
             } else if (nextSec === limitSec) {
               soundEffects.playTimerAlert();
@@ -425,7 +426,6 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     return () => clearInterval(interval);
   }, [isTimerRunning, targetMinutes]);
 
-  // Teleprompter Auto-Scroll Effect for Speaker Notes
   useEffect(() => {
     let interval: any;
     if (isTeleprompterRunning) {
@@ -440,7 +440,6 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     return () => clearInterval(interval);
   }, [isTeleprompterRunning, teleprompterSpeed, isPodiumMode]);
 
-  // Touch Swipe Handlers for Tablet / Mobile Presentation
   const handleTouchStart = (e: React.TouchEvent) => {
     if (isPenActive) return;
     if (e.touches.length > 0) {
@@ -457,16 +456,12 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       touchStartXRef.current = null;
       touchStartYRef.current = null;
       if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
-        if (deltaX < 0) {
-          goToNext();
-        } else {
-          goToPrev();
-        }
+        if (deltaX < 0) goToNext();
+        else goToPrev();
       }
     }
   };
 
-  // Window resize listener for responsive scaling
   useEffect(() => {
     const handleResize = () => {
       setWindowDimensions({
@@ -478,10 +473,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't intercept if user is typing in notes textarea, search input, or contentEditable
       const isInputFocused =
         e.target instanceof HTMLTextAreaElement ||
         e.target instanceof HTMLInputElement ||
@@ -498,7 +491,6 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         return;
       }
 
-      // Quick Slide Jumping by Numbers (e.g. "3" + Enter)
       if (/^[0-9]$/.test(e.key)) {
         e.preventDefault();
         setJumpBuffer(prev => {
@@ -541,7 +533,13 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         setBlankMode(prev => (prev === 'black' ? 'none' : 'black'));
       } else if (e.key.toLowerCase() === 'w' || e.key === ',') {
         setBlankMode(prev => (prev === 'white' ? 'none' : 'white'));
+      } else if (e.key.toLowerCase() === 'v') {
+        handleUpdatePoll({ ...livePoll, isOpen: !livePoll.isOpen });
       } else if (e.key === 'Escape') {
+        if (livePoll.isOpen) {
+          handleUpdatePoll({ ...livePoll, isOpen: false });
+          return;
+        }
         if (showHelpOverlay) {
           setShowHelpOverlay(false);
           return;
@@ -624,6 +622,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
     isSpotlightActive,
     isLaserActive,
     isPodiumMode,
+    livePoll,
   ]);
 
   const toggleSound = () => {
@@ -664,6 +663,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       clearPenCanvas();
       setCurrentIndex(index);
       soundEffects.playSlideTransition();
+      channelRef.current?.postMessage({ type: 'SLIDE_CHANGE', index });
       if (index === slides.length - 1) {
         confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
         channelRef.current?.postMessage({ type: 'CONFETTI' });
@@ -694,7 +694,6 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       const y = e.clientY - areaRect.top;
       setLaserPos({ x, y });
 
-      // Calculate precision coordinate ratio relative to the actual rendered slide box
       let xRatio = Math.max(0, Math.min(1, x / areaRect.width));
       let yRatio = Math.max(0, Math.min(1, y / areaRect.height));
 
@@ -728,7 +727,6 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   };
 
   const currentSlide = slides[currentIndex];
-  // Calculate exact scale based on measured container bounds to prevent any clipping or bottom toolbar overlap
   const availableWidth = Math.max(
     100,
     (slideAreaBounds.width > 0
@@ -737,414 +735,106 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   );
   const availableHeight = Math.max(
     100,
-    (slideAreaBounds.height > 0
-      ? slideAreaBounds.height
-      : windowDimensions.height - 120) - 110
+    (slideAreaBounds.height > 0 ? slideAreaBounds.height : windowDimensions.height - 120) - 110
   );
-  const scale = Math.max(0.05, Math.min(availableWidth / currentSlide.width, availableHeight / currentSlide.height));
+  const scale = Math.max(
+    0.05,
+    Math.min(availableWidth / currentSlide.width, availableHeight / currentSlide.height)
+  );
 
   const wordCount = (currentSlide.notes || '').trim().split(/\s+/).filter(Boolean).length;
   const estimatedSpeechMinutes = Math.floor(wordCount / 130);
   const estimatedSpeechSeconds = Math.round(((wordCount % 130) / 130) * 60);
-  const speechEstimateBadge = wordCount === 0
-    ? null
-    : estimatedSpeechMinutes > 0
+  const speechEstimateBadge =
+    wordCount === 0
+      ? null
+      : estimatedSpeechMinutes > 0
       ? `~${estimatedSpeechMinutes}m ${estimatedSpeechSeconds}d bicara`
       : `~${estimatedSpeechSeconds} detik bicara`;
 
-  const effectiveTransition = (currentSlide.transition && currentSlide.transition !== 'none')
-    ? currentSlide.transition
-    : (currentSlide.transition === 'none' ? 'none' : transitionEffect);
+  const effectiveTransition =
+    currentSlide.transition && currentSlide.transition !== 'none'
+      ? currentSlide.transition
+      : currentSlide.transition === 'none'
+      ? 'none'
+      : transitionEffect;
 
-  const transitionClass = effectiveTransition === 'none'
-    ? ''
-    : effectiveTransition === 'slide'
+  const transitionClass =
+    effectiveTransition === 'none'
+      ? ''
+      : effectiveTransition === 'slide'
       ? 'animate-in slide-in-from-right-10 duration-300'
       : effectiveTransition === 'slide-vertical'
-        ? 'df-trans-slide-vertical'
-        : effectiveTransition === 'zoom'
-          ? 'animate-in zoom-in-95 duration-200'
-          : effectiveTransition === 'flip-cube'
-            ? 'df-trans-flip-cube'
-            : effectiveTransition === 'blur-fade'
-              ? 'df-trans-blur-fade'
-              : 'animate-in fade-in duration-200';
+      ? 'df-trans-slide-vertical'
+      : effectiveTransition === 'zoom'
+      ? 'animate-in zoom-in-95 duration-200'
+      : effectiveTransition === 'flip-cube'
+      ? 'df-trans-flip-cube'
+      : effectiveTransition === 'blur-fade'
+      ? 'df-trans-blur-fade'
+      : 'animate-in fade-in duration-200';
+
+  const isHudHidden = isControlsIdle && !isLaserActive && !isPenActive && !livePoll.isOpen;
 
   return (
-    <div className={`fixed inset-0 z-50 bg-slate-950 flex flex-col select-none text-slate-100 ${isControlsIdle && !isLaserActive && !isPenActive ? 'cursor-none' : ''
-      }`}>
-      {/* Presenter Top Bar - Clean, Minimalist & Responsive */}
-      <header className={`h-14 border-b border-slate-800/80 px-3 sm:px-6 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl shrink-0 z-30 transition-opacity duration-300 ${isControlsIdle && !isLaserActive && !isPenActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
-        }`}>
-        {/* Left Section: Live Status & Clean Timer */}
-        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300">
-              {currentIndex + 1} / {slides.length}
-            </span>
-          </div>
-          <span className="text-xs text-slate-300 font-medium truncate max-w-[120px] sm:max-w-xs md:max-w-md hidden sm:inline">
-            {currentSlide.title}
-          </span>
-
-          {/* Minimalist Stopwatch Capsule */}
-          {(() => {
-            const isTimeOver = targetMinutes > 0 && secondsElapsed >= targetMinutes * 60;
-            const isTimeWarning =
-              targetMinutes > 0 && !isTimeOver && secondsElapsed >= targetMinutes * 60 * 0.8;
-
-            return (
-              <div
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-mono border transition-all ${isTimeOver
-                  ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse font-bold'
-                  : isTimeWarning
-                    ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-semibold'
-                    : 'bg-slate-950 border-slate-800 text-slate-200'
-                  }`}
-              >
-                <button
-                  onClick={() => setIsTimerRunning(!isTimerRunning)}
-                  title={isTimerRunning ? 'Jeda Timer' : 'Lanjutkan Timer'}
-                  className="text-slate-400 hover:text-white"
-                >
-                  {isTimerRunning ? (
-                    <Pause className="w-3.5 h-3.5 text-amber-400" />
-                  ) : (
-                    <Play className="w-3.5 h-3.5 text-emerald-400" />
-                  )}
-                </button>
-                <span className="font-semibold">{formatTimer(secondsElapsed)}</span>
-                {targetMinutes > 0 && (
-                  <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">/ {targetMinutes}m</span>
-                )}
-                <button
-                  onClick={() => setSecondsElapsed(0)}
-                  title="Reset Stopwatch (00:00)"
-                  className="text-slate-500 hover:text-slate-300 ml-0.5"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                </button>
-              </div>
-            );
-          })()}
-
-          {/* Auto-Play Live Countdown Badge */}
-          {isAutoPlay && (
-            <div
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-mono border bg-indigo-500/15 border-indigo-500/40 text-indigo-300"
-              title={`Auto-play aktif: berganti setiap ${autoPlayInterval} detik (tersisa ${autoPlayRemaining} detik)`}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping" />
-              <span>Auto ({autoPlayRemaining}s)</span>
-            </div>
-          )}
-        </div>
-
-        {/* Right Section: Essential Presenter Tools & Options Popover */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Laser Pointer Mode */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setIsLaserActive(!isLaserActive);
-                if (!isLaserActive) setIsPenActive(false);
-              }}
-              title="Laser Pointer (Tekan 'L')"
-              className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${isLaserActive
-                ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-md shadow-rose-500/20'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
-            >
-              <CircleDot className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Laser</span>
-            </button>
-            {isLaserActive && (
-              <div className="absolute top-full mt-1.5 left-0 bg-slate-900 border border-slate-800 rounded-xl p-1.5 shadow-xl flex items-center gap-1.5 z-40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
-                {[
-                  { color: '#f43f5e', name: 'Merah' },
-                  { color: '#38bdf8', name: 'Cyan' },
-                  { color: '#10b981', name: 'Hijau' },
-                ].map(c => (
-                  <button
-                    key={c.color}
-                    onClick={() => setLaserColor(c.color)}
-                    title={`Laser ${c.name}`}
-                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${laserColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                    style={{ backgroundColor: c.color }}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Pen / Doodle Annotation Button */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setIsPenActive(!isPenActive);
-                if (!isPenActive) setIsLaserActive(false);
-              }}
-              title="Anotasi Pena Coretan (Tekan 'P')"
-              className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${isPenActive
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
-            >
-              <Pen className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Pena</span>
-            </button>
-            {isPenActive && (
-              <div className="absolute top-full mt-1.5 left-0 bg-slate-900 border border-slate-800 rounded-xl p-1.5 shadow-xl flex items-center gap-1.5 z-40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
-                {[
-                  { color: '#f43f5e', name: 'Merah' },
-                  { color: '#38bdf8', name: 'Cyan' },
-                  { color: '#facc15', name: 'Kuning' },
-                ].map(c => (
-                  <button
-                    key={c.color}
-                    onClick={() => setPenColor(c.color)}
-                    title={`Warna ${c.name}`}
-                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${penColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                    style={{ backgroundColor: c.color }}
-                  />
-                ))}
-                <div className="h-3 w-[1px] bg-slate-800 mx-0.5" />
-                <button
-                  onClick={undoPenStroke}
-                  title="Batalkan Coretan Terakhir (U)"
-                  className="p-1 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded transition-colors"
-                >
-                  <Undo2 className="w-3 h-3" />
-                </button>
-                <button
-                  onClick={clearPenCanvas}
-                  title="Hapus Semua Coretan (C)"
-                  className="p-1 hover:bg-slate-800 text-slate-400 hover:text-rose-400 rounded transition-colors"
-                >
-                  <Eraser className="w-3 h-3" />
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Virtual Spotlight Mode (Stage Light focus) */}
-          <button
-            onClick={() => {
-              setIsSpotlightActive(!isSpotlightActive);
-              if (!isSpotlightActive) {
-                setIsLaserActive(false);
-                setIsPenActive(false);
-              }
-            }}
-            title="Sorot Panggung / Virtual Spotlight Focus (Tekan 'S')"
-            className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${isSpotlightActive
-              ? 'bg-amber-500/20 border-amber-500 text-amber-300 shadow-md shadow-amber-500/20'
-              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-          >
-            <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-            <span className="hidden sm:inline">Spotlight</span>
-          </button>
-
-          {/* Audience Window (Dual Screen) */}
-          <button
-            onClick={openAudienceWindow}
-            title="Buka Jendela Layar Audiens untuk Proyektor / Monitor Kedua"
-            className="px-2.5 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-800"
-          >
-            <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden md:inline">Layar Audiens</span>
-          </button>
-
-          {/* Toggle Speaker Notes */}
-          <button
-            onClick={() => setShowNotes(!showNotes)}
-            title="Tampilkan / Sembunyikan Catatan Pembicara (N)"
-            className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${showNotes
-              ? 'bg-indigo-600/15 border-indigo-500/40 text-indigo-300'
-              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-              }`}
-          >
-            <span className="hidden sm:inline">{showNotes ? 'Sembunyikan Catatan' : 'Lihat Catatan'}</span>
-            <span className="sm:hidden">Notes</span>
-          </button>
-
-          {/* Stage Teleprompter / Podium Mode Toggle */}
-          <button
-            onClick={() => setIsPodiumMode(!isPodiumMode)}
-            title="Mode Teleprompter & Podium Panggung (Teks Catatan Besar)"
-            className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${isPodiumMode
-              ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/30'
-              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-          >
-            <Tv className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden sm:inline">Podium</span>
-          </button>
-
-          {/* Audio Narration Recording Button */}
-          <button
-            onClick={() => setShowAudioRecorder(!showAudioRecorder)}
-            title="Rekam Narasi Suara Presentasi"
-            className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all flex items-center gap-1.5 ${showAudioRecorder
-              ? 'bg-rose-600 border-rose-500 text-white shadow-md shadow-rose-600/30'
-              : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
-          >
-            <Mic className="w-3.5 h-3.5 text-rose-400" />
-            <span className="hidden sm:inline">Rekam</span>
-          </button>
-
-          {/* Presenter Settings & Secondary Tools Popover */}
-          <div ref={optionsMenuRef} className="relative">
-            <button
-              onClick={() => setShowPresenterOptions(!showPresenterOptions)}
-              title="Pengaturan & Opsi Presentasi"
-              className={`p-1.5 rounded-xl border transition-colors ${showPresenterOptions || isAutoPlay || blankMode !== 'none' || !isSoundMuted
-                ? 'bg-slate-800 text-indigo-300 border-slate-700'
-                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
-                }`}
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-            </button>
-
-            {showPresenterOptions && (
-              <div className="absolute top-full right-0 mt-1.5 w-64 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2.5 z-50 animate-in fade-in zoom-in-95 duration-100 backdrop-blur-xl space-y-2">
-                <div className="px-2 py-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/80">
-                  Opsi Slideshow
-                </div>
-
-                {/* Target Duration Selector */}
-                <div className="space-y-1 px-2">
-                  <label className="text-[10px] text-slate-400 font-semibold block">Target Batas Waktu</label>
-                  <select
-                    value={targetMinutes}
-                    onChange={e => setTargetMinutes(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 outline-none"
-                  >
-                    <option value={0}>Stopwatch Bebas</option>
-                    <option value={3}>Target 3m (Elevator Pitch)</option>
-                    <option value={5}>Target 5m (Lightning Talk)</option>
-                    <option value={10}>Target 10m</option>
-                    <option value={15}>Target 15m (Seminar/Sidang)</option>
-                    <option value={20}>Target 20m (Keynote)</option>
-                  </select>
-                </div>
-
-                {/* Transition Effect Selector */}
-                <div className="space-y-1 px-2">
-                  <label className="text-[10px] text-slate-400 font-semibold block">Efek Transisi Slide</label>
-                  <select
-                    value={transitionEffect}
-                    onChange={e => setTransitionEffect(e.target.value as any)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 outline-none"
-                  >
-                    <option value="fade">Fade (Halus & Elegan)</option>
-                    <option value="slide">Slide (Geser Horizontal)</option>
-                    <option value="slide-vertical">Slide Vertikal (Meluncur Naik)</option>
-                    <option value="zoom">Zoom (Memperbesar)</option>
-                    <option value="flip-cube">Flip 3D (Putaran Modern)</option>
-                    <option value="blur-fade">Blur Focus (Sinematik)</option>
-                  </select>
-                </div>
-
-                {/* Auto Play Setting */}
-                <div className="px-2 py-1 border-t border-slate-800/80 pt-2 flex items-center justify-between">
-                  <span className="text-xs text-slate-300">Putar Otomatis</span>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setIsAutoPlay(!isAutoPlay)}
-                      className={`px-2 py-0.5 rounded text-[11px] font-semibold ${isAutoPlay ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'
-                        }`}
-                    >
-                      {isAutoPlay ? 'ON' : 'OFF'}
-                    </button>
-                    {isAutoPlay && (
-                      <select
-                        value={autoPlayInterval}
-                        onChange={e => setAutoPlayInterval(Number(e.target.value))}
-                        className="bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-[11px] text-slate-200 outline-none font-mono"
-                      >
-                        <option value={3}>3d</option>
-                        <option value={5}>5d</option>
-                        <option value={10}>10d</option>
-                      </select>
-                    )}
-                  </div>
-                </div>
-
-                {/* Sound FX Toggle */}
-                <div className="px-2 py-1 flex items-center justify-between">
-                  <span className="text-xs text-slate-300">Efek Suara Geser (M)</span>
-                  <button
-                    onClick={toggleSound}
-                    className={`px-2 py-0.5 rounded text-[11px] font-semibold ${!isSoundMuted ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
-                      }`}
-                  >
-                    {!isSoundMuted ? 'Aktif' : 'Mati'}
-                  </button>
-                </div>
-
-                {/* Blank Screen Options */}
-                <div className="px-2 py-1 border-t border-slate-800/80 pt-2 flex items-center justify-between">
-                  <span className="text-xs text-slate-300">Layar Kosong Fokus</span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setBlankMode(prev => (prev === 'black' ? 'none' : 'black'))}
-                      title="Layar Hitam (B)"
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${blankMode === 'black' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
-                        }`}
-                    >
-                      Hitam (B)
-                    </button>
-                    <button
-                      onClick={() => setBlankMode(prev => (prev === 'white' ? 'none' : 'white'))}
-                      title="Layar Putih (W)"
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${blankMode === 'white' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
-                        }`}
-                    >
-                      Putih (W)
-                    </button>
-                  </div>
-                </div>
-
-                {/* Shortcuts Helper */}
-                <div className="px-2 pt-1 border-t border-slate-800/80">
-                  <button
-                    onClick={() => {
-                      setShowHelpOverlay(true);
-                      setShowPresenterOptions(false);
-                    }}
-                    className="w-full py-1.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg flex items-center gap-2 justify-center transition-colors"
-                  >
-                    <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Panduan Pintasan Tombol (?)</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Fullscreen Button */}
-          <button
-            onClick={toggleFullscreen}
-            title="Layar Penuh (F)"
-            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            title="Keluar Mode Presentasi (Esc)"
-            className="p-1.5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-xl transition-colors ml-1"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
+    <div
+      className={`fixed inset-0 z-50 bg-slate-950 flex flex-col select-none text-slate-100 ${
+        isHudHidden ? 'cursor-none' : ''
+      }`}
+    >
+      {/* Top Bar */}
+      <PresenterTopBar
+        isHidden={isHudHidden}
+        currentIndex={currentIndex}
+        totalSlides={slides.length}
+        slideTitle={currentSlide.title}
+        secondsElapsed={secondsElapsed}
+        setSecondsElapsed={setSecondsElapsed}
+        targetMinutes={targetMinutes}
+        setTargetMinutes={setTargetMinutes}
+        isTimerRunning={isTimerRunning}
+        setIsTimerRunning={setIsTimerRunning}
+        formatTimer={formatTimer}
+        isAutoPlay={isAutoPlay}
+        setIsAutoPlay={setIsAutoPlay}
+        autoPlayInterval={autoPlayInterval}
+        setAutoPlayInterval={setAutoPlayInterval}
+        autoPlayRemaining={autoPlayRemaining}
+        isLaserActive={isLaserActive}
+        setIsLaserActive={setIsLaserActive}
+        laserColor={laserColor}
+        setLaserColor={setLaserColor}
+        isPenActive={isPenActive}
+        setIsPenActive={setIsPenActive}
+        penColor={penColor}
+        setPenColor={setPenColor}
+        undoPenStroke={undoPenStroke}
+        clearPenCanvas={clearPenCanvas}
+        isSpotlightActive={isSpotlightActive}
+        setIsSpotlightActive={setIsSpotlightActive}
+        openAudienceWindow={openAudienceWindow}
+        showNotes={showNotes}
+        setShowNotes={setShowNotes}
+        isPodiumMode={isPodiumMode}
+        setIsPodiumMode={setIsPodiumMode}
+        showAudioRecorder={showAudioRecorder}
+        setShowAudioRecorder={setShowAudioRecorder}
+        isPollOpen={livePoll.isOpen}
+        onTogglePoll={() => handleUpdatePoll({ ...livePoll, isOpen: !livePoll.isOpen })}
+        showPresenterOptions={showPresenterOptions}
+        setShowPresenterOptions={setShowPresenterOptions}
+        optionsMenuRef={optionsMenuRef}
+        transitionEffect={transitionEffect}
+        setTransitionEffect={setTransitionEffect}
+        isSoundMuted={isSoundMuted}
+        toggleSound={toggleSound}
+        blankMode={blankMode}
+        setBlankMode={setBlankMode}
+        setShowHelpOverlay={setShowHelpOverlay}
+        isFullscreen={isFullscreen}
+        toggleFullscreen={toggleFullscreen}
+        onClose={onClose}
+      />
 
       {/* Floating Audio Narration Recorder */}
       {showAudioRecorder && (
@@ -1154,6 +844,14 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           onClose={() => setShowAudioRecorder(false)}
         />
       )}
+
+      {/* Live Interactive Poll Modal */}
+      <PresenterLivePollModal
+        poll={livePoll}
+        onUpdatePoll={handleUpdatePoll}
+        onClose={() => handleUpdatePoll({ ...livePoll, isOpen: false })}
+        onTriggerConfetti={() => channelRef.current?.postMessage({ type: 'CONFETTI' })}
+      />
 
       {/* Main Slide Display + Notes Area */}
       {isPodiumMode ? (
@@ -1175,7 +873,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           downloadSpeakerNotes={downloadSpeakerNotes}
           podiumTextareaRef={podiumTextareaRef}
           onUpdateSlideNotes={onUpdateSlideNotes}
-          onGoToSlide={setCurrentIndex}
+          onGoToSlide={goToSlide}
           goToPrev={goToPrev}
           goToNext={goToNext}
           blankMode={blankMode}
@@ -1191,10 +889,11 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             onMouseLeave={handleMouseLeave}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
-            className={`flex-1 min-w-0 flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-slate-950 relative overflow-hidden ${isLaserActive ? 'cursor-none' : 'cursor-default'
-              }`}
+            className={`flex-1 min-w-0 flex items-center justify-center p-4 sm:p-6 lg:p-8 bg-slate-950 relative overflow-hidden ${
+              isLaserActive ? 'cursor-none' : 'cursor-default'
+            }`}
           >
-            {/* Virtual Spotlight Mode (Stage Light focus) */}
+            {/* Virtual Spotlight Mode */}
             {isSpotlightActive && (
               <div
                 className="absolute inset-0 pointer-events-none z-45 transition-opacity duration-75"
@@ -1204,7 +903,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               />
             )}
 
-            {/* Blank Screen Overlay (Black or White) for Audience Focus */}
+            {/* Blank Screen Overlays */}
             {blankMode === 'black' && (
               <div
                 onClick={() => setBlankMode('none')}
@@ -1227,7 +926,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               </div>
             )}
 
-            {/* Sized container that occupies exactly the scaled width & height in flexbox, preventing edge clipping */}
+            {/* Scaled Slide Container */}
             <div
               style={{
                 width: `${Math.round(currentSlide.width * scale)}px`,
@@ -1250,18 +949,21 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               >
                 {currentSlide.elements
                   .slice()
+                  .filter(el => !el.hidden)
                   .sort((a, b) => a.zIndex - b.zIndex)
                   .map(el => (
                     <div
                       key={el.id}
-                      className={`absolute ${el.linkToSlideId && !isPenActive ? 'cursor-pointer hover:ring-2 hover:ring-indigo-400/80 transition-all rounded-sm' : ''}`}
+                      className={`absolute ${
+                        el.linkToSlideId && !isPenActive
+                          ? 'cursor-pointer hover:ring-2 hover:ring-indigo-400/80 transition-all rounded-sm'
+                          : ''
+                      }`}
                       onClick={() => {
                         if (!isPenActive && el.linkToSlideId) {
                           const targetIdx = slides.findIndex(s => s.id === el.linkToSlideId);
                           if (targetIdx !== -1 && targetIdx !== currentIndex) {
-                            clearPenCanvas();
-                            setCurrentIndex(targetIdx);
-                            soundEffects.playSlideTransition();
+                            goToSlide(targetIdx);
                           }
                         }
                       }}
@@ -1271,11 +973,14 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                         width: `${el.width}px`,
                         height: `${el.height}px`,
                         zIndex: el.zIndex,
-                        transform: [
-                          el.rotation ? `rotate(${el.rotation}deg)` : '',
-                          el.flipX ? 'scaleX(-1)' : '',
-                          el.flipY ? 'scaleY(-1)' : '',
-                        ].filter(Boolean).join(' ') || undefined,
+                        transform:
+                          [
+                            el.rotation ? `rotate(${el.rotation}deg)` : '',
+                            el.flipX ? 'scaleX(-1)' : '',
+                            el.flipY ? 'scaleY(-1)' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ') || undefined,
                         opacity: el.opacity !== undefined ? el.opacity : 1,
                       }}
                     >
@@ -1288,8 +993,9 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                   ref={penCanvasRef}
                   width={currentSlide.width}
                   height={currentSlide.height}
-                  className={`absolute inset-0 z-30 transition-opacity ${isPenActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
-                    }`}
+                  className={`absolute inset-0 z-30 transition-opacity ${
+                    isPenActive ? 'cursor-crosshair pointer-events-auto' : 'pointer-events-none'
+                  }`}
                   onPointerDown={handlePenPointerDown}
                   onPointerMove={handlePenPointerMove}
                   onPointerUp={handlePenPointerUp}
@@ -1298,72 +1004,18 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               </div>
             </div>
 
-            {/* Floating Pen Palette Toolbar when Pen is Active */}
-            {isPenActive && (
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900/95 border border-slate-700/80 shadow-2xl rounded-2xl px-4 py-2 flex items-center gap-3 backdrop-blur-xl animate-in slide-in-from-bottom-4 duration-200">
-                <span className="text-[11px] font-semibold text-slate-300">Pena:</span>
-                <div className="flex items-center gap-1.5 border-r border-slate-800 pr-3">
-                  {[
-                    { color: '#facc15', label: 'Kuning Stabilo' },
-                    { color: '#f43f5e', label: 'Merah Koreksi' },
-                    { color: '#38bdf8', label: 'Cyan Terang' },
-                    { color: '#34d399', label: 'Emerald' },
-                    { color: '#ffffff', label: 'Putih' },
-                  ].map(sw => (
-                    <button
-                      key={sw.color}
-                      type="button"
-                      onClick={() => setPenColor(sw.color)}
-                      title={sw.label}
-                      className={`w-5 h-5 rounded-full border transition-all ${
-                        penColor === sw.color ? 'scale-125 border-white ring-2 ring-white/40 shadow-sm' : 'border-slate-700 hover:scale-110'
-                      }`}
-                      style={{ backgroundColor: sw.color }}
-                    />
-                  ))}
-                </div>
+            {/* Floating Pen Palette Toolbar */}
+            <PresenterPenToolbar
+              isPenActive={isPenActive}
+              penColor={penColor}
+              setPenColor={setPenColor}
+              penWidth={penWidth}
+              setPenWidth={setPenWidth}
+              undoPenStroke={undoPenStroke}
+              clearPenCanvas={clearPenCanvas}
+            />
 
-                <div className="flex items-center gap-1 border-r border-slate-800 pr-3">
-                  {[
-                    { width: 2, label: 'Tipis' },
-                    { width: 4, label: 'Sedang' },
-                    { width: 8, label: 'Stabilo' },
-                  ].map(sz => (
-                    <button
-                      key={sz.width}
-                      type="button"
-                      onClick={() => setPenWidth(sz.width)}
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono transition-colors ${
-                        penWidth === sz.width ? 'bg-slate-700 text-white font-bold' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {sz.label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={undoPenStroke}
-                    className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-medium transition-colors"
-                    title="Undo Coretan (U)"
-                  >
-                    Undo
-                  </button>
-                  <button
-                    type="button"
-                    onClick={clearPenCanvas}
-                    className="px-2 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-[10px] font-medium transition-colors"
-                    title="Hapus Semua Coretan (C)"
-                  >
-                    Bersihkan
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Glowing Virtual Laser Pointer with Pulse Ring */}
+            {/* Glowing Virtual Laser Pointer */}
             {isLaserActive && (
               <div
                 className="absolute pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2"
@@ -1400,181 +1052,41 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             )}
 
             {/* Quick Slide Navigator Drawer */}
-            {showSlideNavigator && (() => {
-              const filteredNavSlides = slides
-                .map((s, idx) => ({ slide: s, originalIndex: idx }))
-                .filter(({ slide: s, originalIndex: idx }) => {
-                  if (!navSearch.trim()) return true;
-                  const q = navSearch.toLowerCase().trim();
-                  return (
-                    s.title.toLowerCase().includes(q) ||
-                    (s.notes && s.notes.toLowerCase().includes(q)) ||
-                    `slide ${idx + 1}`.includes(q)
-                  );
-                });
+            <PresenterSlideNavigator
+              showSlideNavigator={showSlideNavigator}
+              setShowSlideNavigator={setShowSlideNavigator}
+              slides={slides}
+              currentIndex={currentIndex}
+              navSearch={navSearch}
+              setNavSearch={setNavSearch}
+              goToSlide={goToSlide}
+            />
 
-              return (
-                <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-[92%] max-w-4xl z-50 bg-slate-900/95 border border-slate-700/80 rounded-2xl p-3 shadow-2xl backdrop-blur-md flex flex-col gap-2.5 animate-in slide-in-from-bottom-4 duration-150">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs px-1">
-                    <div className="flex items-center gap-1.5 font-bold text-slate-200">
-                      <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
-                      <span>Lompat Cepat ke Slide</span>
-                      <span className="text-[10px] font-mono text-slate-400 font-normal">
-                        ({filteredNavSlides.length} dari {slides.length} slide)
-                      </span>
-                    </div>
-                    <div className="relative w-full sm:w-64">
-                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        value={navSearch}
-                        onChange={e => setNavSearch(e.target.value)}
-                        placeholder="Cari judul atau catatan..."
-                        className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-7 py-1 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-indigo-500 font-medium"
-                      />
-                      {navSearch && (
-                        <button
-                          type="button"
-                          onClick={() => setNavSearch('')}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {filteredNavSlides.length === 0 ? (
-                    <div className="text-center py-6 text-xs text-slate-400">
-                      Tidak ada slide yang cocok dengan kata kunci "{navSearch}".
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-                      {filteredNavSlides.map(({ slide: s, originalIndex: idx }) => {
-                        const isCur = idx === currentIndex;
-                        return (
-                          <button
-                            key={s.id}
-                            onClick={() => {
-                              goToSlide(idx);
-                              setShowSlideNavigator(false);
-                            }}
-                            className={`flex flex-col items-start p-2 rounded-xl border text-left shrink-0 transition-all w-36 ${isCur
-                              ? 'bg-indigo-600/25 border-indigo-500 ring-2 ring-indigo-500/40 text-white'
-                              : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-800/80'
-                              }`}
-                          >
-                            <div className="flex items-center justify-between w-full mb-1">
-                              <span
-                                className={`text-[10px] font-mono font-bold px-1.5 py-0.2 rounded ${isCur ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-slate-400'
-                                  }`}
-                              >
-                                {idx + 1}
-                              </span>
-                              {s.notes && s.notes.trim() && (
-                                <span className="text-[9px] text-amber-400 font-mono">📝 Notes</span>
-                              )}
-                            </div>
-                            <span className="text-xs font-semibold truncate w-full">
-                              {s.title}
-                            </span>
-                            <span className="text-[10px] text-slate-500">
-                              {s.elements.length} elemen
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-
-            {/* Floating Navigation Controls Capsule - Clean & Uncluttered */}
-            <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 p-1.5 bg-slate-900/90 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-xl z-30 transition-opacity duration-300 ${isControlsIdle && !isLaserActive && !isPenActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
-              }`}>
-              <button
-                onClick={goToPrev}
-                disabled={currentIndex === 0}
-                title="Slide Sebelumnya (← / Panah Kiri)"
-                className="p-1.5 hover:bg-slate-800 disabled:opacity-25 rounded-xl text-slate-300 hover:text-white transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setShowSlideNavigator(prev => !prev)}
-                title="Buka Kisi Miniatur Slide untuk Melompat Cepat"
-                className={`text-xs font-mono font-medium px-2.5 py-1 rounded-xl transition-colors flex items-center gap-1.5 ${showSlideNavigator
-                  ? 'bg-indigo-600 text-white font-bold shadow'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                  }`}
-              >
-                <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
-                <span>{currentIndex + 1} / {slides.length}</span>
-              </button>
-              <button
-                onClick={goToNext}
-                disabled={currentIndex === slides.length - 1}
-                title="Slide Selanjutnya (Spasi / Panah Kanan)"
-                className="p-1.5 hover:bg-slate-800 disabled:opacity-25 rounded-xl text-slate-300 hover:text-white transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-
-              <div className="h-4 w-[1px] bg-slate-800 mx-0.5" />
-
-              {/* Confetti Celebration Button */}
-              <button
-                onClick={triggerCelebration}
-                title="Tembakkan Selebrasi Confetti"
-                className="p-1.5 hover:bg-slate-800 rounded-xl text-amber-400 hover:text-amber-300 transition-colors"
-              >
-                <PartyPopper className="w-4 h-4" />
-              </button>
-
-              {/* Audience Reaction Button with Popover */}
-              <div ref={reactionMenuRef} className="relative">
-                <button
-                  onClick={() => setShowReactionMenu(!showReactionMenu)}
-                  title="Kirim Reaksi Emotikon Audiens"
-                  className={`p-1.5 rounded-xl transition-colors ${showReactionMenu ? 'bg-slate-800 text-indigo-300' : 'hover:bg-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                >
-                  <Smile className="w-4 h-4" />
-                </button>
-
-                {showReactionMenu && (
-                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-1.5 z-40 flex items-center gap-1 animate-in fade-in zoom-in-95 duration-100 backdrop-blur-xl">
-                    {['👏', '❤️', '🔥', '💡', '🚀'].map(emoji => (
-                      <button
-                        key={emoji}
-                        onClick={() => {
-                          triggerFloatingReaction(emoji);
-                          channelRef.current?.postMessage({ type: 'REACTION', emoji });
-                          setShowReactionMenu(false);
-                        }}
-                        title={`Reaksi ${emoji}`}
-                        className="w-7 h-7 flex items-center justify-center text-sm hover:scale-125 transition-transform rounded-xl hover:bg-slate-800"
-                      >
-                        {emoji}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Keyboard Shortcuts Helper Modal Button */}
-              <button
-                onClick={() => setShowHelpOverlay(true)}
-                title="Buka Panduan Pintasan Tombol (? / H)"
-                className="p-1.5 hover:bg-slate-800 rounded-xl text-indigo-400 hover:text-indigo-300 transition-colors"
-              >
-                <HelpCircle className="w-4 h-4" />
-              </button>
-            </div>
+            {/* Floating Navigation Controls Capsule */}
+            <PresenterFloatingHud
+              isHidden={isHudHidden}
+              currentIndex={currentIndex}
+              totalSlides={slides.length}
+              goToPrev={goToPrev}
+              goToNext={goToNext}
+              showSlideNavigator={showSlideNavigator}
+              setShowSlideNavigator={setShowSlideNavigator}
+              triggerCelebration={triggerCelebration}
+              showReactionMenu={showReactionMenu}
+              setShowReactionMenu={setShowReactionMenu}
+              reactionMenuRef={reactionMenuRef}
+              onSendReaction={emoji => {
+                triggerFloatingReaction(emoji);
+                channelRef.current?.postMessage({ type: 'REACTION', emoji });
+                setShowReactionMenu(false);
+              }}
+              setShowHelpOverlay={setShowHelpOverlay}
+              isPollOpen={livePoll.isOpen}
+              onTogglePoll={() => handleUpdatePoll({ ...livePoll, isOpen: !livePoll.isOpen })}
+            />
           </div>
 
-          {/* Presenter Speaker Notes Sidebar (Docked on tablet/desktop, slide-over on small mobile) */}
+          {/* Presenter Speaker Notes Sidebar */}
           <PresenterNotesDrawer
             showNotes={showNotes}
             setShowNotes={setShowNotes}
@@ -1606,10 +1118,8 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
       )}
 
       {/* In-Show Presenter Shortcut HUD Modal (? / H) */}
-      <PresenterShortcutsHud
-        isOpen={showHelpOverlay}
-        onClose={() => setShowHelpOverlay(false)}
-      />
+      <PresenterShortcutsHud isOpen={showHelpOverlay} onClose={() => setShowHelpOverlay(false)} />
+
       {/* Floating Audience Reactions Overlay */}
       <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
         {reactions.map(r => (

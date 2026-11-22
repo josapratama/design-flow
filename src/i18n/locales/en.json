@@ -134,7 +134,18 @@
     "timeRemaining20": "Presentation Time: 20% Remaining",
     "timeReached": "Presentation Target Time Reached!",
     "blackScreen": "Black Screen Mode (Audience Focus)",
-    "whiteScreen": "White Screen Mode (Discussion)"
+    "whiteScreen": "White Screen Mode (Discussion)",
+    "livePoll": "Live Poll & Voting",
+    "recordAudio": "Record Narration"
+  },
+  "versionHistory": {
+    "title": "Version History & Checkpoints",
+    "createSnapshot": "Save New Snapshot",
+    "restore": "Restore This Version"
+  },
+  "dataImporter": {
+    "importCsv": "Import CSV / Excel",
+    "magicContrast": "Magic Contrast Harmonizer"
   },
   "templates": {
     "title": "Template Library",

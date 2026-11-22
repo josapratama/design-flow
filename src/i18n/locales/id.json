@@ -134,7 +134,18 @@
     "timeRemaining20": "Waktu Presentasi Tersisa 20%",
     "timeReached": "Batas Target Waktu Presentasi Tercapai!",
     "blackScreen": "Mode Layar Hitam (Fokus Audiens)",
-    "whiteScreen": "Mode Layar Putih (Diskusi / Proyektor)"
+    "whiteScreen": "Mode Layar Putih (Diskusi / Proyektor)",
+    "livePoll": "Live Poll & Voting",
+    "recordAudio": "Rekam Narasi"
+  },
+  "versionHistory": {
+    "title": "Riwayat Versi & Checkpoint",
+    "createSnapshot": "Simpan Snapshot Baru",
+    "restore": "Pulihkan Versi Ini"
+  },
+  "dataImporter": {
+    "importCsv": "Impor CSV / Excel",
+    "magicContrast": "Magic Contrast Harmonizer"
   },
   "templates": {
     "title": "Pustaka Template Desain",

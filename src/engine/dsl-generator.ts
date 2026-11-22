@@ -1,4 +1,4 @@
-import { DesignProject, Slide, DesignElement } from '../types';
+import { DesignProject } from '../types';
 
 /**
  * Serializes a DesignProject or a single Slide into human-readable DesignFlow DSL.
@@ -23,6 +23,9 @@ export function generateDesignDSL(project: DesignProject): string {
     }
     if (slide.transition && slide.transition !== 'none') {
       lines.push(`  transition: "${slide.transition}"`);
+    }
+    if (slide.transitionDuration !== undefined) {
+      lines.push(`  transitionDuration: ${slide.transitionDuration}`);
     }
     if (slide.notes && slide.notes.trim()) {
       lines.push(`  notes: "${escapeString(slide.notes)}"`);
@@ -71,11 +74,13 @@ export function generateDesignDSL(project: DesignProject): string {
       if (el.imageUrl) lines.push(`    imageUrl: "${escapeString(el.imageUrl)}"`);
       if (el.variant) lines.push(`    variant: "${el.variant}"`);
       if (el.placeholder) lines.push(`    placeholder: "${escapeString(el.placeholder)}"`);
-      if (el.iconName) lines.push(`    icon: "${el.iconName}"`);
+      if (el.iconName) lines.push(`    iconName: "${el.iconName}"`);
       if (el.subTitle) lines.push(`    subTitle: "${escapeString(el.subTitle)}"`);
-      if (el.badgeText) lines.push(`    badge: "${escapeString(el.badgeText)}"`);
+      if (el.badgeText) lines.push(`    badgeText: "${escapeString(el.badgeText)}"`);
       if (el.linkToSlideId) lines.push(`    linkToSlideId: "${escapeString(el.linkToSlideId)}"`);
       if (el.animation && el.animation !== 'none') lines.push(`    animation: "${el.animation}"`);
+      if (el.animationDuration !== undefined) lines.push(`    animationDuration: ${el.animationDuration}`);
+      if (el.animationDelay !== undefined) lines.push(`    animationDelay: ${el.animationDelay}`);
 
       lines.push('  }');
       lines.push('');
@@ -93,5 +98,5 @@ function escapeString(str: string): string {
 }
 
 function sanitizeIdentifier(name: string): string {
-  return name.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase();
+  return name.replace(/[^a-zA-Z0-9_]/g, '_').toLowerCase() || 'el';
 }

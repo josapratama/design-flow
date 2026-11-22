@@ -1,4 +1,5 @@
 import { Slide, DesignElement, DesignProject } from '../types';
+import { getQrCodeUrl } from '../utils/qrGenerator';
 
 /**
  * Converts a Slide or UI/UX Artboard into clean React 19 + Tailwind CSS code.
@@ -279,6 +280,25 @@ export function renderElementJSX(el: DesignElement): string {
           className="w-full h-full object-cover"
         />
       </div>`;
+
+    case 'qr-code': {
+      const qrDataUri = getQrCodeUrl(el.content || 'https://designflow.app', 300, el.color || '#000000', el.fill || '#ffffff');
+      return `      {/* QR Code: ${el.name} */}
+      <div 
+        className="absolute p-2.5 bg-white rounded-2xl flex flex-col items-center justify-between ${getShadowClass(el.shadow)}"
+        ${toStyleAttr({
+          ...getFillStyle(el.fill, '#ffffff'),
+          borderRadius: `${el.borderRadius !== undefined ? el.borderRadius : 16}px`,
+        })}
+      >
+        <img 
+          src="${qrDataUri}"
+          alt="${escapeJSX(el.name || 'QR Code')}"
+          className="w-full h-full object-contain"
+        />
+        ${el.subTitle ? `<span className="text-[10px] font-semibold text-slate-800 text-center truncate w-full mt-1">${escapeJSX(el.subTitle)}</span>` : ''}
+      </div>`;
+    }
 
     case 'heading':
       return `      {/* Heading: ${el.name} */}

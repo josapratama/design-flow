@@ -134,7 +134,18 @@
     "timeRemaining20": "残り発表時間 20%",
     "timeReached": "発表目標時間に達しました！",
     "blackScreen": "暗転モード (聴衆注目)",
-    "whiteScreen": "明転モード (議論・プロジェクター)"
+    "whiteScreen": "明転モード (議論・プロジェクター)",
+    "livePoll": "ライブ投票 (Live Poll)",
+    "recordAudio": "音声ナレーション録音"
+  },
+  "versionHistory": {
+    "title": "バージョン履歴＆チェックポイント",
+    "createSnapshot": "新しいスナップショットを保存",
+    "restore": "このバージョンを復元"
+  },
+  "dataImporter": {
+    "importCsv": "CSV / Excel インポート",
+    "magicContrast": "マジックコントラスト自動補正"
   },
   "templates": {
     "title": "デザインテンプレートライブラリ",

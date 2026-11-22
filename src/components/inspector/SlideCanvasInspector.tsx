@@ -8,8 +8,11 @@ import {
   Upload,
   Sparkles,
   StickyNote,
+  Wand2,
+  CheckCircle2,
 } from 'lucide-react';
 import { extractPaletteFromImage, ExtractedPalette } from '../../utils/paletteExtractor';
+import { evaluateContrast } from '../../utils/colorContrast';
 
 interface SlideCanvasInspectorProps {
   activeSlide: Slide;
@@ -265,6 +268,86 @@ export const SlideCanvasInspector: React.FC<SlideCanvasInspectorProps> = ({
                 <span>Invert Tema Slide (Gelap ⇄ Terang)</span>
               </button>
             )}
+
+            {/* 1-Click Magic Contrast & Readability Harmonizer */}
+            {(() => {
+              const slideBgHex = activeSlide.background.startsWith('#')
+                ? activeSlide.background
+                : '#0f172a';
+              const textTypes = new Set(['heading', 'text', 'quote', 'button', 'card', 'rect', 'badge-shape']);
+              const lowContrastElements = activeSlide.elements.filter(el => {
+                if (el.hidden || !textTypes.has(el.type)) return false;
+                const effectiveBg =
+                  el.fill && el.fill.startsWith('#') && el.fill !== 'transparent'
+                    ? el.fill
+                    : slideBgHex;
+                const textColor = el.color && el.color.startsWith('#') ? el.color : '#ffffff';
+                const score = evaluateContrast(textColor, effectiveBg);
+                return !score.isGood;
+              });
+
+              const handleMagicHarmonize = () => {
+                let fixedCount = 0;
+                const nextElements = activeSlide.elements.map(el => {
+                  if (el.hidden || !textTypes.has(el.type)) return el;
+                  const effectiveBg =
+                    el.fill && el.fill.startsWith('#') && el.fill !== 'transparent'
+                      ? el.fill
+                      : slideBgHex;
+                  const textColor = el.color && el.color.startsWith('#') ? el.color : '#ffffff';
+                  const score = evaluateContrast(textColor, effectiveBg);
+                  if (!score.isGood) {
+                    fixedCount++;
+                    return {
+                      ...el,
+                      color: score.recommendedColor === '#ffffff' ? '#f8fafc' : '#0f172a',
+                    };
+                  }
+                  return el;
+                });
+
+                if (fixedCount > 0) {
+                  onUpdateSlide(activeSlide.id, { elements: nextElements });
+                  showToast(`Magic Contrast memperbaiki ${fixedCount} elemen!`);
+                } else {
+                  showToast('Seluruh kontras teks sudah optimal (WCAG AA/AAA)!');
+                }
+              };
+
+              return (
+                <div className="p-2.5 rounded-xl bg-slate-950/80 border border-indigo-500/30 space-y-2 mt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-indigo-300 flex items-center gap-1.5">
+                      <Wand2 className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Magic Contrast Harmonizer</span>
+                    </span>
+                    <span
+                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold ${
+                        lowContrastElements.length === 0
+                          ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30'
+                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                      }`}
+                    >
+                      {lowContrastElements.length === 0
+                        ? 'WCAG Optimal'
+                        : `${lowContrastElements.length} Perlu Fix`}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleMagicHarmonize}
+                    className="w-full py-1.5 px-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white text-[11px] font-semibold flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>
+                      {lowContrastElements.length > 0
+                        ? `Perbaiki Otomatis (${lowContrastElements.length} Elemen)`
+                        : 'Optimalkan Kontras & Keterbacaan Slide'}
+                    </span>
+                  </button>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Wallpaper & Gambar Latar Slide */}
