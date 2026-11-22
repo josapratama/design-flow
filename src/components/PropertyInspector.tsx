@@ -151,6 +151,80 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     'Paperclip', 'Archive', 'Printer', 'Trash2', 'Copy', 'Edit', 'Edit2', 'Pen', 'Crop', 'Maximize2', 'Minimize2', 'Plus', 'Minus', 'X', 'RefreshCw'
   ];
 
+  const filteredIcons = popularIconNames.filter(name =>
+    name.toLowerCase().includes(iconFilter.toLowerCase())
+  );
+
+  const [copiedStyleActive, setCopiedStyleActive] = useState<boolean>(() => hasCopiedStyle());
+  const [inspectorToast, setInspectorToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    return subscribeStyleClipboard(() => {
+      setCopiedStyleActive(hasCopiedStyle());
+    });
+  }, []);
+
+  const showToast = (msg: string) => {
+    setInspectorToast(msg);
+    setTimeout(() => setInspectorToast(null), 2000);
+  };
+
+  const handleCopyStyle = () => {
+    if (!element) return;
+    copyElementStyle(element);
+    showToast('Gaya Disalin! (Pilih elemen lain untuk Tempel)');
+  };
+
+  const handlePasteStyle = () => {
+    if (!element) return;
+    const applied = pasteElementStyle(element.id, onUpdateElement);
+    if (applied) {
+      showToast('Gaya Diterapkan!');
+      confetti({ particleCount: 25, spread: 45, origin: { y: 0.7 } });
+    }
+  };
+
+  const activeColorForHarmonies = useMemo(() => {
+    if (element?.fill && element.fill.startsWith('#') && element.fill !== 'transparent') {
+      return element.fill;
+    }
+    if (element?.color && element.color.startsWith('#')) {
+      return element.color;
+    }
+    return '#6366f1';
+  }, [element?.fill, element?.color]);
+
+  const colorHarmonies = useMemo(() => {
+    return generateColorHarmonies(activeColorForHarmonies);
+  }, [activeColorForHarmonies]);
+
+  const handleCopyJSX = () => {
+    if (!element) return;
+    try {
+      const snippet = renderElementJSX(element);
+      navigator.clipboard.writeText(snippet);
+      showToast('Kode JSX Disalin!');
+      confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
+    } catch {
+      showToast('Gagal menyalin JSX.');
+    }
+  };
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        handleCopyStyle();
+      } else if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        handlePasteStyle();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [element]);
+
   // 1. IF NO ELEMENT IS SELECTED: SHOW CANVAS & SLIDE SETTINGS
   if (!element) {
     const bgSwatches = [
@@ -703,80 +777,6 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     const contrastColor = yiq >= 128 ? '#0f172a' : '#ffffff';
     handleChange('color', contrastColor);
   };
-
-  const filteredIcons = popularIconNames.filter(name =>
-    name.toLowerCase().includes(iconFilter.toLowerCase())
-  );
-
-  const [copiedStyleActive, setCopiedStyleActive] = useState<boolean>(() => hasCopiedStyle());
-  const [inspectorToast, setInspectorToast] = useState<string | null>(null);
-
-  useEffect(() => {
-    return subscribeStyleClipboard(() => {
-      setCopiedStyleActive(hasCopiedStyle());
-    });
-  }, []);
-
-  const showToast = (msg: string) => {
-    setInspectorToast(msg);
-    setTimeout(() => setInspectorToast(null), 2000);
-  };
-
-  const handleCopyStyle = () => {
-    if (!element) return;
-    copyElementStyle(element);
-    showToast('Gaya Disalin! (Pilih elemen lain untuk Tempel)');
-  };
-
-  const handlePasteStyle = () => {
-    if (!element) return;
-    const applied = pasteElementStyle(element.id, onUpdateElement);
-    if (applied) {
-      showToast('Gaya Diterapkan!');
-      confetti({ particleCount: 25, spread: 45, origin: { y: 0.7 } });
-    }
-  };
-
-  const activeColorForHarmonies = useMemo(() => {
-    if (element?.fill && element.fill.startsWith('#') && element.fill !== 'transparent') {
-      return element.fill;
-    }
-    if (element?.color && element.color.startsWith('#')) {
-      return element.color;
-    }
-    return '#6366f1';
-  }, [element?.fill, element?.color]);
-
-  const colorHarmonies = useMemo(() => {
-    return generateColorHarmonies(activeColorForHarmonies);
-  }, [activeColorForHarmonies]);
-
-  const handleCopyJSX = () => {
-    if (!element) return;
-    try {
-      const snippet = renderElementJSX(element);
-      navigator.clipboard.writeText(snippet);
-      showToast('Kode JSX Disalin!');
-      confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
-    } catch {
-      showToast('Gagal menyalin JSX.');
-    }
-  };
-
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'c') {
-        e.preventDefault();
-        handleCopyStyle();
-      } else if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'v') {
-        e.preventDefault();
-        handlePasteStyle();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [element]);
 
   return (
     <aside className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 select-none z-10 relative">
