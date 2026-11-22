@@ -67,6 +67,7 @@ interface PropertyInspectorProps {
   onReorder: (direction: 'front' | 'back' | 'up' | 'down') => void;
   onAlignElement: (alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
   onDistributeElements?: (direction: 'horizontal' | 'vertical') => void;
+  onTidyUpElements?: () => void;
   onBatchUpdateElements?: (updater: (el: DesignElement) => Partial<DesignElement>) => void;
   onApplySlideTheme?: (theme: { background: string; primaryAccent: string; cardFill: string; textColor: string }) => void;
   onInvertSlideTheme?: () => void;
@@ -89,6 +90,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   onReorder,
   onAlignElement,
   onDistributeElements,
+  onTidyUpElements,
   onBatchUpdateElements,
   onApplySlideTheme,
   onInvertSlideTheme,
@@ -2536,27 +2538,42 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         </div>
 
         {/* Distribusi Jarak (Smart Spacing) saat 3+ elemen terpilih */}
-        {selectedCount >= 3 && onDistributeElements && (
+        {/* Smart Tidy Up / Distribusi Spasi Merata */}
+        {selectedCount >= 2 && (
           <div className="space-y-2">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Distribusi Spasi Merata
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => onDistributeElements('horizontal')}
-                className="p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-center gap-1.5 text-slate-300 hover:text-white"
-              >
-                <ArrowLeftRight className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Rata Horizontal</span>
-              </button>
-              <button
-                onClick={() => onDistributeElements('vertical')}
-                className="p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-center gap-1.5 text-slate-300 hover:text-white"
-              >
-                <ArrowUpDown className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Rata Vertikal</span>
-              </button>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                Penataan Cepat
+              </span>
+              {onTidyUpElements && (
+                <button
+                  type="button"
+                  onClick={onTidyUpElements}
+                  className="px-2 py-0.5 rounded bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 text-[10px] font-bold flex items-center gap-1 transition-colors"
+                >
+                  <Sparkles className="w-3 h-3 text-indigo-400" />
+                  <span>Rapikan Grid (Auto)</span>
+                </button>
+              )}
             </div>
+            {selectedCount >= 3 && onDistributeElements && (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => onDistributeElements('horizontal')}
+                  className="p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-center gap-1.5 text-slate-300 hover:text-white text-xs"
+                >
+                  <ArrowLeftRight className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Rata Horizontal</span>
+                </button>
+                <button
+                  onClick={() => onDistributeElements('vertical')}
+                  className="p-2 bg-slate-950 border border-slate-800 hover:border-indigo-500 rounded-lg flex items-center justify-center gap-1.5 text-slate-300 hover:text-white text-xs"
+                >
+                  <ArrowUpDown className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Rata Vertikal</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
 

@@ -3,6 +3,41 @@ import { DesignElement } from '../types';
 import * as Icons from 'lucide-react';
 import { getFontFamilyStyle } from '../utils/fontLoader';
 
+export function renderRichInlineText(text: string): React.ReactNode {
+  if (!text) return null;
+  if (!/[*_=`]/.test(text)) {
+    return text;
+  }
+  const regex = /(\*\*[^*]+\*\*|\*[^*]+\*|==[^=]+==|_[^_]+_|`[^`]+`)/g;
+  const parts = text.split(regex);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+      return <strong key={i} className="font-extrabold">{part.slice(2, -2)}</strong>;
+    }
+    if (part.startsWith('*') && part.endsWith('*') && part.length >= 2) {
+      return <em key={i} className="italic">{part.slice(1, -1)}</em>;
+    }
+    if (part.startsWith('==') && part.endsWith('==') && part.length >= 4) {
+      return (
+        <mark key={i} className="bg-indigo-500/30 text-indigo-200 px-1 rounded border border-indigo-500/40 not-italic">
+          {part.slice(2, -2)}
+        </mark>
+      );
+    }
+    if (part.startsWith('_') && part.endsWith('_') && part.length >= 2) {
+      return <span key={i} className="underline underline-offset-2">{part.slice(1, -1)}</span>;
+    }
+    if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+      return (
+        <code key={i} className="font-mono bg-slate-800/80 text-cyan-300 px-1 py-0.5 rounded text-[0.9em] border border-slate-700/60">
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return part;
+  });
+}
+
 interface ElementRendererProps {
   element: DesignElement;
   isSelected: boolean;
@@ -526,7 +561,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
             whiteSpace: 'pre-wrap',
           }}
         >
-          {content || (type === 'heading' ? 'Judul Teks' : 'Teks Paragraf')}
+          {content ? renderRichInlineText(content) : (type === 'heading' ? 'Judul Teks' : 'Teks Paragraf')}
         </div>
       );
 
@@ -546,7 +581,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
             lineHeight: lineHeight !== undefined ? lineHeight : 1.35,
           }}
         >
-          <div className="whitespace-pre-wrap">“{content || 'Kutipan inspiratif atau testimonial pelanggan.'}”</div>
+          <div className="whitespace-pre-wrap">“{content ? renderRichInlineText(content) : 'Kutipan inspiratif atau testimonial pelanggan.'}”</div>
           {subTitle && (
             <div className="text-xs not-italic text-slate-400 mt-2 font-normal">
               — {subTitle}

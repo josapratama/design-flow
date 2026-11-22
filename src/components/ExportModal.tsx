@@ -5,10 +5,11 @@ import { exportArtboardToImage, copyArtboardToClipboard } from '../engine/canvas
 import { exportToReactTailwind, exportProjectToReactDeck } from '../engine/tailwind-exporter';
 import { generateDesignDSL } from '../engine/dsl-generator';
 import { generateStandaloneHtmlPresentation } from '../engine/html-exporter';
-import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive, Globe, Copy, Printer } from 'lucide-react';
+import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive, Globe, Copy, Printer, Archive } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toPng, toSvg } from 'html-to-image';
 import jsPDF from 'jspdf';
+import JSZip from 'jszip';
 import { ElementRenderer } from './ElementRenderer';
 import { getSlideBackground } from '../utils/slideStyle';
 
@@ -229,6 +230,58 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     link.click();
     URL.revokeObjectURL(url);
     confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+  };
+
+  const handleDownloadWebBundleZip = async () => {
+    setIsExporting(true);
+    setExportProgress('Menyusun arsip bundel web (.zip)...');
+    try {
+      const zip = new JSZip();
+      const title = project.title || 'Presentasi';
+      const cleanName = title.toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+      // 1. Standalone HTML presentation
+      const htmlContent = generateStandaloneHtmlPresentation(project);
+      zip.file('index.html', htmlContent);
+
+      // 2. Project JSON Backup
+      zip.file(`${cleanName}.designflow.json`, JSON.stringify(project, null, 2));
+
+      // 3. DSL source
+      zip.file(`${cleanName}.dflow`, generateDesignDSL(project));
+
+      // 4. Speaker Handout
+      zip.file('speaker_handout.md', generateOutlineMarkdown());
+
+      // 5. Documentation
+      zip.file(
+        'README.md',
+        `# ${title} - Paket Presentasi DesignFlow Studio\n\n` +
+          `Paket ini siap dibuka secara offline tanpa instalasi software apa pun.\n\n` +
+          `## Berkas yang Disertakan:\n` +
+          `- **index.html**: Buka file ini di browser (Chrome, Edge, Safari, Firefox) untuk memulai slideshow mandiri offline.\n` +
+          `- **${cleanName}.designflow.json**: Berkas sumber proyek untuk diimpor kembali ke DesignFlow Studio.\n` +
+          `- **${cleanName}.dflow**: Format kode sumber DesignFlow DSL.\n` +
+          `- **speaker_handout.md**: Panduan narasi dan catatan naskah pembicara per slide.\n\n` +
+          `Dibuat dengan DesignFlow Studio.`
+      );
+
+      setExportProgress('Mengompresi paket zip...');
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${cleanName}_presentation_bundle.zip`;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      confetti({ particleCount: 75, spread: 65, origin: { y: 0.7 } });
+    } catch (err: any) {
+      alert('Gagal membuat paket ZIP: ' + err.message);
+    } finally {
+      setIsExporting(false);
+      setExportProgress('');
+    }
   };
 
   const handleExportPPTX = async () => {
@@ -892,13 +945,25 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <p>• Total slide disertakan: {project.slides.length} slide</p>
               </div>
 
-              <button
-                onClick={handleDownloadStandaloneHTML}
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-[0.98]"
-              >
-                <Download className="w-4 h-4" />
-                <span>Unduh Berkas HTML Slideshow (.html)</span>
-              </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                <button
+                  onClick={handleDownloadStandaloneHTML}
+                  disabled={isExporting}
+                  className="py-3 px-4 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-[0.98]"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Unduh 1 Berkas HTML (.html)</span>
+                </button>
+
+                <button
+                  onClick={handleDownloadWebBundleZip}
+                  disabled={isExporting}
+                  className="py-3 px-4 bg-slate-800 hover:bg-slate-700 hover:border-indigo-500/60 border border-slate-700 disabled:opacity-50 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98]"
+                >
+                  <Archive className="w-4 h-4 text-cyan-400" />
+                  <span>Unduh Paket Lengkap (.zip)</span>
+                </button>
+              </div>
             </div>
           )}
 

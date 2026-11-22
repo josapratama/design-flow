@@ -515,6 +515,77 @@ export function useDesignStore() {
     }
   }, [activeSlide, project.selectedElementIds, updateActiveSlide]);
 
+  // Smart Tidy Up: automatically arranges 2+ selected elements into an evenly-spaced row, column, or grid
+  const tidyUpSelectedElements = useCallback((gap: number = 24) => {
+    if (project.selectedElementIds.length < 2 || !activeSlide) return;
+    const selected = activeSlide.elements.filter(el => project.selectedElementIds.includes(el.id));
+    if (selected.length < 2) return;
+
+    const count = selected.length;
+    const minX = Math.min(...selected.map(e => e.x));
+    const minY = Math.min(...selected.map(e => e.y));
+    const maxX = Math.max(...selected.map(e => e.x + e.width));
+    const maxY = Math.max(...selected.map(e => e.y + e.height));
+    const spanX = maxX - minX;
+    const spanY = maxY - minY;
+
+    updateActiveSlide(slide => {
+      const updates = new Map<string, { x: number; y: number }>();
+
+      // Check if grid (e.g. 4, 6, 8, 9 items with both spanX and spanY large)
+      const isGrid = count >= 4 && spanX > 250 && spanY > 200;
+
+      if (isGrid) {
+        const cols = count === 4 ? 2 : count === 6 ? 3 : Math.ceil(Math.sqrt(count));
+        const sorted = [...selected].sort((a, b) => {
+          const rowDiff = Math.round(a.y / 80) - Math.round(b.y / 80);
+          return rowDiff !== 0 ? rowDiff : a.x - b.x;
+        });
+
+        const maxW = Math.max(...selected.map(e => e.width));
+        const maxH = Math.max(...selected.map(e => e.height));
+
+        sorted.forEach((el, idx) => {
+          const col = idx % cols;
+          const row = Math.floor(idx / cols);
+          updates.set(el.id, {
+            x: Math.round(minX + col * (maxW + gap)),
+            y: Math.round(minY + row * (maxH + gap)),
+          });
+        });
+      } else if (spanX >= spanY) {
+        // Horizontal row
+        const sorted = [...selected].sort((a, b) => a.x - b.x);
+        let currX = minX;
+        const avgY = Math.round(selected.reduce((sum, e) => sum + e.y, 0) / count);
+        sorted.forEach(el => {
+          updates.set(el.id, { x: Math.round(currX), y: avgY });
+          currX += el.width + gap;
+        });
+      } else {
+        // Vertical column
+        const sorted = [...selected].sort((a, b) => a.y - b.y);
+        let currY = minY;
+        const avgX = Math.round(selected.reduce((sum, e) => sum + e.x, 0) / count);
+        sorted.forEach(el => {
+          updates.set(el.id, { x: avgX, y: Math.round(currY) });
+          currY += el.height + gap;
+        });
+      }
+
+      return {
+        ...slide,
+        elements: slide.elements.map(el => {
+          if (updates.has(el.id)) {
+            const pos = updates.get(el.id)!;
+            return { ...el, x: pos.x, y: pos.y };
+          }
+          return el;
+        }),
+      };
+    });
+  }, [activeSlide, project.selectedElementIds, updateActiveSlide]);
+
   const reorderSelectedElement = useCallback((direction: 'front' | 'back' | 'up' | 'down', elementId?: string) => {
     const targetId = elementId || (project.selectedElementIds.length > 0 ? project.selectedElementIds[0] : null);
     if (!targetId) return;
@@ -989,6 +1060,7 @@ export function useDesignStore() {
     nudgeSelectedElements,
     alignSelectedElement,
     distributeSelectedElements,
+    tidyUpSelectedElements,
     selectAllElements,
     deselectAllElements,
     reorderSelectedElement,

@@ -44,6 +44,7 @@ interface ToolbarProps {
   onOpenSlideSorter?: () => void;
   onGroup?: () => void;
   onUngroup?: () => void;
+  onTidyUp?: () => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
 }
@@ -71,6 +72,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onOpenSlideSorter,
   onGroup,
   onUngroup,
+  onTidyUp,
   onDeleteSelected,
   onDuplicateSelected,
 }) => {
@@ -330,6 +332,18 @@ export const Toolbar: React.FC<ToolbarProps> = ({
               className="p-1.5 hover:bg-emerald-600/20 text-emerald-400 rounded-xl transition-colors"
             >
               <Boxes className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Smart Tidy Up */}
+          {selectedCount > 1 && onTidyUp && (
+            <button
+              onClick={onTidyUp}
+              title="Rapikan Jarak & Grid Otomatis (Smart Tidy Up)"
+              className="p-1.5 hover:bg-indigo-600/20 text-indigo-400 rounded-xl transition-colors flex items-center gap-1"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span className="hidden md:inline font-semibold text-[10px]">Rapikan</span>
             </button>
           )}
 

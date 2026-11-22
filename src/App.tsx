@@ -60,6 +60,7 @@ export default function App() {
     nudgeSelectedElements,
     alignSelectedElement,
     distributeSelectedElements,
+    tidyUpSelectedElements,
     selectAllElements,
     deselectAllElements,
     reorderSelectedElement,
@@ -627,6 +628,7 @@ export default function App() {
             onOpenSlideSorter={() => setIsSlideSorterOpen(true)}
             onGroup={groupSelectedElements}
             onUngroup={ungroupSelectedElements}
+            onTidyUp={tidyUpSelectedElements}
             onDeleteSelected={deleteSelectedElements}
             onDuplicateSelected={duplicateSelectedElements}
           />
@@ -653,6 +655,7 @@ export default function App() {
               onReorder={reorderSelectedElement}
               onAlignElement={alignSelectedElement}
               onDistributeElements={distributeSelectedElements}
+              onTidyUpElements={tidyUpSelectedElements}
               onBatchUpdateElements={updateSelectedElements}
               onApplySlideTheme={applyThemeToActiveSlide}
               onInvertSlideTheme={invertActiveSlideTheme}
