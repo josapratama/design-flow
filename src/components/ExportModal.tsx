@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { DesignProject, Slide } from '../types';
 import { exportToPowerPoint } from '../engine/pptx-exporter';
-import { exportArtboardToImage } from '../engine/canvas-exporter';
+import { exportArtboardToImage, copyArtboardToClipboard } from '../engine/canvas-exporter';
 import { exportToReactTailwind, exportProjectToReactDeck } from '../engine/tailwind-exporter';
 import { generateDesignDSL } from '../engine/dsl-generator';
 import { generateStandaloneHtmlPresentation } from '../engine/html-exporter';
@@ -34,6 +34,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [copiedOutline, setCopiedOutline] = useState(false);
   const [copiedSvg, setCopiedSvg] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
+  const [copiedImage, setCopiedImage] = useState(false);
   const [exportProgress, setExportProgress] = useState<string>('');
 
   const tailwindCode = codeScope === 'deck'
@@ -185,6 +186,27 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
     } catch (err: any) {
       alert('Gagal mengekspor gambar: ' + err.message);
+    } finally {
+      setIsExporting(false);
+      setExportProgress('');
+    }
+  };
+
+  const handleCopyImageToClipboard = async () => {
+    if (!artboardRef.current) return;
+    setIsExporting(true);
+    setExportProgress(`Menyalin kanvas ke clipboard (${imageScale}x)...`);
+    try {
+      const success = await copyArtboardToClipboard(artboardRef.current, imageScale);
+      if (success) {
+        setCopiedImage(true);
+        confetti({ particleCount: 35, spread: 50, origin: { y: 0.7 } });
+        setTimeout(() => setCopiedImage(false), 2500);
+      } else {
+        alert('Browser Anda tidak mendukung penulisan gambar ke clipboard.');
+      }
+    } catch (err: any) {
+      alert('Gagal menyalin gambar: ' + err.message);
     } finally {
       setIsExporting(false);
       setExportProgress('');
@@ -451,6 +473,28 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     </button>
                   ))}
                 </div>
+              </div>
+
+              {/* Quick Copy Artboard to OS Clipboard */}
+              <div className="p-3 bg-slate-900/90 border border-slate-800 rounded-xl flex items-center justify-between gap-3 shadow-inner">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg">
+                    <Copy className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-white block">Salin Gambar Slide Langsung</span>
+                    <span className="text-[10px] text-slate-400">Salin PNG ke clipboard untuk ditempel langsung (Ctrl+Shift+C)</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyImageToClipboard}
+                  disabled={isExporting}
+                  className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md active:scale-95 shrink-0"
+                >
+                  {copiedImage ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedImage ? 'Gambar Tersalin!' : 'Salin ke Clipboard'}</span>
+                </button>
               </div>
 
               <div className="grid grid-cols-4 gap-2">

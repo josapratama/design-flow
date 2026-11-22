@@ -109,6 +109,26 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     return Array.from(set).slice(0, 10);
   }, [activeSlide]);
 
+  const [recentColors, setRecentColors] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('designflow_recent_colors');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const recordRecentColor = (color: string) => {
+    if (!color || !color.startsWith('#')) return;
+    setRecentColors(prev => {
+      const next = [color.toLowerCase(), ...prev.filter(c => c.toLowerCase() !== color.toLowerCase())].slice(0, 8);
+      try {
+        localStorage.setItem('designflow_recent_colors', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
   const popularIconNames = [
     // Common & Core UI
     'Star', 'Heart', 'Shield', 'ShieldCheck', 'Check', 'CheckCircle', 'CheckCircle2', 'User', 'Users', 'UserCheck', 'Search', 'Settings', 'Home',
@@ -647,6 +667,9 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
 
   // 2. IF AN ELEMENT IS SELECTED: SHOW ELEMENT PROPERTIES
   const handleChange = (field: keyof DesignElement, val: any) => {
+    if ((field === 'fill' || field === 'color' || field === 'stroke') && typeof val === 'string' && val.startsWith('#')) {
+      recordRecentColor(val);
+    }
     onUpdateElement(element.id, { [field]: val });
   };
 
@@ -1821,6 +1844,24 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   />
                 ))}
               </div>
+              {/* Recent Colors for Fill */}
+              {recentColors.length > 0 && (
+                <div className="pt-1.5">
+                  <span className="text-[9px] text-slate-500 font-medium block mb-1">Riwayat Terakhir:</span>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {recentColors.map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => handleChange('fill', c)}
+                        title={`Gunakan riwayat ${c}`}
+                        className="w-3.5 h-3.5 rounded-full border border-slate-700 hover:scale-110 transition-transform"
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {(() => {
@@ -1913,6 +1954,24 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                       />
                     ))}
                   </div>
+                  {/* Recent Colors for Text */}
+                  {recentColors.length > 0 && (
+                    <div className="pt-1.5">
+                      <span className="text-[9px] text-slate-500 font-medium block mb-1">Riwayat Terakhir:</span>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {recentColors.map(c => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => handleChange('color', c)}
+                            title={`Gunakan riwayat ${c}`}
+                            className="w-3.5 h-3.5 rounded-full border border-slate-700 hover:scale-110 transition-transform"
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })()}

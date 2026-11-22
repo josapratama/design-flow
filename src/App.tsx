@@ -369,6 +369,17 @@ export default function App() {
         setShowSafeMargin(prev => !prev);
       }
 
+      // 6.4 Reorder Slide Position: Ctrl+Shift+Up / Ctrl+Shift+Down
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+        e.preventDefault();
+        if (e.key === 'ArrowUp') {
+          reorderSlide(project.activeSlideId, 'left');
+        } else {
+          reorderSlide(project.activeSlideId, 'right');
+        }
+        return;
+      }
+
       // 7. Arrow Key Nudge (when elements selected) or Slide Navigation (when canvas idle)
       if (project.selectedElementIds.length > 0) {
         const step = e.shiftKey ? 10 : 1;

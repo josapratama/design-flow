@@ -299,12 +299,12 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             </>
           )}
 
-          {/* Multi-Element Alignment Quick Sub-actions */}
-          {selectedCount >= 2 && onAlign && (
+          {/* Alignment Quick Sub-actions */}
+          {selectedCount >= 1 && onAlign && (
             <>
               <div className="my-1 border-t border-slate-800" />
               <div className="px-3 py-1 text-[9px] font-semibold text-slate-500 uppercase tracking-wider">
-                Perataan ({selectedCount} Elemen)
+                {selectedCount === 1 ? 'Perataan ke Kanvas' : `Perataan (${selectedCount} Elemen)`}
               </div>
               <div className="px-3 py-1 grid grid-cols-6 gap-1">
                 <button

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Slide } from '../types';
 import { ElementRenderer } from './ElementRenderer';
 import { getSlideBackground } from '../utils/slideStyle';
@@ -79,8 +79,34 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [reactions, setReactions] = useState<Array<{ id: number; emoji: string; left: number }>>([]);
   const [showPresenterOptions, setShowPresenterOptions] = useState(false);
   const [showReactionMenu, setShowReactionMenu] = useState(false);
+  const [isControlsIdle, setIsControlsIdle] = useState(false);
+  const idleTimerRef = useRef<any>(null);
   const optionsMenuRef = useRef<HTMLDivElement>(null);
   const reactionMenuRef = useRef<HTMLDivElement>(null);
+
+  const resetIdleTimer = useCallback(() => {
+    setIsControlsIdle(false);
+    if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    idleTimerRef.current = setTimeout(() => {
+      if (!showPresenterOptions && !showReactionMenu && !showSlideNavigator && !showHelpOverlay) {
+        setIsControlsIdle(true);
+      }
+    }, 3000);
+  }, [showPresenterOptions, showReactionMenu, showSlideNavigator, showHelpOverlay]);
+
+  useEffect(() => {
+    const handleActivity = () => resetIdleTimer();
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+    resetIdleTimer();
+    return () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+    };
+  }, [resetIdleTimer]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -599,9 +625,19 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   };
 
   const currentSlide = slides[currentIndex];
-  const viewportWidth = windowDimensions.width * (showNotes ? 0.72 : 0.95);
+  const isLargeScreen = windowDimensions.width >= 1024;
+  const viewportWidth = windowDimensions.width * (showNotes && isLargeScreen ? 0.72 : 0.95);
   const viewportHeight = windowDimensions.height * 0.85;
   const scale = Math.min(viewportWidth / currentSlide.width, viewportHeight / currentSlide.height);
+
+  const wordCount = (currentSlide.notes || '').trim().split(/\s+/).filter(Boolean).length;
+  const estimatedSpeechMinutes = Math.floor(wordCount / 130);
+  const estimatedSpeechSeconds = Math.round(((wordCount % 130) / 130) * 60);
+  const speechEstimateBadge = wordCount === 0
+    ? null
+    : estimatedSpeechMinutes > 0
+      ? `~${estimatedSpeechMinutes}m ${estimatedSpeechSeconds}d bicara`
+      : `~${estimatedSpeechSeconds} detik bicara`;
 
   const effectiveTransition = (currentSlide.transition && currentSlide.transition !== 'none')
     ? currentSlide.transition
@@ -616,9 +652,13 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
         : 'animate-in fade-in duration-200';
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col select-none text-slate-100">
+    <div className={`fixed inset-0 z-50 bg-slate-950 flex flex-col select-none text-slate-100 ${
+      isControlsIdle && !isLaserActive && !isPenActive ? 'cursor-none' : ''
+    }`}>
       {/* Presenter Top Bar - Clean, Minimalist & Responsive */}
-      <header className="h-14 border-b border-slate-800/80 px-3 sm:px-6 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl shrink-0 z-30">
+      <header className={`h-14 border-b border-slate-800/80 px-3 sm:px-6 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl shrink-0 z-30 transition-opacity duration-300 ${
+        isControlsIdle && !isLaserActive && !isPenActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      }`}>
         {/* Left Section: Live Status & Clean Timer */}
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <div className="flex items-center gap-2 shrink-0">
@@ -676,25 +716,25 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
         {/* Right Section: Essential Presenter Tools & Options Popover */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Laser Pointer Button with Mini Color Selector */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-0.5">
+          {/* Laser Pointer Mode */}
+          <div className="relative">
             <button
               onClick={() => {
                 setIsLaserActive(!isLaserActive);
                 if (!isLaserActive) setIsPenActive(false);
               }}
               title="Laser Pointer (Tekan 'L')"
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
                 isLaserActive
-                  ? 'bg-rose-500 text-white shadow-md shadow-rose-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-md shadow-rose-500/20'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
               <CircleDot className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Laser</span>
             </button>
             {isLaserActive && (
-              <div className="flex items-center gap-1 px-1 border-l border-slate-800 ml-0.5">
+              <div className="absolute top-full mt-1.5 left-0 bg-slate-900 border border-slate-800 rounded-xl p-1.5 shadow-xl flex items-center gap-1.5 z-40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
                 {[
                   { color: '#f43f5e', name: 'Merah' },
                   { color: '#38bdf8', name: 'Cyan' },
@@ -704,7 +744,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                     key={c.color}
                     onClick={() => setLaserColor(c.color)}
                     title={`Laser ${c.name}`}
-                    className={`w-3 h-3 rounded-full border transition-transform ${laserColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${laserColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-60 hover:opacity-100'}`}
                     style={{ backgroundColor: c.color }}
                   />
                 ))}
@@ -713,24 +753,24 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           </div>
 
           {/* Pen / Doodle Annotation Button */}
-          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-0.5">
+          <div className="relative">
             <button
               onClick={() => {
                 setIsPenActive(!isPenActive);
                 if (!isPenActive) setIsLaserActive(false);
               }}
               title="Anotasi Pena Coretan (Tekan 'P')"
-              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-2.5 py-1 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border ${
                 isPenActive
                   ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
-                  : 'text-slate-400 hover:text-white'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
               }`}
             >
               <Pen className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Pena</span>
             </button>
             {isPenActive && (
-              <div className="flex items-center gap-1 px-1 border-l border-slate-800 ml-0.5">
+              <div className="absolute top-full mt-1.5 left-0 bg-slate-900 border border-slate-800 rounded-xl p-1.5 shadow-xl flex items-center gap-1.5 z-40 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
                 {[
                   { color: '#f43f5e', name: 'Merah' },
                   { color: '#38bdf8', name: 'Cyan' },
@@ -740,10 +780,11 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                     key={c.color}
                     onClick={() => setPenColor(c.color)}
                     title={`Warna ${c.name}`}
-                    className={`w-3 h-3 rounded-full border transition-transform ${penColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${penColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-60 hover:opacity-100'}`}
                     style={{ backgroundColor: c.color }}
                   />
                 ))}
+                <div className="h-3 w-[1px] bg-slate-800 mx-0.5" />
                 <button
                   onClick={undoPenStroke}
                   title="Batalkan Coretan Terakhir (U)"
@@ -1029,6 +1070,11 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                   <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
                     Naskah & Panduan Berbicara
                   </span>
+                  {speechEstimateBadge && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                      {speechEstimateBadge}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1">
@@ -1383,7 +1429,9 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           )}
 
           {/* Floating Navigation Controls Capsule - Clean & Uncluttered */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 p-1.5 bg-slate-900/90 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-xl z-30">
+          <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 p-1.5 bg-slate-900/90 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-xl z-30 transition-opacity duration-300 ${
+            isControlsIdle && !isLaserActive && !isPenActive ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}>
             <button
               onClick={goToPrev}
               disabled={currentIndex === 0}
@@ -1473,10 +1521,17 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block mb-1">
-                    Catatan Pembicara (Speaker Notes)
-                  </span>
-                  <h4 className="text-sm font-semibold text-slate-200">{currentSlide.title}</h4>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                      Catatan Pembicara
+                    </span>
+                    {speechEstimateBadge && (
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                        {speechEstimateBadge}
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-semibold text-slate-200 mt-1">{currentSlide.title}</h4>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <button
@@ -1495,7 +1550,13 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                     <FileDown className="w-3.5 h-3.5 text-indigo-400" />
                     <span className="text-[10px] font-mono">Unduh .md</span>
                   </button>
-                  <FileEdit className="w-4 h-4 text-slate-500" />
+                  <button
+                    onClick={() => setShowNotes(false)}
+                    title="Tutup Catatan"
+                    className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg lg:hidden"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
