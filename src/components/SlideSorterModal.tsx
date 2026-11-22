@@ -28,6 +28,7 @@ interface SlideSorterModalProps {
   onDuplicateSlide: (slideId: string) => void;
   onDeleteSlide: (slideId: string) => void;
   onReorderSlide: (slideId: string, direction: 'left' | 'right' | 'start' | 'end') => void;
+  onMoveSlideToIndex?: (slideId: string, targetIndex: number) => void;
   onUpdateSlideTitle: (slideId: string, title: string) => void;
 }
 
@@ -41,22 +42,59 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
   onDuplicateSlide,
   onDeleteSlide,
   onReorderSlide,
+  onMoveSlideToIndex,
   onUpdateSlideTitle,
 }) => {
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempTitle, setTempTitle] = useState('');
+  const [draggedSlideId, setDraggedSlideId] = useState<string | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
+      if (editingId) return;
+
       if (e.key === 'Escape') {
         onClose();
+        return;
+      }
+
+      // Ctrl+D / Cmd+D: duplikasi slide aktif
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        onDuplicateSlide(activeSlideId);
+        return;
+      }
+
+      // Del / Backspace: hapus slide aktif
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (slides.length > 1) {
+          e.preventDefault();
+          onDeleteSlide(activeSlideId);
+        }
+        return;
+      }
+
+      // Navigasi panah
+      if (e.key === 'ArrowLeft') {
+        const curIdx = slides.findIndex(s => s.id === activeSlideId);
+        if (curIdx > 0) {
+          e.preventDefault();
+          onSelectSlide(slides[curIdx - 1].id);
+        }
+      } else if (e.key === 'ArrowRight') {
+        const curIdx = slides.findIndex(s => s.id === activeSlideId);
+        if (curIdx < slides.length - 1) {
+          e.preventDefault();
+          onSelectSlide(slides[curIdx + 1].id);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, editingId, activeSlideId, slides, onDuplicateSlide, onDeleteSlide, onSelectSlide]);
 
   if (!isOpen) return null;
 
@@ -80,7 +118,7 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
               </span>
             </div>
             <p className="text-[11px] text-slate-400">
-              Tinjauan makro seluruh slide — klik untuk memilih, atur urutan, duplikat atau buat slide baru.
+              Drag & drop kartu untuk mengatur urutan • <kbd className="px-1 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 font-mono">Ctrl+D</kbd> duplikasi • <kbd className="px-1 py-0.5 rounded bg-slate-800 text-[10px] text-slate-300 font-mono">Del</kbd> hapus
             </p>
           </div>
         </div>
@@ -131,12 +169,43 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
             return (
               <div
                 key={slide.id}
+                draggable={!editingId}
+                onDragStart={e => {
+                  e.dataTransfer.setData('text/plain', slide.id);
+                  setDraggedSlideId(slide.id);
+                }}
+                onDragEnd={() => {
+                  setDraggedSlideId(null);
+                  setDragOverIndex(null);
+                }}
+                onDragOver={e => {
+                  e.preventDefault();
+                  if (dragOverIndex !== originalIndex) {
+                    setDragOverIndex(originalIndex);
+                  }
+                }}
+                onDragLeave={() => {
+                  if (dragOverIndex === originalIndex) {
+                    setDragOverIndex(null);
+                  }
+                }}
+                onDrop={e => {
+                  e.preventDefault();
+                  const sourceId = e.dataTransfer.getData('text/plain') || draggedSlideId;
+                  if (sourceId && onMoveSlideToIndex && sourceId !== slide.id) {
+                    onMoveSlideToIndex(sourceId, originalIndex);
+                  }
+                  setDraggedSlideId(null);
+                  setDragOverIndex(null);
+                }}
                 onClick={() => {
                   onSelectSlide(slide.id);
                   onClose();
                 }}
-                className={`group relative rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between p-3.5 bg-slate-900/90 hover:bg-slate-900 shadow-lg ${
-                  isActive
+                className={`group relative rounded-2xl border-2 transition-all cursor-grab active:cursor-grabbing flex flex-col justify-between p-3.5 bg-slate-900/90 hover:bg-slate-900 shadow-lg ${
+                  dragOverIndex === originalIndex && draggedSlideId !== slide.id
+                    ? 'border-indigo-400 ring-4 ring-indigo-500/50 scale-[1.02] bg-indigo-950/40 shadow-indigo-500/20'
+                    : isActive
                     ? 'border-indigo-500 ring-2 ring-indigo-500/40 shadow-indigo-500/10'
                     : 'border-slate-800 hover:border-slate-700'
                 }`}

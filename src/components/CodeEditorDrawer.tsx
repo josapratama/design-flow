@@ -187,6 +187,11 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
           }}
           onScroll={handleScroll}
           onKeyDown={e => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              onClose();
+              return;
+            }
             if (e.key === 'Tab') {
               e.preventDefault();
               const textarea = textareaRef.current;

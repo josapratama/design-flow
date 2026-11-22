@@ -595,6 +595,25 @@ export function useDesignStore() {
     });
   }, [pushHistory]);
 
+  const moveSlideToIndex = useCallback((slideId: string, targetIndex: number) => {
+    setProject(prev => {
+      const index = prev.slides.findIndex(s => s.id === slideId);
+      if (index === -1) return prev;
+      if (targetIndex < 0 || targetIndex >= prev.slides.length || targetIndex === index) return prev;
+
+      pushHistory(prev.slides);
+      const newSlides = [...prev.slides];
+      const [moved] = newSlides.splice(index, 1);
+      newSlides.splice(targetIndex, 0, moved);
+
+      return {
+        ...prev,
+        slides: newSlides,
+        activeSlideId: moved.id,
+      };
+    });
+  }, [pushHistory]);
+
   // Load a complete template
   const loadTemplate = useCallback((template: typeof TEMPLATES[0]) => {
     pushHistory(project.slides);
@@ -844,6 +863,7 @@ export function useDesignStore() {
     duplicateSlide,
     deleteSlide,
     reorderSlide,
+    moveSlideToIndex,
     loadTemplate,
     saveProjectToFile,
     loadProjectData,

@@ -62,6 +62,7 @@ export default function App() {
     duplicateSlide,
     deleteSlide,
     reorderSlide,
+    moveSlideToIndex,
     loadTemplate,
     saveProjectToFile,
     loadProjectData,
@@ -687,6 +688,7 @@ export default function App() {
         onDuplicateSlide={duplicateSlide}
         onDeleteSlide={deleteSlide}
         onReorderSlide={reorderSlide}
+        onMoveSlideToIndex={moveSlideToIndex}
         onUpdateSlideTitle={(slideId, title) => updateSlideSettings(slideId, { title })}
       />
     </div>

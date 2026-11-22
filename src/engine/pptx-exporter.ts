@@ -407,6 +407,121 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
           break;
         }
 
+        case 'avatar': {
+          if (el.imageUrl) {
+            try {
+              slide.addImage({
+                path: el.imageUrl,
+                x: posX,
+                y: posY,
+                w: w,
+                h: h,
+                rounding: true,
+              });
+            } catch (avErr) {
+              console.warn('Gagal menambahkan avatar image:', avErr);
+              slide.addShape(pptx.ShapeType.ellipse, {
+                x: posX,
+                y: posY,
+                w: w,
+                h: h,
+                fill: { color: cleanHex(el.fill || '#1E293B') },
+                line: { color: cleanHex(el.stroke || '#6366F1'), width: el.strokeWidth || 2 },
+              });
+              slide.addText(el.content || 'DF', {
+                x: posX,
+                y: posY,
+                w: w,
+                h: h,
+                fontSize: Math.round(Math.min(w, h) * 16) || 14,
+                color: cleanHex(el.color || '#FFFFFF'),
+                bold: true,
+                align: 'center',
+                valign: 'middle',
+              });
+            }
+          } else {
+            slide.addShape(pptx.ShapeType.ellipse, {
+              x: posX,
+              y: posY,
+              w: w,
+              h: h,
+              fill: { color: cleanHex(el.fill || '#1E293B') },
+              line: { color: cleanHex(el.stroke || '#6366F1'), width: el.strokeWidth || 2 },
+            });
+            slide.addText(el.content || 'DF', {
+              x: posX,
+              y: posY,
+              w: w,
+              h: h,
+              fontSize: Math.round(Math.min(w, h) * 16) || 14,
+              color: cleanHex(el.color || '#FFFFFF'),
+              bold: true,
+              align: 'center',
+              valign: 'middle',
+            });
+          }
+
+          // Online status badge dot
+          slide.addShape(pptx.ShapeType.ellipse, {
+            x: posX + w * 0.72,
+            y: posY + h * 0.72,
+            w: Math.max(0.12, w * 0.22),
+            h: Math.max(0.12, h * 0.22),
+            fill: { color: '10B981' },
+            line: { color: '0F172A', width: 1.5 },
+          });
+          break;
+        }
+
+        case 'icon': {
+          slide.addShape(pptx.ShapeType.ellipse, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '1E293B' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
+          });
+
+          slide.addText(el.iconName ? `★ ${el.iconName}` : '✦', {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fontSize: Math.round(Math.min(w, h) * 14) || 16,
+            color: cleanHex(el.color || '#818CF8'),
+            align: 'center',
+            valign: 'middle',
+            bold: true,
+          });
+          break;
+        }
+
+        case 'toggle': {
+          const isActive = el.content !== 'off';
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            rectRadius: 0.5,
+            fill: { color: isActive ? cleanHex(el.fill || '#6366F1') : '334155' },
+          });
+
+          const knobSize = h * 0.75;
+          const knobX = isActive ? posX + w - knobSize - (h * 0.12) : posX + (h * 0.12);
+          const knobY = posY + (h * 0.125);
+          slide.addShape(pptx.ShapeType.ellipse, {
+            x: knobX,
+            y: knobY,
+            w: knobSize,
+            h: knobSize,
+            fill: { color: 'FFFFFF' },
+          });
+          break;
+        }
+
         case 'card':
         case 'rect':
         default: {

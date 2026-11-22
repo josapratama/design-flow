@@ -97,6 +97,9 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
       { name: 'Sunset Crimson', bg: 'linear-gradient(135deg, #180512 0%, #4c0519 100%)' },
       { name: 'Aurora Emerald', bg: 'linear-gradient(135deg, #021a12 0%, #064e3b 100%)' },
       { name: 'Slate Modern', bg: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)' },
+      { name: 'Midnight Aurora', bg: 'linear-gradient(135deg, #090d16 0%, #1e1b4b 50%, #064e3b 100%)' },
+      { name: 'Cosmic Violet', bg: 'linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #831843 100%)' },
+      { name: 'Sunset Glow', bg: 'linear-gradient(135deg, #1e1b4b 0%, #be123c 50%, #ea580c 100%)' },
     ];
 
     return (
@@ -332,11 +335,10 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   <button
                     key={wp.name}
                     onClick={() => onUpdateSlide(activeSlide.id, { wallpaper: wp.url })}
-                    className={`group relative h-12 rounded-lg overflow-hidden border transition-all text-left ${
-                      activeSlide.wallpaper === wp.url
-                        ? 'border-indigo-500 ring-2 ring-indigo-500/30'
-                        : 'border-slate-800 hover:border-slate-700'
-                    }`}
+                    className={`group relative h-12 rounded-lg overflow-hidden border transition-all text-left ${activeSlide.wallpaper === wp.url
+                      ? 'border-indigo-500 ring-2 ring-indigo-500/30'
+                      : 'border-slate-800 hover:border-slate-700'
+                      }`}
                   >
                     <img
                       src={wp.url}
@@ -1191,9 +1193,8 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     type="button"
                     onClick={() => handleChange('fill', sw)}
                     title={`Pilih warna ${sw}`}
-                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${
-                      element.fill === sw ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent hover:scale-110'
-                    }`}
+                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${element.fill === sw ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent hover:scale-110'
+                      }`}
                     style={{ backgroundColor: sw }}
                   />
                 ))}
@@ -1231,9 +1232,8 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                     type="button"
                     onClick={() => handleChange('color', sw)}
                     title={`Pilih warna teks ${sw}`}
-                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${
-                      element.color === sw ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent hover:scale-110'
-                    }`}
+                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${element.color === sw ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent hover:scale-110'
+                      }`}
                     style={{ backgroundColor: sw }}
                   />
                 ))}
