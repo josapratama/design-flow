@@ -41,6 +41,7 @@ export default function App() {
     addElement,
     addElements,
     updateElement,
+    updateSelectedElements,
     updateElementLive,
     moveSelectedElementsLive,
     commitHistory,
@@ -626,6 +627,7 @@ export default function App() {
               onReorder={reorderSelectedElement}
               onAlignElement={alignSelectedElement}
               onDistributeElements={distributeSelectedElements}
+              onBatchUpdateElements={updateSelectedElements}
               onApplySlideTheme={applyThemeToActiveSlide}
               onInvertSlideTheme={invertActiveSlideTheme}
               onToggleLock={toggleLockElement}

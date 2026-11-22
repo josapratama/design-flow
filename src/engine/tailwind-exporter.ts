@@ -218,7 +218,7 @@ function renderElementJSX(el: DesignElement): string {
 
   // Custom typography (Google Fonts)
   if (el.fontFamily && !['sans', 'serif', 'mono'].includes(el.fontFamily)) {
-    baseStyle.fontFamily = `'${el.fontFamily}', sans-serif`;
+    baseStyle.fontFamily = `"${el.fontFamily}", sans-serif`;
   }
 
   // Border / Stroke styling
@@ -232,7 +232,7 @@ function renderElementJSX(el: DesignElement): string {
       if (v !== undefined) merged[k] = v;
     }
     const entries = Object.entries(merged)
-      .map(([k, v]) => `${k}: '${v}'`)
+      .map(([k, v]) => (typeof v === 'number' ? `${k}: ${v}` : `${k}: ${JSON.stringify(v)}`))
       .join(', ');
     return `style={{ ${entries} }}`;
   };
@@ -357,8 +357,8 @@ function renderElementJSX(el: DesignElement): string {
 
       return `      {/* Table Element: ${el.name} */}
       <div 
-        className="absolute rounded-xl border border-slate-800 bg-slate-900/90 overflow-hidden shadow-lg"
-        style={{ left: '${el.x}px', top: '${el.y}px', width: '${el.width}px', height: '${el.height}px' }}
+        className="absolute rounded-xl border border-slate-800 bg-slate-900/90 overflow-hidden shadow-lg ${fontClass} ${getShadowClass(el.shadow)}"
+        ${toStyleAttr({ borderRadius: `${el.borderRadius !== undefined ? el.borderRadius : 12}px` })}
       >
         <table className="w-full h-full border-collapse text-left text-xs">
           <thead className="bg-indigo-950/40 border-b border-slate-800 text-indigo-300 font-bold uppercase text-[10px]">

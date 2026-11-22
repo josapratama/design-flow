@@ -142,6 +142,19 @@ export function useDesignStore() {
     }));
   }, [updateActiveSlide]);
 
+  // Update multiple selected elements in a single history transaction
+  const updateSelectedElements = useCallback((updater: (el: DesignElement) => Partial<DesignElement>) => {
+    updateActiveSlide(slide => ({
+      ...slide,
+      elements: slide.elements.map(el => {
+        if (project.selectedElementIds.includes(el.id)) {
+          return { ...el, ...updater(el) };
+        }
+        return el;
+      }),
+    }));
+  }, [project.selectedElementIds, updateActiveSlide]);
+
   // Live update without pushing to history (used while dragging, rotating, resizing)
   const updateElementLive = useCallback((elementId: string, updates: Partial<DesignElement>) => {
     setProject(prev => {
@@ -910,6 +923,7 @@ export function useDesignStore() {
     addElement,
     addElements,
     updateElement,
+    updateSelectedElements,
     updateElementLive,
     moveSelectedElementsLive,
     commitHistory,

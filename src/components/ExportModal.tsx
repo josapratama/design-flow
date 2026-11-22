@@ -494,24 +494,37 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 </button>
               </div>
 
-              {/* 1-Click SVG Vector Clipboard Box */}
+              {/* 1-Click SVG Vector Clipboard & Download Box */}
               <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-between gap-3 mt-1">
                 <div className="flex items-center gap-2.5">
                   <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
                   <div>
-                    <span className="text-xs font-semibold text-white block">Salin Kode Vektor SVG ke Clipboard</span>
-                    <span className="text-[10px] text-slate-400">Siap di-paste langsung ke Figma, Adobe Illustrator, atau kode web</span>
+                    <span className="text-xs font-semibold text-white block">Berkas & Kode Vektor SVG Murni</span>
+                    <span className="text-[10px] text-slate-400">Siap diimpor ke Figma, Illustrator, Inkscape, atau web</span>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleCopySvgCode}
-                  disabled={isExporting}
-                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm active:scale-95 shrink-0"
-                >
-                  {copiedSvg ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedSvg ? 'Tersalin ke Clipboard!' : 'Salin Kode SVG'}</span>
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleExportImage('svg')}
+                    disabled={isExporting}
+                    className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-indigo-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-700 active:scale-95 shadow-sm"
+                    title="Unduh berkas .svg ke perangkat Anda"
+                  >
+                    <Download className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Unduh .SVG</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopySvgCode}
+                    disabled={isExporting}
+                    className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm active:scale-95"
+                    title="Salin markup SVG ke clipboard"
+                  >
+                    {copiedSvg ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copiedSvg ? 'Tersalin!' : 'Salin Kode'}</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}

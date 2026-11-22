@@ -293,12 +293,23 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
         </div>
       )}
 
-      {/* Drawer Footer Actions */}
+      {/* Drawer Footer Actions & Live Structural Token Inspector */}
       <div className="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-900">
         <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
-          <span>{lines.length} baris</span>
-          <span>•</span>
-          <span className="text-slate-500"><kbd className="text-indigo-400">Ctrl+Enter</kbd> terapkan</span>
+          <span className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-indigo-300 font-semibold">
+            {lines.length} baris
+          </span>
+          <span className="px-1.5 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-300">
+            {(code.match(/slide\s+"[^"]*"/g) || []).length || project.slides.length} slide
+          </span>
+          <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
+            error
+              ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+              : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+          }`}>
+            {error ? 'Sintaks Error' : 'DSL Valid'}
+          </span>
+          <span className="text-slate-500 hidden sm:inline">• <kbd className="text-indigo-400">Ctrl+Enter</kbd></span>
         </div>
         <button
           onClick={handleApply}

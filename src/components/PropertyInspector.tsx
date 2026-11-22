@@ -48,6 +48,7 @@ interface PropertyInspectorProps {
   onReorder: (direction: 'front' | 'back' | 'up' | 'down') => void;
   onAlignElement: (alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
   onDistributeElements?: (direction: 'horizontal' | 'vertical') => void;
+  onBatchUpdateElements?: (updater: (el: DesignElement) => Partial<DesignElement>) => void;
   onApplySlideTheme?: (theme: { background: string; primaryAccent: string; cardFill: string; textColor: string }) => void;
   onInvertSlideTheme?: () => void;
   onToggleLock?: (elementId: string) => void;
@@ -67,6 +68,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   onReorder,
   onAlignElement,
   onDistributeElements,
+  onBatchUpdateElements,
   onApplySlideTheme,
   onInvertSlideTheme,
   onToggleLock,
@@ -813,6 +815,69 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               >
                 <ArrowUpDown className="w-3.5 h-3.5 text-indigo-400" />
                 <span>Rata Vertikal</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Transformasi Teks Massal saat 2+ elemen terpilih */}
+        {selectedCount > 1 && onBatchUpdateElements && (
+          <div className="space-y-2 p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-indigo-300 uppercase tracking-wider flex items-center gap-1">
+                <Sparkles className="w-3 h-3" />
+                <span>Format Teks Massal</span>
+              </span>
+              <span className="text-[9px] font-mono text-indigo-400">
+                {selectedCount} item
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 leading-tight">
+              Ubah kapitalisasi semua teks yang terpilih sekaligus:
+            </p>
+            <div className="grid grid-cols-3 gap-1.5 pt-0.5">
+              <button
+                type="button"
+                onClick={() => {
+                  onBatchUpdateElements(el => {
+                    if (el.content) return { content: el.content.toUpperCase() };
+                    return {};
+                  });
+                }}
+                className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 text-slate-200 rounded text-[10px] font-mono font-bold text-center transition-colors"
+                title="Ubah semua elemen teks terpilih ke UPPERCASE"
+              >
+                UPPERCASE
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onBatchUpdateElements(el => {
+                    if (el.content) return { content: el.content.toLowerCase() };
+                    return {};
+                  });
+                }}
+                className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 text-slate-200 rounded text-[10px] font-mono lowercase text-center transition-colors"
+                title="Ubah semua elemen teks terpilih ke lowercase"
+              >
+                lowercase
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onBatchUpdateElements(el => {
+                    if (el.content) {
+                      return {
+                        content: el.content.replace(/\b\w+/g, t => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase()),
+                      };
+                    }
+                    return {};
+                  });
+                }}
+                className="py-1 px-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-indigo-500 text-slate-200 rounded text-[10px] font-mono text-center transition-colors"
+                title="Ubah semua elemen teks terpilih ke Title Case"
+              >
+                Title Case
               </button>
             </div>
           </div>
