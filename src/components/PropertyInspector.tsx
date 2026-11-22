@@ -400,6 +400,18 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     }
   };
 
+  const handleAutoContrast = () => {
+    const bg = element.fill || activeSlide.background || '#0f172a';
+    let hex = bg.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const r = parseInt(hex.substring(0, 2), 16) || 15;
+    const g = parseInt(hex.substring(2, 4), 16) || 23;
+    const b = parseInt(hex.substring(4, 6), 16) || 42;
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    const contrastColor = yiq >= 128 ? '#0f172a' : '#ffffff';
+    handleChange('color', contrastColor);
+  };
+
   const filteredIcons = popularIconNames.filter(name =>
     name.toLowerCase().includes(iconFilter.toLowerCase())
   );
@@ -904,9 +916,20 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         {(element.fontSize !== undefined ||
           ['heading', 'text', 'button', 'card'].includes(element.type)) && (
             <div className="space-y-2">
-              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                Tipografi
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Tipografi
+                </span>
+                <button
+                  type="button"
+                  onClick={handleAutoContrast}
+                  title="Otomatis sesuaikan kontras warna teks terhadap latar belakang (WCAG AAA)"
+                  className="text-[10px] text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 hover:underline"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>Kontras Otomatis</span>
+                </button>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-[10px] text-slate-500 block mb-1">Ukuran Font</label>
@@ -1052,6 +1075,21 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   {element.fill || '#1e293b'}
                 </span>
               </div>
+              {/* Quick Swatches for Fill */}
+              <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                {['#6366f1', '#38bdf8', '#10b981', '#f43f5e', '#f59e0b', '#8b5cf6', '#ffffff', '#1e293b'].map(sw => (
+                  <button
+                    key={sw}
+                    type="button"
+                    onClick={() => handleChange('fill', sw)}
+                    title={`Pilih warna ${sw}`}
+                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${
+                      element.fill === sw ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent hover:scale-110'
+                    }`}
+                    style={{ backgroundColor: sw }}
+                  />
+                ))}
+              </div>
             </div>
 
             <div>
@@ -1076,6 +1114,21 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                 <span className="text-[11px] font-mono text-slate-300">
                   {element.color || '#ffffff'}
                 </span>
+              </div>
+              {/* Quick Swatches for Text Color */}
+              <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                {['#ffffff', '#94a3b8', '#6366f1', '#38bdf8', '#34d399', '#f87171', '#fbbf24', '#0f172a'].map(sw => (
+                  <button
+                    key={sw}
+                    type="button"
+                    onClick={() => handleChange('color', sw)}
+                    title={`Pilih warna teks ${sw}`}
+                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${
+                      element.color === sw ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent hover:scale-110'
+                    }`}
+                    style={{ backgroundColor: sw }}
+                  />
+                ))}
               </div>
             </div>
           </div>

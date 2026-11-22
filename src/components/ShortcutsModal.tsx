@@ -28,6 +28,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Ctrl', '0'], description: 'Sesuaikan Kanvas ke Layar (Fit Screen)' },
         { keys: ['Shift', 'R'], description: 'Nyalakan / Matikan Penggaris Piksel (Rulers)' },
         { keys: ['Shift', 'M'], description: 'Nyalakan / Matikan Batas Area Aman (Safe Margin)' },
+        { keys: ['Shift', 'F'], description: 'Mode Fokus Kanvas / Sembunyikan Panel (Zen Mode)' },
         { keys: ['Ctrl', 'K'], description: 'Buka Spotlight Command Palette Cepat' },
         { keys: ['Ctrl', 'H'], description: 'Buka Dialog Cari & Ganti Teks (Find & Replace)' },
         { keys: ['Ctrl', 'E'], description: 'Buka Modal Ekspor Desain (PNG/WebP/PDF/React)' },

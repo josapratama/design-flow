@@ -14,6 +14,8 @@ import {
   PlusCircle,
   CopyPlus,
   Shield,
+  ArrowLeftRight,
+  ArrowUpDown,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -44,6 +46,7 @@ interface ContextMenuProps {
   onToggleSafeMargin?: () => void;
   onAlign?: (type: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
   onDistribute?: (direction: 'horizontal' | 'vertical') => void;
+  onFlip?: (direction: 'horizontal' | 'vertical') => void;
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -67,6 +70,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onToggleSafeMargin,
   onAlign,
   onDistribute,
+  onFlip,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -161,6 +165,40 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
               </span>
               <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+Shift+G</kbd>
             </button>
+          )}
+
+          {/* Flip / Mirror Element */}
+          {onFlip && (
+            <>
+              <div className="my-1 border-t border-slate-800" />
+              <button
+                onClick={() => {
+                  onFlip('horizontal');
+                  onClose();
+                }}
+                className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <ArrowLeftRight className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Cermin Horisontal</span>
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">Flip X</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  onFlip('vertical');
+                  onClose();
+                }}
+                className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+              >
+                <span className="flex items-center gap-2">
+                  <ArrowUpDown className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Cermin Vertikal</span>
+                </span>
+                <span className="text-[10px] text-slate-500 font-mono">Flip Y</span>
+              </button>
+            </>
           )}
 
           {/* Multi-Element Alignment Quick Sub-actions */}

@@ -11,6 +11,7 @@ import {
   RotateCcw,
   RotateCw,
   Shield,
+  PanelLeftClose,
 } from 'lucide-react';
 
 interface ToolbarProps {
@@ -19,6 +20,7 @@ interface ToolbarProps {
   snapToGrid?: boolean;
   showRulers?: boolean;
   showSafeMargin?: boolean;
+  isZenMode?: boolean;
   hasSelectedElements: boolean;
   canUndo?: boolean;
   canRedo?: boolean;
@@ -32,6 +34,7 @@ interface ToolbarProps {
   onToggleSnapToGrid?: () => void;
   onToggleRulers?: () => void;
   onToggleSafeMargin?: () => void;
+  onToggleZenMode?: () => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
 }
@@ -42,6 +45,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   snapToGrid = false,
   showRulers = true,
   showSafeMargin = false,
+  isZenMode = false,
   hasSelectedElements,
   canUndo = false,
   canRedo = false,
@@ -55,6 +59,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onToggleSnapToGrid,
   onToggleRulers,
   onToggleSafeMargin,
+  onToggleZenMode,
   onDeleteSelected,
   onDuplicateSelected,
 }) => {
@@ -169,6 +174,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
           }`}
         >
           <Shield className="w-4 h-4" />
+        </button>
+      )}
+
+      {/* Zen / Focus Canvas Mode Toggle */}
+      {onToggleZenMode && (
+        <button
+          onClick={onToggleZenMode}
+          title={`Mode Fokus Kanvas (Shift+F): ${isZenMode ? 'Aktif' : 'Nonaktif'}`}
+          className={`p-1.5 rounded-xl transition-colors ${
+            isZenMode ? 'bg-purple-600/30 text-purple-300 font-bold' : 'hover:bg-slate-800 text-slate-400'
+          }`}
+        >
+          <PanelLeftClose className="w-4 h-4" />
         </button>
       )}
 

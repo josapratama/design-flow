@@ -70,6 +70,7 @@ export default function App() {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false);
   const [showSafeMargin, setShowSafeMargin] = useState(false);
+  const [isZenMode, setIsZenMode] = useState(false);
 
   // Floating Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -203,24 +204,10 @@ export default function App() {
         return;
       }
 
-      // 0.6 Presenter Slideshow: F5
-      if (e.key === 'F5') {
+      // 0.9 Zen / Focus Canvas Mode: Shift+F
+      if (e.shiftKey && e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
-        setIsPresenterOpen(true);
-        return;
-      }
-
-      // 0.7 Export Dialog: Ctrl+E / Cmd+E
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e') {
-        e.preventDefault();
-        setIsExportOpen(true);
-        return;
-      }
-
-      // 0.8 Find & Replace Dialog: Ctrl+H / Cmd+H
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'h') {
-        e.preventDefault();
-        setIsFindReplaceOpen(true);
+        setIsZenMode(prev => !prev);
         return;
       }
 
@@ -353,18 +340,20 @@ export default function App() {
       {/* Main Workspace Workspace */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Left Elements Palette (Includes Smart Blocks, Media & Layers) */}
-        <SidebarPalette
-          mode={project.mode}
-          activeSlide={activeSlide}
-          selectedElementIds={project.selectedElementIds}
-          onSelectElement={handleSelectElementWithGroup}
-          onToggleLock={toggleLockElement}
-          onToggleHide={toggleHideElement}
-          onDeleteElement={deleteElementById}
-          onReorderElement={reorderSelectedElement}
-          onAddElement={addElement}
-          onAddElements={addElements}
-        />
+        {!isZenMode && (
+          <SidebarPalette
+            mode={project.mode}
+            activeSlide={activeSlide}
+            selectedElementIds={project.selectedElementIds}
+            onSelectElement={handleSelectElementWithGroup}
+            onToggleLock={toggleLockElement}
+            onToggleHide={toggleHideElement}
+            onDeleteElement={deleteElementById}
+            onReorderElement={reorderSelectedElement}
+            onAddElement={addElement}
+            onAddElements={addElements}
+          />
+        )}
 
         {/* Center Visual Canvas */}
         <main className="flex-1 relative overflow-hidden bg-slate-950">
@@ -407,6 +396,7 @@ export default function App() {
             snapToGrid={project.snapToGrid}
             showRulers={project.showRulers !== false}
             showSafeMargin={showSafeMargin}
+            isZenMode={isZenMode}
             hasSelectedElements={project.selectedElementIds.length > 0}
             canUndo={canUndo}
             canRedo={canRedo}
@@ -426,27 +416,30 @@ export default function App() {
               setProject(prev => ({ ...prev, showRulers: prev.showRulers === false ? true : false }))
             }
             onToggleSafeMargin={() => setShowSafeMargin(prev => !prev)}
+            onToggleZenMode={() => setIsZenMode(prev => !prev)}
             onDeleteSelected={deleteSelectedElements}
             onDuplicateSelected={duplicateSelectedElements}
           />
         </main>
 
         {/* Right Property Inspector with Visual Icon Picker & Style Controls */}
-        <PropertyInspector
-          element={selectedElement}
-          activeSlide={activeSlide}
-          selectedCount={project.selectedElementIds.length}
-          onUpdateElement={updateElement}
-          onUpdateSlide={updateSlideSettings}
-          onDelete={deleteSelectedElements}
-          onDuplicate={duplicateSelectedElements}
-          onReorder={reorderSelectedElement}
-          onAlignElement={alignSelectedElement}
-          onDistributeElements={distributeSelectedElements}
-          onApplySlideTheme={applyThemeToActiveSlide}
-          onToggleLock={toggleLockElement}
-          onToggleHide={toggleHideElement}
-        />
+        {!isZenMode && (
+          <PropertyInspector
+            element={selectedElement}
+            activeSlide={activeSlide}
+            selectedCount={project.selectedElementIds.length}
+            onUpdateElement={updateElement}
+            onUpdateSlide={updateSlideSettings}
+            onDelete={deleteSelectedElements}
+            onDuplicate={duplicateSelectedElements}
+            onReorder={reorderSelectedElement}
+            onAlignElement={alignSelectedElement}
+            onDistributeElements={distributeSelectedElements}
+            onApplySlideTheme={applyThemeToActiveSlide}
+            onToggleLock={toggleLockElement}
+            onToggleHide={toggleHideElement}
+          />
+        )}
 
         {/* Bi-Directional Code Drawer */}
         <CodeEditorDrawer
@@ -513,6 +506,14 @@ export default function App() {
           onToggleSafeMargin={() => setShowSafeMargin(prev => !prev)}
           onAlign={alignSelectedElement}
           onDistribute={distributeSelectedElements}
+          onFlip={dir => {
+            if (selectedElement) {
+              updateElement(selectedElement.id, {
+                [dir === 'horizontal' ? 'flipX' : 'flipY']:
+                  dir === 'horizontal' ? !selectedElement.flipX : !selectedElement.flipY,
+              });
+            }
+          }}
         />
       )}
 

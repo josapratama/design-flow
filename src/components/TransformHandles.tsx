@@ -35,6 +35,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isRotating, setIsRotating] = useState(false);
+  const [isAltDuplicating, setIsAltDuplicating] = useState(false);
   const [resizingDims, setResizingDims] = useState<{ w: number; h: number } | null>(null);
   const hasPlayedSnap = useRef(false);
 
@@ -124,6 +125,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
     // Alt + Drag quick duplication (Figma / Illustrator style)
     if (e.altKey && onDuplicateSelected) {
       onDuplicateSelected();
+      setIsAltDuplicating(true);
     }
 
     const startX = e.clientX;
@@ -268,6 +270,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
 
     const handlePointerUp = () => {
       setIsDragging(false);
+      setIsAltDuplicating(false);
       hasPlayedSnap.current = false;
       onGuideLinesChange?.(null);
       window.removeEventListener('pointermove', handlePointerMove);
@@ -405,6 +408,11 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
           {resizingDims ? Math.round(resizingDims.w) : element.width} × {resizingDims ? Math.round(resizingDims.h) : element.height} px
         </span>
         {element.rotation ? <span className="opacity-80">({element.rotation}°)</span> : null}
+        {isAltDuplicating && (
+          <span className="px-1 py-0.2 bg-emerald-400 text-slate-950 font-bold rounded text-[9px] animate-pulse">
+            + Duplikat
+          </span>
+        )}
       </div>
     </div>
   );

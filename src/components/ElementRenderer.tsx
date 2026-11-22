@@ -206,6 +206,21 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
       );
     }
 
+    case 'hexagon': {
+      return (
+        <div className={`w-full h-full select-none ${shadowClass}`}>
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polygon
+              points="50,2 95,25 95,75 50,98 5,75 5,25"
+              fill={fill || '#8b5cf6'}
+              stroke={stroke || 'transparent'}
+              strokeWidth={strokeWidth || 0}
+            />
+          </svg>
+        </div>
+      );
+    }
+
     case 'chart': {
       const chartMode = element.chartType || 'bar';
       const data = element.chartData || [

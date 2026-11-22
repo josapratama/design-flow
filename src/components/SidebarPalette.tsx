@@ -235,6 +235,8 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
         return <Star className="w-3.5 h-3.5 text-yellow-400" />;
       case 'arrow':
         return <MoveRight className="w-3.5 h-3.5 text-cyan-400" />;
+      case 'hexagon':
+        return <Hexagon className="w-3.5 h-3.5 text-emerald-400" />;
       case 'button':
         return <MousePointerClick className="w-3.5 h-3.5 text-amber-400" />;
       case 'input':

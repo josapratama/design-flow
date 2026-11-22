@@ -166,6 +166,12 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
                 <button
                   onClick={e => {
                     e.stopPropagation();
+                    if (slide.elements.length > 2) {
+                      const confirmed = window.confirm(
+                        `Hapus slide "${slide.title}" beserta ${slide.elements.length} elemen di dalamnya?`
+                      );
+                      if (!confirmed) return;
+                    }
                     onDeleteSlide(slide.id);
                   }}
                   title="Hapus Slide"
