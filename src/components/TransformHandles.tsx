@@ -15,7 +15,7 @@ interface TransformHandlesProps {
   onMoveSelectedLive: (deltaX: number, deltaY: number, basePositions: Map<string, { x: number; y: number }>) => void;
   onCommitHistory: () => void;
   onDuplicateSelected?: () => void;
-  onGuideLinesChange?: (guides: { x?: number; y?: number; isElementSnap?: boolean } | null) => void;
+  onGuideLinesChange?: (guides: { x?: number; y?: number; isElementSnap?: boolean; labelX?: string; labelY?: string } | null) => void;
 }
 
 export const TransformHandles: React.FC<TransformHandlesProps> = ({
@@ -150,7 +150,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         ? Math.round((element.y + deltaY) / gridSize) * gridSize - element.y
         : Math.round(deltaY);
 
-      const guides: { x?: number; y?: number; isElementSnap?: boolean } = {};
+      const guides: { x?: number; y?: number; isElementSnap?: boolean; labelX?: string; labelY?: string } = {};
       const snapThreshold = 7;
 
       // Filter sibling elements not being moved
@@ -165,6 +165,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         if (Math.abs(potentialCenterX - artboardMidX) <= 12) {
           finalDeltaX = Math.round(artboardMidX - element.width / 2 - element.x);
           guides.x = artboardMidX;
+          guides.labelX = `Tengah Kanvas (${artboardMidX}px)`;
         }
       }
 
@@ -183,26 +184,31 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
             finalDeltaX = sibLeft - element.x;
             guides.x = sibLeft;
             guides.isElementSnap = true;
+            guides.labelX = `Sejajar Kiri (${Math.round(sibLeft)}px)`;
             break;
           } else if (Math.abs(curRight - sibRight) <= snapThreshold) {
             finalDeltaX = sibRight - element.width - element.x;
             guides.x = sibRight;
             guides.isElementSnap = true;
+            guides.labelX = `Sejajar Kanan (${Math.round(sibRight)}px)`;
             break;
           } else if (Math.abs(curMidX - sibMidX) <= snapThreshold) {
             finalDeltaX = Math.round(sibMidX - element.width / 2 - element.x);
             guides.x = sibMidX;
             guides.isElementSnap = true;
+            guides.labelX = `Sejajar Tengah (${Math.round(sibMidX)}px)`;
             break;
           } else if (Math.abs(curLeft - sibRight) <= snapThreshold) {
             finalDeltaX = sibRight - element.x;
             guides.x = sibRight;
             guides.isElementSnap = true;
+            guides.labelX = `Menempel Kanan (${Math.round(sibRight)}px)`;
             break;
           } else if (Math.abs(curRight - sibLeft) <= snapThreshold) {
             finalDeltaX = sibLeft - element.width - element.x;
             guides.x = sibLeft;
             guides.isElementSnap = true;
+            guides.labelX = `Menempel Kiri (${Math.round(sibLeft)}px)`;
             break;
           }
         }
@@ -216,6 +222,7 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
         if (Math.abs(potentialCenterY - artboardMidY) <= 12) {
           finalDeltaY = Math.round(artboardMidY - element.height / 2 - element.y);
           guides.y = artboardMidY;
+          guides.labelY = `Tengah Kanvas (${artboardMidY}px)`;
         }
       }
 
@@ -234,26 +241,31 @@ export const TransformHandles: React.FC<TransformHandlesProps> = ({
             finalDeltaY = sibTop - element.y;
             guides.y = sibTop;
             guides.isElementSnap = true;
+            guides.labelY = `Sejajar Atas (${Math.round(sibTop)}px)`;
             break;
           } else if (Math.abs(curBottom - sibBottom) <= snapThreshold) {
             finalDeltaY = sibBottom - element.height - element.y;
             guides.y = sibBottom;
             guides.isElementSnap = true;
+            guides.labelY = `Sejajar Bawah (${Math.round(sibBottom)}px)`;
             break;
           } else if (Math.abs(curMidY - sibMidY) <= snapThreshold) {
             finalDeltaY = Math.round(sibMidY - element.height / 2 - element.y);
             guides.y = sibMidY;
             guides.isElementSnap = true;
+            guides.labelY = `Sejajar Tengah (${Math.round(sibMidY)}px)`;
             break;
           } else if (Math.abs(curTop - sibBottom) <= snapThreshold) {
             finalDeltaY = sibBottom - element.y;
             guides.y = sibBottom;
             guides.isElementSnap = true;
+            guides.labelY = `Menempel Bawah (${Math.round(sibBottom)}px)`;
             break;
           } else if (Math.abs(curBottom - sibTop) <= snapThreshold) {
             finalDeltaY = sibTop - element.height - element.y;
             guides.y = sibTop;
             guides.isElementSnap = true;
+            guides.labelY = `Menempel Atas (${Math.round(sibTop)}px)`;
             break;
           }
         }

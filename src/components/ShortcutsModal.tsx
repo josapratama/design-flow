@@ -54,6 +54,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Ctrl', 'D'], description: 'Duplikat elemen terpilih instan' },
         { keys: ['Ctrl', 'Shift', 'D'], description: 'Duplikat slide aktif instan' },
         { keys: ['Alt', 'Drag'], description: 'Duplikat elemen instan saat digeser di kanvas' },
+        { keys: ['Smart Guides'], description: 'Garis magnetik presisi dengan badge piksel posisi real-time' },
         { keys: ['Delete'], description: 'Hapus elemen yang dipilih' },
         { keys: ['Shift', 'Drag'], description: 'Kunci rasio aspek proporsional saat resize' },
         { keys: ['Shift', 'Putar'], description: 'Snap rotasi presisi per 15 derajat' },

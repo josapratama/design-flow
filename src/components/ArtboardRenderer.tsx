@@ -40,7 +40,13 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
     ref
   ) => {
     const [editingElementId, setEditingElementId] = useState<string | null>(null);
-    const [guideLines, setGuideLines] = useState<{ x?: number; y?: number; isElementSnap?: boolean } | null>(null);
+    const [guideLines, setGuideLines] = useState<{
+      x?: number;
+      y?: number;
+      isElementSnap?: boolean;
+      labelX?: string;
+      labelY?: string;
+    } | null>(null);
 
     return (
       <div
@@ -60,7 +66,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
           }
         }}
       >
-        {/* Smart Magnetic Guide Lines (Center X and Center Y or Sibling Element Alignment) */}
+        {/* Smart Magnetic Guide Lines & Real-Time Alignment Badges */}
         {guideLines?.x !== undefined && (
           <div
             className={`absolute top-0 bottom-0 pointer-events-none z-40 border-l-2 border-dashed ${
@@ -70,7 +76,19 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
             }`}
             data-export-ignore="true"
             style={{ left: `${guideLines.x}px` }}
-          />
+          >
+            {guideLines.labelX && (
+              <span
+                className={`absolute top-3 left-2 px-2 py-0.5 rounded text-[9px] font-mono font-bold whitespace-nowrap shadow-xl border backdrop-blur-md ${
+                  guideLines.isElementSnap
+                    ? 'bg-cyan-950/90 text-cyan-300 border-cyan-500/50'
+                    : 'bg-rose-950/90 text-rose-300 border-rose-500/50'
+                }`}
+              >
+                {guideLines.labelX}
+              </span>
+            )}
+          </div>
         )}
         {guideLines?.y !== undefined && (
           <div
@@ -81,7 +99,19 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
             }`}
             data-export-ignore="true"
             style={{ top: `${guideLines.y}px` }}
-          />
+          >
+            {guideLines.labelY && (
+              <span
+                className={`absolute left-3 top-2 px-2 py-0.5 rounded text-[9px] font-mono font-bold whitespace-nowrap shadow-xl border backdrop-blur-md ${
+                  guideLines.isElementSnap
+                    ? 'bg-cyan-950/90 text-cyan-300 border-cyan-500/50'
+                    : 'bg-rose-950/90 text-rose-300 border-rose-500/50'
+                }`}
+              >
+                {guideLines.labelY}
+              </span>
+            )}
+          </div>
         )}
 
         {/* Render elements sorted by zIndex */}
@@ -120,7 +150,9 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
                   if (onContextMenuElement) {
                     e.preventDefault();
                     e.stopPropagation();
-                    onSelectElement(element.id, false);
+                    if (!selectedElementIds.includes(element.id)) {
+                      onSelectElement(element.id, false);
+                    }
                     onContextMenuElement(e, element);
                   }
                 }}

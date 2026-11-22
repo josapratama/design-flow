@@ -92,10 +92,20 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   }, [activeSlide]);
 
   const popularIconNames = [
-    'Star', 'Heart', 'Shield', 'Check', 'User', 'Search', 'Settings', 'Home',
-    'ArrowRight', 'Zap', 'Download', 'Compass', 'Laptop', 'Mail', 'Phone',
-    'Calendar', 'Clock', 'Lock', 'Sparkles', 'Folder', 'FileText', 'BarChart3',
-    'Smartphone', 'CreditCard', 'Camera', 'Bell', 'Tag', 'Bookmark', 'Globe', 'HelpCircle'
+    // Common & Core UI
+    'Star', 'Heart', 'Shield', 'ShieldCheck', 'Check', 'CheckCircle', 'CheckCircle2', 'User', 'Users', 'UserCheck', 'Search', 'Settings', 'Home',
+    'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'ChevronRight', 'ChevronLeft', 'ChevronUp', 'ChevronDown', 'Zap', 'Download', 'Upload',
+    'Compass', 'Laptop', 'Monitor', 'Smartphone', 'Tablet', 'Mail', 'Phone', 'PhoneCall', 'MessageSquare', 'MessageCircle', 'Send', 'Share2',
+    'Calendar', 'Clock', 'Lock', 'Unlock', 'Sparkles', 'Folder', 'FolderOpen', 'FileText', 'File', 'BarChart', 'BarChart2', 'BarChart3', 'PieChart', 'LineChart',
+    'CreditCard', 'Wallet', 'DollarSign', 'Camera', 'Video', 'Bell', 'Tag', 'Bookmark', 'Globe', 'HelpCircle', 'Info', 'AlertCircle', 'AlertTriangle',
+    // Media & Creative
+    'Image', 'Music', 'Headphones', 'Volume2', 'VolumeX', 'Play', 'Pause', 'Film', 'Radio', 'Tv', 'Sliders', 'SlidersHorizontal', 'Eye', 'EyeOff',
+    'Smile', 'Frown', 'Award', 'Gift', 'Flame', 'Sun', 'Moon', 'Cloud', 'CloudRain', 'Wind', 'Coffee', 'Utensils',
+    // Technology & Coding
+    'Code', 'Terminal', 'Cpu', 'Database', 'Server', 'HardDrive', 'Wifi', 'Bluetooth', 'Key', 'Layers', 'Boxes', 'Box', 'Activity', 'TrendingUp', 'TrendingDown',
+    // Business & Productivity
+    'Briefcase', 'Building', 'ShoppingBag', 'ShoppingCart', 'Receipt', 'Target', 'Flag', 'MapPin', 'Map', 'Navigation', 'Rocket', 'Plane', 'Car',
+    'Paperclip', 'Archive', 'Printer', 'Trash2', 'Copy', 'Edit', 'Edit2', 'Pen', 'Crop', 'Maximize2', 'Minimize2', 'Plus', 'Minus', 'X', 'RefreshCw'
   ];
 
   // 1. IF NO ELEMENT IS SELECTED: SHOW CANVAS & SLIDE SETTINGS
@@ -1040,14 +1050,18 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             {/* Pop-up Grid */}
             {showIconPicker && (
               <div className="p-2.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2 animate-in fade-in-50 duration-100">
+                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <span className="font-semibold">Koleksi Ikon Lucide</span>
+                  <span className="font-mono text-indigo-400 font-bold">{filteredIcons.length} ikon</span>
+                </div>
                 <input
                   type="text"
-                  placeholder="Cari ikon (misal: star, user)..."
+                  placeholder="Cari 100+ ikon (wifi, cloud, heart, star)..."
                   value={iconFilter}
                   onChange={e => setIconFilter(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 outline-none"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500"
                 />
-                <div className="grid grid-cols-6 gap-1 max-h-36 overflow-y-auto pt-1">
+                <div className="grid grid-cols-6 gap-1 max-h-44 overflow-y-auto pt-1">
                   {filteredIcons.map(name => {
                     const IconComp = (LucideIcons as any)[name];
                     if (!IconComp) return null;
