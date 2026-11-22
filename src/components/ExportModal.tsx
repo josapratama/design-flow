@@ -5,7 +5,7 @@ import { exportArtboardToImage } from '../engine/canvas-exporter';
 import { exportToReactTailwind } from '../engine/tailwind-exporter';
 import { generateDesignDSL } from '../engine/dsl-generator';
 import { generateStandaloneHtmlPresentation } from '../engine/html-exporter';
-import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive, Globe } from 'lucide-react';
+import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive, Globe, Copy } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
@@ -30,37 +30,91 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [imageScale, setImageScale] = useState<number>(2);
   const [pdfScope, setPdfScope] = useState<'all' | 'active'>('all');
   const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedOutline, setCopiedOutline] = useState(false);
   const [exportProgress, setExportProgress] = useState<string>('');
 
   const tailwindCode = exportToReactTailwind(activeSlide);
 
-  const handleDownloadSpeakerNotes = () => {
+  const generateOutlineMarkdown = () => {
     const title = project.title || 'Presentasi';
+    const totalWords = project.slides.reduce((acc, s) => {
+      const w = (s.notes || '').trim().split(/\s+/).filter(Boolean).length;
+      return acc + w;
+    }, 0);
+    const totalSeconds = Math.ceil((totalWords / 130) * 60) + project.slides.length * 15;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const durationStr = minutes > 0 ? `${minutes}m ${seconds}d` : `${seconds}d`;
+
     const lines = [
-      `# Naskah Pembicara: ${title}`,
-      `Total Slide: ${project.slides.length} | Dibuat dengan DesignFlow Studio`,
+      `# Panduan & Outline Pembicara: ${title}`,
+      `> Lembar Contekan Presentasi (Speaker Handout Cheat Sheet)`,
+      '',
+      `- **Jumlah Slide**: ${project.slides.length} slide`,
+      `- **Estimasi Waktu Total**: ~${durationStr} (kecepatan santai ~130 kata/menit)`,
+      `- **Rasio Kanvas**: ${project.slides[0]?.presetName || '16:9'}`,
       '',
       '============================================================',
       '',
     ];
 
     project.slides.forEach((s, idx) => {
-      lines.push(`## Slide ${idx + 1}: ${s.title}`);
-      lines.push(
-        s.notes && s.notes.trim()
-          ? s.notes.trim()
-          : '*(Tidak ada catatan pembicara untuk slide ini)*'
-      );
+      const slideWords = (s.notes || '').trim().split(/\s+/).filter(Boolean).length;
+      const slideSec = Math.ceil((slideWords / 130) * 60) + 15;
+
+      lines.push(`## Slide ${idx + 1}: ${s.title || `Slide ${idx + 1}`} (~${slideSec} detik)`);
+      if (s.transition && s.transition !== 'none') {
+        lines.push(`*Efek Transisi: ${s.transition}*`);
+      }
+      lines.push('');
+
+      // Extract key textual content from elements on this slide
+      const keyPoints = s.elements
+        .filter(el => !el.hidden && (el.content || el.subTitle || el.badgeText))
+        .map(el => {
+          const parts: string[] = [];
+          if (el.content) parts.push(el.content.trim());
+          if (el.subTitle) parts.push(`(${el.subTitle.trim()})`);
+          if (el.badgeText) parts.push(`[${el.badgeText.trim()}]`);
+          return parts.join(' ');
+        })
+        .filter(Boolean);
+
+      if (keyPoints.length > 0) {
+        lines.push('### Poin Konten Layar:');
+        keyPoints.forEach(pt => lines.push(`- ${pt}`));
+        lines.push('');
+      }
+
+      lines.push('### Catatan Pembicara:');
+      if (s.notes && s.notes.trim()) {
+        lines.push(s.notes.trim());
+      } else {
+        lines.push('*(Tidak ada catatan pembicara khusus)*');
+      }
+
       lines.push('');
       lines.push('------------------------------------------------------------');
       lines.push('');
     });
 
-    const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+    return lines.join('\n');
+  };
+
+  const handleCopyOutline = () => {
+    navigator.clipboard.writeText(generateOutlineMarkdown());
+    setCopiedOutline(true);
+    setTimeout(() => setCopiedOutline(false), 2000);
+  };
+
+  const handleDownloadSpeakerNotes = () => {
+    const title = project.title || 'Presentasi';
+    const content = generateOutlineMarkdown();
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_naskah_pembicara.md`;
+    link.download = `${title.toLowerCase().replace(/[^a-z0-9]/g, '_')}_panduan_outline_pembicara.md`;
     link.click();
     URL.revokeObjectURL(url);
     confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
@@ -492,19 +546,29 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   <div>
                     <div className="flex items-center gap-2 text-indigo-400 font-bold text-xs mb-1">
                       <BookOpen className="w-4 h-4" />
-                      <span>Naskah Markdown (.md)</span>
+                      <span>Contekan & Outline Pembicara (.md)</span>
                     </div>
                     <p className="text-[11px] text-slate-400 leading-relaxed">
-                      Kompilasi seluruh catatan pembicara slide terstruktur rapi untuk gladi bersih atau cetak teks.
+                      Kompilasi judul slide, poin teks layar, durasi pacing bicara, dan catatan narasi lengkap untuk panduan presentasi offline.
                     </p>
                   </div>
-                  <button
-                    onClick={handleDownloadSpeakerNotes}
-                    className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-600/30"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Unduh .md</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handleDownloadSpeakerNotes}
+                      className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-600/30"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Unduh .md</span>
+                    </button>
+                    <button
+                      onClick={handleCopyOutline}
+                      className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-xs font-medium flex items-center justify-center gap-1 transition-colors"
+                      title="Salin Markdown Outline ke Clipboard"
+                    >
+                      {copiedOutline ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedOutline ? 'Tersalin' : 'Salin'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Declarative DSL (.dflow) */}
@@ -546,6 +610,27 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                     <span>Unduh .json</span>
                   </button>
                 </div>
+              </div>
+
+              {/* Live Markdown Outline Preview Box */}
+              <div className="space-y-1.5 pt-2">
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span className="font-semibold text-slate-300 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Pratinjau Outline Dokumen ({project.slides.length} Slide):</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyOutline}
+                    className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1"
+                  >
+                    {copiedOutline ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedOutline ? 'Tersalin ke Clipboard' : 'Salin Semua Teks'}</span>
+                  </button>
+                </div>
+                <pre className="p-3 bg-slate-950 border border-slate-800 rounded-xl font-mono text-[11px] text-slate-300 max-h-48 overflow-y-auto whitespace-pre-wrap leading-relaxed select-text">
+                  {generateOutlineMarkdown()}
+                </pre>
               </div>
             </div>
           )}

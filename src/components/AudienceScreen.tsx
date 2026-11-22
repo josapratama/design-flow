@@ -232,6 +232,18 @@ export const AudienceScreen: React.FC = () => {
     windowDimensions.height / currentSlide.height
   );
 
+  const effectiveTransition = (currentSlide.transition && currentSlide.transition !== 'none')
+    ? currentSlide.transition
+    : (currentSlide.transition === 'none' ? 'none' : transitionEffect);
+
+  const transitionClass = effectiveTransition === 'none'
+    ? ''
+    : effectiveTransition === 'slide'
+      ? 'animate-in slide-in-from-right-10 duration-300'
+      : effectiveTransition === 'zoom'
+        ? 'animate-in zoom-in-95 duration-200'
+        : 'animate-in fade-in duration-200';
+
   return (
     <div
       onDoubleClick={handleToggleFullscreen}
@@ -257,12 +269,7 @@ export const AudienceScreen: React.FC = () => {
       {/* Slide Canvas Container */}
       <div
         key={currentIndex}
-        className={`relative shadow-2xl overflow-hidden shrink-0 ${transitionEffect === 'slide'
-          ? 'animate-in slide-in-from-right-10 duration-300'
-          : transitionEffect === 'zoom'
-            ? 'animate-in zoom-in-95 duration-200'
-            : 'animate-in fade-in duration-200'
-          }`}
+        className={`relative shadow-2xl overflow-hidden shrink-0 ${transitionClass}`}
         style={{
           width: `${currentSlide.width}px`,
           height: `${currentSlide.height}px`,

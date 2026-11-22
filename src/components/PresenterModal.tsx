@@ -502,6 +502,18 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const viewportHeight = windowDimensions.height * 0.85;
   const scale = Math.min(viewportWidth / currentSlide.width, viewportHeight / currentSlide.height);
 
+  const effectiveTransition = (currentSlide.transition && currentSlide.transition !== 'none')
+    ? currentSlide.transition
+    : (currentSlide.transition === 'none' ? 'none' : transitionEffect);
+
+  const transitionClass = effectiveTransition === 'none'
+    ? ''
+    : effectiveTransition === 'slide'
+      ? 'animate-in slide-in-from-right-10 duration-300'
+      : effectiveTransition === 'zoom'
+        ? 'animate-in zoom-in-95 duration-200'
+        : 'animate-in fade-in duration-200';
+
   return (
     <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col select-none text-slate-100">
       {/* Presenter Top Bar */}
@@ -845,12 +857,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
           <div
             key={currentIndex}
-            className={`relative shadow-2xl rounded-sm overflow-hidden ${transitionEffect === 'slide'
-              ? 'animate-in slide-in-from-right-10 duration-300'
-              : transitionEffect === 'zoom'
-                ? 'animate-in zoom-in-95 duration-200'
-                : 'animate-in fade-in duration-200'
-              }`}
+            className={`relative shadow-2xl rounded-sm overflow-hidden ${transitionClass}`}
             style={{
               width: `${currentSlide.width}px`,
               height: `${currentSlide.height}px`,

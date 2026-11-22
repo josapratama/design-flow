@@ -39,11 +39,15 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
   const handleApply = () => {
     try {
       const parsed = parseDesignDSL(code, project.mode);
+      const preservedActiveId = parsed.slides.some(s => s.id === project.activeSlideId)
+        ? project.activeSlideId
+        : (parsed.slides[0]?.id || project.activeSlideId);
+
       onApplyCode({
         title: parsed.title,
         mode: parsed.mode,
         slides: parsed.slides,
-        activeSlideId: parsed.slides[0]?.id || project.activeSlideId,
+        activeSlideId: preservedActiveId,
       });
       setError(null);
     } catch (err: any) {

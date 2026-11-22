@@ -71,6 +71,19 @@ export const Toolbar: React.FC<ToolbarProps> = ({
 }) => {
   const [showZoomMenu, setShowZoomMenu] = React.useState(false);
   const zoomLevels = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+  const zoomMenuRef = React.useRef<HTMLDivElement>(null);
+
+  // Close zoom menu on click outside
+  React.useEffect(() => {
+    if (!showZoomMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (zoomMenuRef.current && !zoomMenuRef.current.contains(e.target as Node)) {
+        setShowZoomMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showZoomMenu]);
 
   return (
     <div className="absolute bottom-6 left-6 flex items-center gap-1.5 bg-slate-900/90 border border-slate-800/80 p-1.5 rounded-2xl shadow-2xl backdrop-blur-md select-none z-20 max-w-[calc(100vw-3rem)] overflow-x-auto no-scrollbar">
@@ -83,7 +96,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         <ZoomOut className="w-4 h-4" />
       </button>
 
-      <div className="relative">
+      <div ref={zoomMenuRef} className="relative">
         <button
           onClick={() => setShowZoomMenu(!showZoomMenu)}
           title="Pilih level zoom"

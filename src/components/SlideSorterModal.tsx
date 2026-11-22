@@ -57,6 +57,7 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
       if (editingId) return;
+      if ((e.target as HTMLElement)?.tagName === 'INPUT' || (e.target as HTMLElement)?.tagName === 'TEXTAREA') return;
 
       if (e.key === 'Escape') {
         onClose();
