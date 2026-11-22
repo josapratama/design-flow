@@ -33,6 +33,7 @@ import {
   ToggleLeft,
   Tag,
   Image as ImageIcon,
+  Table,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -576,6 +577,25 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
               >
                 <BarChart3 className="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" />
                 <span className="text-slate-200 font-medium">Grafik / Chart</span>
+              </button>
+
+              <button
+                onClick={() =>
+                  onAddElement(
+                    createBaseElement('table', 'Tabel Data', 480, 220, {
+                      content: 'Indikator | Target | Realisasi | Status\nAkurasi Model | 95.0% | 99.4% | Tercapai\nLatensi Inferensi | < 20ms | 11.8ms | Optimal\nThroughput | 2.0x | 3.4x | Melampaui',
+                      fill: '#0f172a',
+                      stroke: '#334155',
+                      strokeWidth: 1,
+                      borderRadius: 12,
+                      shadow: 'md',
+                    })
+                  )
+                }
+                className="p-3 bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500 rounded-lg flex flex-col items-center gap-2 group text-center"
+              >
+                <Table className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                <span className="text-slate-200 font-medium">Tabel Data</span>
               </button>
             </div>
           </div>

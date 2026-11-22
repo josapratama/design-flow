@@ -818,6 +818,49 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
           </div>
         )}
 
+        {/* Table Content Editor */}
+        {element.type === 'table' && (
+          <div className="space-y-3 p-3 bg-slate-950 border border-slate-800 rounded-xl">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+              Editor Isi Tabel Data
+            </span>
+            <div className="text-[11px] text-slate-400">
+              Gunakan pemisah pipa (<kbd className="text-indigo-300">|</kbd>) untuk memisahkan kolom dan baris baru untuk tiap record.
+            </div>
+            <textarea
+              value={element.content || ''}
+              onChange={e => handleChange('content', e.target.value)}
+              placeholder="Kolom 1 | Kolom 2 | Kolom 3&#10;Data A | Data B | Data C"
+              rows={5}
+              className="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-xs font-mono text-slate-200 outline-none focus:border-indigo-500 leading-relaxed resize-y"
+            />
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              <button
+                onClick={() =>
+                  handleChange(
+                    'content',
+                    'Fitur | Basic | Pro Studio | Enterprise\nEkspor PPTX | - | Ya | Ya\nWeb Fonts Bebas | - | Ya | Ya\nSmart Snapping | Ya | Ya | Ya\nCustom Branding | - | - | Ya'
+                  )
+                }
+                className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-[10px] text-indigo-300 rounded border border-slate-800 transition-colors"
+              >
+                Template: Harga
+              </button>
+              <button
+                onClick={() =>
+                  handleChange(
+                    'content',
+                    'Indikator | Target | Realisasi | Status\nAkurasi Model | 95.0% | 99.4% | Tercapai\nLatensi Edge | < 20ms | 11.8ms | Optimal\nThroughput | 2.0x | 3.4x | Melampaui'
+                  )
+                }
+                className="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-[10px] text-emerald-300 rounded border border-slate-800 transition-colors"
+              >
+                Template: Evaluasi KPI
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Visual Icon Picker */}
         {['button', 'input', 'metric-card', 'navbar', 'icon', 'badge-shape'].includes(element.type) && (
           <div className="space-y-2">

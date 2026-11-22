@@ -22,6 +22,8 @@ import {
   AlignStartVertical,
   AlignCenterVertical,
   AlignEndVertical,
+  Focus,
+  Maximize,
 } from 'lucide-react';
 import { DesignElement } from '../types';
 
@@ -47,6 +49,8 @@ interface ContextMenuProps {
   onAlign?: (type: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
   onDistribute?: (direction: 'horizontal' | 'vertical') => void;
   onFlip?: (direction: 'horizontal' | 'vertical') => void;
+  onZoomToSelection?: () => void;
+  onZoomToFit?: () => void;
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -71,6 +75,8 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onAlign,
   onDistribute,
   onFlip,
+  onZoomToSelection,
+  onZoomToFit,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -133,6 +139,22 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
             </span>
             <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+D</kbd>
           </button>
+
+          {onZoomToSelection && (
+            <button
+              onClick={() => {
+                onZoomToSelection();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Focus className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Zoom ke Elemen</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Shift+2</kbd>
+            </button>
+          )}
 
           {/* Grouping / Ungrouping */}
           {selectedCount >= 2 && onGroup && (
@@ -369,6 +391,22 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 <span>Pilih Semua Elemen</span>
               </span>
               <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+A</kbd>
+            </button>
+          )}
+
+          {onZoomToFit && (
+            <button
+              onClick={() => {
+                onZoomToFit();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Maximize className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Sesuaikan ke Layar</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+0</kbd>
             </button>
           )}
 

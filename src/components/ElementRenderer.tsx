@@ -356,6 +356,66 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
       );
     }
 
+    case 'table': {
+      const defaultTableText = `Indikator | Target | Realisasi | Status\nAkurasi Model | 95.0% | 99.4% | Tercapai\nLatensi Inferensi | < 20ms | 11.8ms | Optimal\nThroughput | 2.0x | 3.4x | Melampaui`;
+      const tableRaw = content || defaultTableText;
+      const rows = tableRaw
+        .split('\n')
+        .map(r => r.trim())
+        .filter(r => r.length > 0)
+        .map(r => r.split('|').map(c => c.trim()));
+
+      const headerRow = rows[0] || [];
+      const bodyRows = rows.slice(1);
+
+      return (
+        <div
+          className={`w-full h-full overflow-hidden select-none border transition-all flex flex-col ${glassClass} ${shadowClass}`}
+          style={{
+            backgroundColor: fill || '#0f172a',
+            border: stroke ? `${strokeWidth || 1}px ${borderDashStyle} ${stroke}` : '1px solid rgba(255,255,255,0.08)',
+            borderRadius: `${borderRadius !== undefined ? borderRadius : 14}px`,
+            color: color || '#f8fafc',
+          }}
+        >
+          <div className="w-full h-full overflow-auto">
+            <table className="w-full h-full border-collapse text-left" style={{ fontSize: fontSize ? `${fontSize}px` : '12px' }}>
+              {headerRow.length > 0 && (
+                <thead>
+                  <tr className="bg-indigo-950/40 border-b border-white/10">
+                    {headerRow.map((col, idx) => (
+                      <th
+                        key={idx}
+                        className="px-3.5 py-2.5 font-bold tracking-wider uppercase text-[10px] text-indigo-300 border-r border-white/5 last:border-r-0"
+                      >
+                        {col}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+              )}
+              <tbody>
+                {bodyRows.map((row, rIdx) => (
+                  <tr
+                    key={rIdx}
+                    className={`border-b border-white/5 last:border-b-0 ${
+                      rIdx % 2 === 1 ? 'bg-white/[0.02]' : 'bg-transparent'
+                    } hover:bg-white/[0.04] transition-colors`}
+                  >
+                    {row.map((cell, cIdx) => (
+                      <td key={cIdx} className="px-3.5 py-2.5 border-r border-white/5 last:border-r-0 text-slate-300">
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      );
+    }
+
     case 'image':
       return (
         <div

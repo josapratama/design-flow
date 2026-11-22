@@ -263,7 +263,90 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
           break;
         }
 
-        case 'metric-card':
+        case 'table': {
+          const defaultTableText = `Indikator | Target | Realisasi | Status\nAkurasi Model | 95.0% | 99.4% | Tercapai\nLatensi Inferensi | < 20ms | 11.8ms | Optimal\nThroughput | 2.0x | 3.4x | Melampaui`;
+          const tableRaw = el.content || defaultTableText;
+          const rows = tableRaw
+            .split('\n')
+            .map(r => r.trim())
+            .filter(r => r.length > 0)
+            .map(r => r.split('|').map(c => c.trim()));
+
+          if (rows.length > 0) {
+            const tableData = rows.map((row, rIdx) =>
+              row.map(cell => ({
+                text: cell,
+                options: {
+                  bold: rIdx === 0,
+                  color: rIdx === 0 ? 'A5B4FC' : cleanHex(el.color || '#F8FAFC'),
+                  fill: rIdx === 0 ? { color: '1E1B4B' } : rIdx % 2 === 1 ? { color: '1E293B' } : { color: '0F172A' },
+                  fontSize: el.fontSize ? Math.round(el.fontSize * 0.45) : 11,
+                  align: 'left' as const,
+                },
+              }))
+            );
+
+            try {
+              slide.addTable(tableData, {
+                x: posX,
+                y: posY,
+                w: w,
+                h: h,
+                border: { type: 'solid', color: '334155', pt: 1 },
+              });
+            } catch (tblErr) {
+              console.warn('Gagal menambahkan tabel pptx:', tblErr);
+              slide.addShape(pptx.ShapeType.roundRect, {
+                x: posX,
+                y: posY,
+                w: w,
+                h: h,
+                fill: { color: '0F172A' },
+              });
+            }
+          }
+          break;
+        }
+
+        case 'metric-card': {
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '1E293B' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : undefined,
+          });
+
+          // Big Metric Number
+          slide.addText(el.content || '0', {
+            x: posX,
+            y: posY + (el.subTitle ? 0.08 : h * 0.25),
+            w: w,
+            h: el.subTitle ? h * 0.55 : h * 0.5,
+            fontSize: el.fontSize ? Math.round(el.fontSize * 0.55) : 24,
+            bold: true,
+            color: cleanHex(el.color || '#38BDF8'),
+            align: 'center',
+            valign: 'middle',
+          });
+
+          // Subtitle
+          if (el.subTitle) {
+            slide.addText(el.subTitle, {
+              x: posX,
+              y: posY + h * 0.55,
+              w: w,
+              h: h * 0.35,
+              fontSize: 11,
+              color: '94A3B8',
+              align: 'center',
+              valign: 'top',
+            });
+          }
+          break;
+        }
+
         case 'card':
         case 'rect':
         default: {

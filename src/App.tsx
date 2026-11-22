@@ -561,6 +561,8 @@ export default function App() {
               });
             }
           }}
+          onZoomToSelection={handleZoomToSelection}
+          onZoomToFit={handleZoomToFit}
         />
       )}
 

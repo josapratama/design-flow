@@ -152,6 +152,36 @@ function renderElementJSX(el: DesignElement): string {
         </span>
       </div>`;
 
+    case 'table': {
+      const defaultTableText = `Indikator | Target | Realisasi | Status\nAkurasi Model | 95.0% | 99.4% | Tercapai\nLatensi Inferensi | < 20ms | 11.8ms | Optimal\nThroughput | 2.0x | 3.4x | Melampaui`;
+      const tableRaw = el.content || defaultTableText;
+      const rows = tableRaw
+        .split('\n')
+        .map(r => r.trim())
+        .filter(r => r.length > 0)
+        .map(r => r.split('|').map(c => c.trim()));
+
+      const headerRow = rows[0] || [];
+      const bodyRows = rows.slice(1);
+
+      return `      {/* Table Element: ${el.name} */}
+      <div 
+        className="absolute rounded-xl border border-slate-800 bg-slate-900/90 overflow-hidden shadow-lg"
+        style={{ left: '${el.x}px', top: '${el.y}px', width: '${el.width}px', height: '${el.height}px' }}
+      >
+        <table className="w-full h-full border-collapse text-left text-xs">
+          <thead className="bg-indigo-950/40 border-b border-slate-800 text-indigo-300 font-bold uppercase text-[10px]">
+            <tr>
+              ${headerRow.map(h => `<th className="px-3 py-2 border-r border-slate-800/60 last:border-r-0">${h}</th>`).join('\n              ')}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-slate-300">
+            ${bodyRows.map((r, i) => `<tr>\n              ${r.map(c => `<td className="px-3 py-2 border-r border-slate-800/40 last:border-r-0 ${i % 2 === 1 ? 'bg-slate-800/30' : ''}">${c}</td>`).join('\n              ')}\n            </tr>`).join('\n            ')}
+          </tbody>
+        </table>
+      </div>`;
+    }
+
     case 'circle':
       return `      {/* Circle Shape: ${el.name} */}
       <div 
