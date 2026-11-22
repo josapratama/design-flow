@@ -26,6 +26,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Spasi', 'Drag'], description: 'Alat Tangan (Pan Kanvas bebas)' },
         { keys: ['Ctrl', 'Wheel'], description: 'Perbesar / Perkecil Kanvas (Zoom)' },
         { keys: ['Ctrl', '0'], description: 'Sesuaikan Kanvas ke Layar (Fit Screen)' },
+        { keys: ['Shift', '2'], description: 'Zoom ke Elemen Terpilih (Zoom to Selection)' },
         { keys: ['Shift', 'R'], description: 'Nyalakan / Matikan Penggaris Piksel (Rulers)' },
         { keys: ['Shift', 'M'], description: 'Nyalakan / Matikan Batas Area Aman (Safe Margin)' },
         { keys: ['Shift', 'F'], description: 'Mode Fokus Kanvas / Sembunyikan Panel (Zen Mode)' },

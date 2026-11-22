@@ -128,6 +128,45 @@ export default function App() {
     setProject(prev => ({ ...prev, scale: roundedScale, panX, panY }));
   }, [activeSlide, setProject]);
 
+  // Zoom to selected elements (Figma Shift+2 behavior)
+  const handleZoomToSelection = React.useCallback(() => {
+    const mainEl = document.querySelector('main');
+    if (!mainEl || !activeSlide || project.selectedElementIds.length === 0) return;
+    const selectedElements = activeSlide.elements.filter(el =>
+      project.selectedElementIds.includes(el.id)
+    );
+    if (selectedElements.length === 0) return;
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    selectedElements.forEach(el => {
+      minX = Math.min(minX, el.x);
+      minY = Math.min(minY, el.y);
+      maxX = Math.max(maxX, el.x + el.width);
+      maxY = Math.max(maxY, el.y + el.height);
+    });
+
+    const selW = Math.max(maxX - minX, 50);
+    const selH = Math.max(maxY - minY, 50);
+    const padding = 140;
+    const availW = Math.max(mainEl.clientWidth - padding, 100);
+    const availH = Math.max(mainEl.clientHeight - padding, 100);
+
+    const fitScale = Math.min(availW / selW, availH / selH, 2.5);
+    const roundedScale = Math.max(0.2, Number(fitScale.toFixed(2)));
+
+    const centerX = minX + selW / 2;
+    const centerY = minY + selH / 2;
+
+    const panX = Math.round(mainEl.clientWidth / 2 - centerX * roundedScale);
+    const panY = Math.round(mainEl.clientHeight / 2 - centerY * roundedScale);
+
+    setProject(prev => ({ ...prev, scale: roundedScale, panX, panY }));
+  }, [activeSlide, project.selectedElementIds, setProject]);
+
   // Global Keyboard Shortcuts (Figma / Canva style)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -152,6 +191,13 @@ export default function App() {
       if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
         handleZoomToFit();
+        return;
+      }
+
+      // 0.15 Zoom to Selection: Shift+2
+      if (e.shiftKey && (e.key === '2' || e.key === '@') && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        handleZoomToSelection();
         return;
       }
 
@@ -409,6 +455,7 @@ export default function App() {
               setProject(prev => ({ ...prev, scale: Math.max(0.15, Number((prev.scale - 0.1).toFixed(2))) }))
             }
             onResetZoom={handleZoomToFit}
+            onZoomToSelection={handleZoomToSelection}
             onSetScale={scale => setProject(prev => ({ ...prev, scale }))}
             onToggleGrid={() => setProject(prev => ({ ...prev, showGrid: !prev.showGrid }))}
             onToggleSnapToGrid={() => setProject(prev => ({ ...prev, snapToGrid: !prev.snapToGrid }))}

@@ -635,7 +635,7 @@ export function useDesignStore() {
     }));
   }, [project.slides, pushHistory]);
 
-  // Global Find and Replace across elements
+  // Global Find and Replace across elements and slide meta
   const replaceTextInElements = useCallback(
     (findText: string, replaceText: string, scope: 'active' | 'all' = 'active', matchCase: boolean = false): number => {
       if (!findText) return 0;
@@ -646,15 +646,32 @@ export function useDesignStore() {
         const newSlides = prev.slides.map(slide => {
           if (scope === 'active' && slide.id !== prev.activeSlideId) return slide;
 
+          const flags = matchCase ? 'g' : 'gi';
+          const escapedFind = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(escapedFind, flags);
+
+          let slideTitle = slide.title;
+          let slideNotes = slide.notes;
+
+          const replaceInField = (val?: string): string | undefined => {
+            if (!val) return val;
+            const matches = val.match(regex);
+            if (matches && matches.length > 0) {
+              replaceCount += matches.length;
+              return val.replace(regex, replaceText);
+            }
+            return val;
+          };
+
+          if (slideTitle) slideTitle = replaceInField(slideTitle) || slideTitle;
+          if (slideNotes) slideNotes = replaceInField(slideNotes);
+
           const newElements = slide.elements.map(el => {
             let updated = { ...el };
             let changed = false;
 
-            const replaceInField = (val?: string): string | undefined => {
+            const replaceInElField = (val?: string): string | undefined => {
               if (!val) return val;
-              const flags = matchCase ? 'g' : 'gi';
-              const escapedFind = findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-              const regex = new RegExp(escapedFind, flags);
               const matches = val.match(regex);
               if (matches && matches.length > 0) {
                 replaceCount += matches.length;
@@ -664,15 +681,15 @@ export function useDesignStore() {
               return val;
             };
 
-            if (updated.content) updated.content = replaceInField(updated.content);
-            if (updated.subTitle) updated.subTitle = replaceInField(updated.subTitle);
-            if (updated.badgeText) updated.badgeText = replaceInField(updated.badgeText);
-            if (updated.placeholder) updated.placeholder = replaceInField(updated.placeholder);
+            if (updated.content) updated.content = replaceInElField(updated.content);
+            if (updated.subTitle) updated.subTitle = replaceInElField(updated.subTitle);
+            if (updated.badgeText) updated.badgeText = replaceInElField(updated.badgeText);
+            if (updated.placeholder) updated.placeholder = replaceInElField(updated.placeholder);
 
             return changed ? updated : el;
           });
 
-          return { ...slide, elements: newElements };
+          return { ...slide, title: slideTitle, notes: slideNotes, elements: newElements };
         });
 
         return { ...prev, slides: newSlides };

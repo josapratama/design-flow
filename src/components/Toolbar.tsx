@@ -12,6 +12,7 @@ import {
   RotateCw,
   Shield,
   PanelLeftClose,
+  Focus,
 } from 'lucide-react';
 
 interface ToolbarProps {
@@ -29,6 +30,7 @@ interface ToolbarProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetZoom: () => void;
+  onZoomToSelection?: () => void;
   onSetScale?: (scale: number) => void;
   onToggleGrid: () => void;
   onToggleSnapToGrid?: () => void;
@@ -54,6 +56,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onZoomIn,
   onZoomOut,
   onResetZoom,
+  onZoomToSelection,
   onSetScale,
   onToggleGrid,
   onToggleSnapToGrid,
@@ -87,7 +90,7 @@ export const Toolbar: React.FC<ToolbarProps> = ({
         </button>
 
         {showZoomMenu && (
-          <div className="absolute bottom-full mb-2 left-0 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-1 z-30 flex flex-col gap-0.5 min-w-[70px] animate-in fade-in zoom-in-95 duration-100">
+          <div className="absolute bottom-full mb-2 left-0 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-1 z-30 flex flex-col gap-0.5 min-w-[120px] animate-in fade-in zoom-in-95 duration-100">
             {zoomLevels.map(lvl => (
               <button
                 key={lvl}
@@ -104,6 +107,27 @@ export const Toolbar: React.FC<ToolbarProps> = ({
                 {Math.round(lvl * 100)}%
               </button>
             ))}
+            <div className="h-[1px] bg-slate-800 my-1" />
+            <button
+              onClick={() => {
+                onResetZoom();
+                setShowZoomMenu(false);
+              }}
+              className="px-2 py-1 text-left rounded text-xs text-slate-300 hover:bg-slate-800"
+            >
+              Fit Screen (Ctrl+0)
+            </button>
+            {hasSelectedElements && onZoomToSelection && (
+              <button
+                onClick={() => {
+                  onZoomToSelection();
+                  setShowZoomMenu(false);
+                }}
+                className="px-2 py-1 text-left rounded text-xs text-indigo-300 hover:bg-slate-800 font-medium"
+              >
+                Pilihan (Shift+2)
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -121,11 +145,22 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       {/* Fit to screen */}
       <button
         onClick={onResetZoom}
-        title="Sesuaikan dengan Layar (Fit Screen)"
+        title="Sesuaikan dengan Layar (Fit Screen - Ctrl+0)"
         className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
       >
         <Maximize className="w-4 h-4" />
       </button>
+
+      {/* Zoom to selection button when elements selected */}
+      {hasSelectedElements && onZoomToSelection && (
+        <button
+          onClick={onZoomToSelection}
+          title="Zoom ke Elemen Terpilih (Shift+2)"
+          className="p-1.5 hover:bg-indigo-600/20 text-indigo-400 hover:text-indigo-300 rounded-xl transition-colors"
+        >
+          <Focus className="w-4 h-4" />
+        </button>
+      )}
 
       {/* Grid toggle */}
       <button

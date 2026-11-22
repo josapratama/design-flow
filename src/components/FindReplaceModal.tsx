@@ -43,6 +43,14 @@ export const FindReplaceModal: React.FC<FindReplaceModalProps> = ({
     const regex = new RegExp(escaped, flags);
 
     targetSlides.forEach(slide => {
+      const slideMetaFields = [slide.title, slide.notes];
+      slideMetaFields.forEach(smf => {
+        if (smf) {
+          const matches = smf.match(regex);
+          if (matches) count += matches.length;
+        }
+      });
+
       slide.elements.forEach(el => {
         const textFields = [el.content, el.subTitle, el.badgeText, el.placeholder];
         textFields.forEach(tf => {

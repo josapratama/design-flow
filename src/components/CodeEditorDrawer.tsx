@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DesignProject } from '../types';
 import { generateDesignDSL } from '../engine/dsl-generator';
 import { parseDesignDSL } from '../engine/dsl-parser';
@@ -20,6 +20,8 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const gutterRef = useRef<HTMLDivElement>(null);
 
   // Synchronize visual state to DSL code whenever project updates
   useEffect(() => {
@@ -52,8 +54,16 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    if (gutterRef.current) {
+      gutterRef.current.scrollTop = e.currentTarget.scrollTop;
+    }
+  };
+
+  const lines = code.split('\n');
+
   return (
-    <div className="absolute top-14 bottom-0 right-0 w-[480px] bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col z-30 select-none animate-in slide-in-from-right duration-200">
+    <div className="absolute top-14 bottom-0 right-0 w-[500px] bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col z-30 select-none animate-in slide-in-from-right duration-200">
       {/* Drawer Header */}
       <div className="p-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
         <div className="flex items-center gap-2">
@@ -93,14 +103,27 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
         </div>
       </div>
 
-      {/* Code Editor Body */}
-      <div className="flex-1 relative bg-slate-950 font-mono text-xs">
+      {/* Code Editor Body with Line Number Gutter */}
+      <div className="flex-1 relative bg-slate-950 font-mono text-xs flex overflow-hidden">
+        {/* Line Numbers Gutter */}
+        <div
+          ref={gutterRef}
+          className="w-11 py-4 pr-2 text-right bg-slate-950/90 text-slate-600 font-mono select-none overflow-hidden border-r border-slate-800/80 shrink-0 leading-relaxed pointer-events-none"
+        >
+          {lines.map((_, idx) => (
+            <div key={idx} className="text-[11px] leading-5">{idx + 1}</div>
+          ))}
+        </div>
+
+        {/* Textarea */}
         <textarea
+          ref={textareaRef}
           value={code}
           onChange={e => {
             setCode(e.target.value);
             setError(null);
           }}
+          onScroll={handleScroll}
           onKeyDown={e => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
               e.preventDefault();
@@ -109,7 +132,7 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
           }}
           placeholder="// Kode DesignFlow DSL..."
           spellCheck={false}
-          className="w-full h-full p-4 bg-transparent text-emerald-400 placeholder-slate-600 outline-none resize-none leading-relaxed selection:bg-indigo-600 selection:text-white font-mono"
+          className="flex-1 h-full p-4 pl-3 bg-transparent text-emerald-400 placeholder-slate-600 outline-none resize-none leading-5 selection:bg-indigo-600 selection:text-white font-mono overflow-y-auto whitespace-pre"
         />
       </div>
 
@@ -124,7 +147,7 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
       {/* Drawer Footer Actions */}
       <div className="p-3 border-t border-slate-800 flex items-center justify-between bg-slate-900">
         <div className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
-          <span>{code.split('\n').length} baris</span>
+          <span>{lines.length} baris</span>
           <span>•</span>
           <span className="text-slate-500"><kbd className="text-indigo-400">Ctrl+Enter</kbd> terapkan</span>
         </div>
