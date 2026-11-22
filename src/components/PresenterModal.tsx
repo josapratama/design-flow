@@ -24,6 +24,11 @@ import {
   HelpCircle,
   PartyPopper,
   LayoutGrid,
+  SlidersHorizontal,
+  Smile,
+  Check,
+  Clock,
+  Sparkles,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { soundEffects } from '../utils/audioEffects';
@@ -67,6 +72,23 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [showHelpOverlay, setShowHelpOverlay] = useState(false);
   const [soundToast, setSoundToast] = useState<string | null>(null);
   const [reactions, setReactions] = useState<Array<{ id: number; emoji: string; left: number }>>([]);
+  const [showPresenterOptions, setShowPresenterOptions] = useState(false);
+  const [showReactionMenu, setShowReactionMenu] = useState(false);
+  const optionsMenuRef = useRef<HTMLDivElement>(null);
+  const reactionMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (optionsMenuRef.current && !optionsMenuRef.current.contains(e.target as Node)) {
+        setShowPresenterOptions(false);
+      }
+      if (reactionMenuRef.current && !reactionMenuRef.current.contains(e.target as Node)) {
+        setShowReactionMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const triggerFloatingReaction = (emoji: string) => {
     const id = Date.now() + Math.random();
@@ -528,20 +550,21 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col select-none text-slate-100">
-      {/* Presenter Top Bar */}
-      <header className="h-14 border-b border-slate-800 px-6 flex items-center justify-between bg-slate-900/90">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 font-bold text-sm text-indigo-400">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span>Mode Presentasi (Slideshow)</span>
+      {/* Presenter Top Bar - Clean, Minimalist & Responsive */}
+      <header className="h-14 border-b border-slate-800/80 px-3 sm:px-6 flex items-center justify-between bg-slate-900/95 backdrop-blur-xl shrink-0 z-30">
+        {/* Left Section: Live Status & Clean Timer */}
+        <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300">
+              {currentIndex + 1} / {slides.length}
+            </span>
           </div>
-          <span className="text-xs text-slate-400">
-            Slide {currentIndex + 1} dari {slides.length} — {currentSlide.title}
+          <span className="text-xs text-slate-300 font-medium truncate max-w-[120px] sm:max-w-xs md:max-w-md hidden sm:inline">
+            {currentSlide.title}
           </span>
-        </div>
 
-        {/* Timer, Target Duration & Controls */}
-        <div className="flex items-center gap-2">
+          {/* Minimalist Stopwatch Capsule */}
           {(() => {
             const isTimeOver = targetMinutes > 0 && secondsElapsed >= targetMinutes * 60;
             const isTimeWarning =
@@ -549,12 +572,13 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
             return (
               <div
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono border transition-all ${isTimeOver
-                  ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse font-bold'
-                  : isTimeWarning
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-mono border transition-all ${
+                  isTimeOver
+                    ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse font-bold'
+                    : isTimeWarning
                     ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-semibold'
-                    : 'bg-slate-800 border-slate-700 text-slate-200'
-                  }`}
+                    : 'bg-slate-950 border-slate-800 text-slate-200'
+                }`}
               >
                 <button
                   onClick={() => setIsTimerRunning(!isTimerRunning)}
@@ -569,7 +593,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
                 </button>
                 <span className="font-semibold">{formatTimer(secondsElapsed)}</span>
                 {targetMinutes > 0 && (
-                  <span className="text-[10px] text-slate-400 font-normal">/ {targetMinutes}m</span>
+                  <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">/ {targetMinutes}m</span>
                 )}
                 <button
                   onClick={() => setSecondsElapsed(0)}
@@ -581,114 +605,39 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
               </div>
             );
           })()}
+        </div>
 
-          {/* Visual Target Countdown Remaining Badge */}
-          {targetMinutes > 0 && (() => {
-            const targetSeconds = targetMinutes * 60;
-            const diff = targetSeconds - secondsElapsed;
-            const isOver = diff < 0;
-            const remainingAbs = Math.abs(diff);
-            return (
-              <div
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold border transition-all ${isOver
-                  ? 'bg-rose-500/25 border-rose-500 text-rose-300 animate-pulse'
-                  : diff <= 120
-                    ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                    : 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                  }`}
-                title={
-                  isOver
-                    ? 'Waktu presentasi telah melewati batas target!'
-                    : 'Sisa waktu presentasi menuju batas target'
-                }
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${isOver ? 'bg-rose-400' : diff <= 120 ? 'bg-amber-400' : 'bg-emerald-400'
-                    }`}
-                />
-                <span>{isOver ? `+${formatTimer(remainingAbs)} Lewat` : `Sisa ${formatTimer(remainingAbs)}`}</span>
-              </div>
-            );
-          })()}
-
-          {/* Target Duration Selector */}
-          <select
-            value={targetMinutes}
-            onChange={e => setTargetMinutes(Number(e.target.value))}
-            title="Target Batas Waktu Presentasi"
-            className="bg-slate-800/80 border border-slate-700 rounded-lg px-2 py-1 text-[11px] text-slate-300 outline-none cursor-pointer font-medium"
-          >
-            <option value={0} className="bg-slate-900">Stopwatch Bebas</option>
-            <option value={3} className="bg-slate-900">Target 3m (Pitch)</option>
-            <option value={5} className="bg-slate-900">Target 5m</option>
-            <option value={10} className="bg-slate-900">Target 10m</option>
-            <option value={15} className="bg-slate-900">Target 15m</option>
-            <option value={20} className="bg-slate-900">Target 20m</option>
-          </select>
-
-          {/* Auto-Play Toggle */}
-          <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700 rounded-lg p-0.5 text-xs">
-            <button
-              onClick={() => setIsAutoPlay(!isAutoPlay)}
-              title={isAutoPlay ? 'Hentikan Putar Otomatis' : 'Mulai Putar Otomatis'}
-              className={`px-2 py-1 rounded flex items-center gap-1.5 transition-colors font-semibold ${isAutoPlay ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
-                }`}
-            >
-              <Play className="w-3.5 h-3.5" />
-              <span>Auto-Play</span>
-            </button>
-            <select
-              value={autoPlayInterval}
-              onChange={e => setAutoPlayInterval(Number(e.target.value))}
-              className="bg-transparent text-[11px] text-slate-300 outline-none pr-1 cursor-pointer font-mono"
-            >
-              <option value={3} className="bg-slate-900">3d</option>
-              <option value={5} className="bg-slate-900">5d</option>
-              <option value={10} className="bg-slate-900">10d</option>
-            </select>
-          </div>
-
-          {/* Sound FX Toggle */}
-          <button
-            onClick={toggleSound}
-            title={`Efek Suara Transisi: ${isSoundMuted ? 'Mati (Tekan M)' : 'Aktif (Tekan M)'}`}
-            className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center transition-all ${!isSoundMuted
-              ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-              : 'bg-slate-800 border-slate-700 text-slate-500 hover:text-slate-300'
-              }`}
-          >
-            {!isSoundMuted ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-          </button>
-
-          {/* Laser Pointer Toggle & Color Picker */}
-          <div className="flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-lg p-0.5">
+        {/* Right Section: Essential Presenter Tools & Options Popover */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Laser Pointer Button with Mini Color Selector */}
+          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-0.5">
             <button
               onClick={() => {
                 setIsLaserActive(!isLaserActive);
                 if (!isLaserActive) setIsPenActive(false);
               }}
               title="Laser Pointer (Tekan 'L')"
-              className={`px-3 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${isLaserActive
-                ? 'bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20'
-                : 'text-slate-400 hover:text-white'
-                }`}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                isLaserActive
+                  ? 'bg-rose-500 text-white shadow-md shadow-rose-500/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
             >
               <CircleDot className="w-3.5 h-3.5" />
-              <span>Laser {isLaserActive ? 'Aktif' : 'Pointer'}</span>
+              <span className="hidden sm:inline">Laser</span>
             </button>
             {isLaserActive && (
-              <div className="flex items-center gap-1 px-1 border-l border-slate-700/80 ml-0.5">
+              <div className="flex items-center gap-1 px-1 border-l border-slate-800 ml-0.5">
                 {[
                   { color: '#f43f5e', name: 'Merah' },
                   { color: '#38bdf8', name: 'Cyan' },
                   { color: '#10b981', name: 'Hijau' },
-                  { color: '#facc15', name: 'Emas' },
                 ].map(c => (
                   <button
                     key={c.color}
                     onClick={() => setLaserColor(c.color)}
                     title={`Laser ${c.name}`}
-                    className={`w-3.5 h-3.5 rounded-full border transition-transform ${laserColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                    className={`w-3 h-3 rounded-full border transition-transform ${laserColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-60 hover:opacity-100'}`}
                     style={{ backgroundColor: c.color }}
                   />
                 ))}
@@ -696,138 +645,226 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             )}
           </div>
 
-          {/* Live Pen / Doodle Annotation Toggle */}
-          <div className="flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-lg p-0.5">
+          {/* Pen / Doodle Annotation Button */}
+          <div className="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-0.5">
             <button
               onClick={() => {
                 setIsPenActive(!isPenActive);
                 if (!isPenActive) setIsLaserActive(false);
               }}
               title="Anotasi Pena Coretan (Tekan 'P')"
-              className={`px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1.5 transition-all ${isPenActive
-                ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
-                : 'text-slate-400 hover:text-white'
-                }`}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+                isPenActive
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/30'
+                  : 'text-slate-400 hover:text-white'
+              }`}
             >
               <Pen className="w-3.5 h-3.5" />
-              <span>Pena {isPenActive ? 'Aktif' : ''}</span>
+              <span className="hidden sm:inline">Pena</span>
             </button>
             {isPenActive && (
-              <>
-                <div className="flex items-center gap-1 px-1">
-                  {[
-                    { color: '#f43f5e', name: 'Merah' },
-                    { color: '#38bdf8', name: 'Cyan' },
-                    { color: '#facc15', name: 'Kuning' },
-                    { color: '#10b981', name: 'Hijau' },
-                  ].map(c => (
-                    <button
-                      key={c.color}
-                      onClick={() => setPenColor(c.color)}
-                      title={`Warna ${c.name}`}
-                      className={`w-3.5 h-3.5 rounded-full border transition-transform ${penColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-70 hover:opacity-100'
-                        }`}
-                      style={{ backgroundColor: c.color }}
-                    />
-                  ))}
-                </div>
-                {/* Pen Stroke Width Controls */}
-                <div className="flex items-center gap-0.5 border-l border-slate-700 pl-1.5 ml-0.5">
-                  {[
-                    { width: 2, label: '2px', title: 'Ketebalan Halus (2px)' },
-                    { width: 4, label: '4px', title: 'Ketebalan Sedang (4px)' },
-                    { width: 8, label: '8px', title: 'Ketebalan Tebal (8px)' },
-                  ].map(w => (
-                    <button
-                      key={w.width}
-                      onClick={() => setPenWidth(w.width)}
-                      title={w.title}
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold transition-all ${
-                        penWidth === w.width
-                          ? 'bg-amber-400 text-slate-950 shadow-sm'
-                          : 'text-slate-400 hover:text-white hover:bg-slate-700'
-                      }`}
-                    >
-                      {w.label}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex items-center gap-1 px-1 border-l border-slate-800 ml-0.5">
+                {[
+                  { color: '#f43f5e', name: 'Merah' },
+                  { color: '#38bdf8', name: 'Cyan' },
+                  { color: '#facc15', name: 'Kuning' },
+                ].map(c => (
+                  <button
+                    key={c.color}
+                    onClick={() => setPenColor(c.color)}
+                    title={`Warna ${c.name}`}
+                    className={`w-3 h-3 rounded-full border transition-transform ${penColor === c.color ? 'scale-125 border-white ring-1 ring-white/50' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                    style={{ backgroundColor: c.color }}
+                  />
+                ))}
                 <button
                   onClick={undoPenStroke}
-                  title="Batalkan Coretan Terakhir (Tekan 'U' atau 'Ctrl+Z')"
-                  className="p-1 hover:bg-slate-700 text-slate-400 hover:text-indigo-400 rounded transition-colors"
+                  title="Batalkan Coretan Terakhir (U)"
+                  className="p-1 hover:bg-slate-800 text-slate-400 hover:text-indigo-400 rounded transition-colors"
                 >
-                  <Undo2 className="w-3.5 h-3.5" />
+                  <Undo2 className="w-3 h-3" />
                 </button>
                 <button
                   onClick={clearPenCanvas}
-                  title="Hapus Semua Coretan (Tekan 'C')"
-                  className="p-1 hover:bg-slate-700 text-slate-400 hover:text-rose-400 rounded transition-colors"
+                  title="Hapus Semua Coretan (C)"
+                  className="p-1 hover:bg-slate-800 text-slate-400 hover:text-rose-400 rounded transition-colors"
                 >
-                  <Eraser className="w-3.5 h-3.5" />
+                  <Eraser className="w-3 h-3" />
                 </button>
-              </>
+              </div>
             )}
           </div>
 
-          {/* Transition Effect Selector */}
-          <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700 rounded-lg px-2 py-1 text-xs">
-            <span className="text-[10px] text-slate-400 font-semibold">Efek:</span>
-            <select
-              value={transitionEffect}
-              onChange={e => setTransitionEffect(e.target.value as any)}
-              className="bg-transparent text-[11px] text-slate-200 outline-none cursor-pointer font-medium"
-            >
-              <option value="fade" className="bg-slate-900">Fade (Halus)</option>
-              <option value="slide" className="bg-slate-900">Slide (Geser)</option>
-              <option value="zoom" className="bg-slate-900">Zoom (Memperbesar)</option>
-            </select>
-          </div>
-
-          <button
-            onClick={() => setShowNotes(!showNotes)}
-            title="Tampilkan / Sembunyikan Catatan (Tekan 'N')"
-            className={`px-3 py-1 rounded-lg text-xs font-medium border ${showNotes
-              ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
-              : 'bg-slate-800 border-slate-700 text-slate-400'
-              }`}
-          >
-            {showNotes ? 'Sembunyikan Catatan' : 'Lihat Catatan'}
-          </button>
-
+          {/* Audience Window (Dual Screen) */}
           <button
             onClick={openAudienceWindow}
-            title="Buka Jendela Layar Audiens Terpisah untuk Proyektor / Monitor Kedua"
-            className="px-2.5 py-1.5 hover:bg-slate-800 text-slate-400 hover:text-indigo-300 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-800 hover:border-indigo-500/40"
+            title="Buka Jendela Layar Audiens untuk Proyektor / Monitor Kedua"
+            className="px-2.5 py-1.5 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-800"
           >
             <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
-            <span className="hidden sm:inline">Layar Audiens</span>
+            <span className="hidden md:inline">Layar Audiens</span>
           </button>
 
+          {/* Toggle Speaker Notes */}
+          <button
+            onClick={() => setShowNotes(!showNotes)}
+            title="Tampilkan / Sembunyikan Catatan Pembicara (N)"
+            className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+              showNotes
+                ? 'bg-indigo-600/15 border-indigo-500/40 text-indigo-300'
+                : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+            }`}
+          >
+            <span className="hidden sm:inline">{showNotes ? 'Sembunyikan Catatan' : 'Lihat Catatan'}</span>
+            <span className="sm:hidden">Notes</span>
+          </button>
+
+          {/* Presenter Settings & Secondary Tools Popover */}
+          <div ref={optionsMenuRef} className="relative">
+            <button
+              onClick={() => setShowPresenterOptions(!showPresenterOptions)}
+              title="Pengaturan & Opsi Presentasi"
+              className={`p-1.5 rounded-xl border transition-colors ${
+                showPresenterOptions || isAutoPlay || blankMode !== 'none' || !isSoundMuted
+                  ? 'bg-slate-800 text-indigo-300 border-slate-700'
+                  : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+            </button>
+
+            {showPresenterOptions && (
+              <div className="absolute top-full right-0 mt-1.5 w-64 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2.5 z-50 animate-in fade-in zoom-in-95 duration-100 backdrop-blur-xl space-y-2">
+                <div className="px-2 py-1 text-[10px] font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-800/80">
+                  Opsi Slideshow
+                </div>
+
+                {/* Target Duration Selector */}
+                <div className="space-y-1 px-2">
+                  <label className="text-[10px] text-slate-400 font-semibold block">Target Batas Waktu</label>
+                  <select
+                    value={targetMinutes}
+                    onChange={e => setTargetMinutes(Number(e.target.value))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 outline-none"
+                  >
+                    <option value={0}>Stopwatch Bebas</option>
+                    <option value={3}>Target 3m (Elevator Pitch)</option>
+                    <option value={5}>Target 5m (Lightning Talk)</option>
+                    <option value={10}>Target 10m</option>
+                    <option value={15}>Target 15m (Seminar/Sidang)</option>
+                    <option value={20}>Target 20m (Keynote)</option>
+                  </select>
+                </div>
+
+                {/* Transition Effect Selector */}
+                <div className="space-y-1 px-2">
+                  <label className="text-[10px] text-slate-400 font-semibold block">Efek Transisi Slide</label>
+                  <select
+                    value={transitionEffect}
+                    onChange={e => setTransitionEffect(e.target.value as any)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1.5 text-xs text-slate-200 outline-none"
+                  >
+                    <option value="fade">Fade (Halus & Elegan)</option>
+                    <option value="slide">Slide (Geser Dinamis)</option>
+                    <option value="zoom">Zoom (Memperbesar)</option>
+                  </select>
+                </div>
+
+                {/* Auto Play Setting */}
+                <div className="px-2 py-1 border-t border-slate-800/80 pt-2 flex items-center justify-between">
+                  <span className="text-xs text-slate-300">Putar Otomatis</span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setIsAutoPlay(!isAutoPlay)}
+                      className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                        isAutoPlay ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      {isAutoPlay ? 'ON' : 'OFF'}
+                    </button>
+                    {isAutoPlay && (
+                      <select
+                        value={autoPlayInterval}
+                        onChange={e => setAutoPlayInterval(Number(e.target.value))}
+                        className="bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-[11px] text-slate-200 outline-none font-mono"
+                      >
+                        <option value={3}>3d</option>
+                        <option value={5}>5d</option>
+                        <option value={10}>10d</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sound FX Toggle */}
+                <div className="px-2 py-1 flex items-center justify-between">
+                  <span className="text-xs text-slate-300">Efek Suara Geser (M)</span>
+                  <button
+                    onClick={toggleSound}
+                    className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                      !isSoundMuted ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'
+                    }`}
+                  >
+                    {!isSoundMuted ? 'Aktif' : 'Mati'}
+                  </button>
+                </div>
+
+                {/* Blank Screen Options */}
+                <div className="px-2 py-1 border-t border-slate-800/80 pt-2 flex items-center justify-between">
+                  <span className="text-xs text-slate-300">Layar Kosong Fokus</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setBlankMode(prev => (prev === 'black' ? 'none' : 'black'))}
+                      title="Layar Hitam (B)"
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        blankMode === 'black' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      Hitam (B)
+                    </button>
+                    <button
+                      onClick={() => setBlankMode(prev => (prev === 'white' ? 'none' : 'white'))}
+                      title="Layar Putih (W)"
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        blankMode === 'white' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
+                      }`}
+                    >
+                      Putih (W)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Shortcuts Helper */}
+                <div className="px-2 pt-1 border-t border-slate-800/80">
+                  <button
+                    onClick={() => {
+                      setShowHelpOverlay(true);
+                      setShowPresenterOptions(false);
+                    }}
+                    className="w-full py-1.5 text-xs text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg flex items-center gap-2 justify-center transition-colors"
+                  >
+                    <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Panduan Pintasan Tombol (?)</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Fullscreen Button */}
           <button
             onClick={toggleFullscreen}
-            title="Layar Penuh (Tekan 'F')"
-            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg"
+            title="Layar Penuh (F)"
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl transition-colors"
           >
             {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
           </button>
 
-          {/* Black Screen / Blank Screen Toggle */}
-          <button
-            onClick={() => setBlankMode(prev => (prev === 'black' ? 'none' : 'black'))}
-            title={`Layar Kosong Hitam (Tekan 'B'): ${blankMode === 'black' ? 'Aktif' : 'Nonaktif'}`}
-            className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center transition-all ${blankMode === 'black'
-              ? 'bg-purple-500/20 border-purple-500 text-purple-300'
-              : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white'
-              }`}
-          >
-            <EyeOff className="w-4 h-4" />
-          </button>
-
+          {/* Close Button */}
           <button
             onClick={onClose}
-            title="Keluar Presentasi (Esc)"
-            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg ml-2"
+            title="Keluar Mode Presentasi (Esc)"
+            className="p-1.5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 rounded-xl transition-colors ml-1"
           >
             <X className="w-4 h-4" />
           </button>
@@ -1004,98 +1041,94 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
             </div>
           )}
 
-          {/* Floating Navigation Controls & Keyboard Hints */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1.5 z-40">
-            <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-800/80 px-3 py-1.5 rounded-full shadow-2xl backdrop-blur-md">
+          {/* Floating Navigation Controls Capsule - Clean & Uncluttered */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1.5 p-1.5 bg-slate-900/90 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-xl z-30">
+            <button
+              onClick={goToPrev}
+              disabled={currentIndex === 0}
+              title="Slide Sebelumnya (← / Panah Kiri)"
+              className="p-1.5 hover:bg-slate-800 disabled:opacity-25 rounded-xl text-slate-300 hover:text-white transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setShowSlideNavigator(prev => !prev)}
+              title="Buka Kisi Miniatur Slide untuk Melompat Cepat"
+              className={`text-xs font-mono font-medium px-2.5 py-1 rounded-xl transition-colors flex items-center gap-1.5 ${
+                showSlideNavigator
+                  ? 'bg-indigo-600 text-white font-bold shadow'
+                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
+              <span>{currentIndex + 1} / {slides.length}</span>
+            </button>
+            <button
+              onClick={goToNext}
+              disabled={currentIndex === slides.length - 1}
+              title="Slide Selanjutnya (Spasi / Panah Kanan)"
+              className="p-1.5 hover:bg-slate-800 disabled:opacity-25 rounded-xl text-slate-300 hover:text-white transition-colors"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            <div className="h-4 w-[1px] bg-slate-800 mx-0.5" />
+
+            {/* Confetti Celebration Button */}
+            <button
+              onClick={triggerCelebration}
+              title="Tembakkan Selebrasi Confetti"
+              className="p-1.5 hover:bg-slate-800 rounded-xl text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              <PartyPopper className="w-4 h-4" />
+            </button>
+
+            {/* Audience Reaction Button with Popover */}
+            <div ref={reactionMenuRef} className="relative">
               <button
-                onClick={goToPrev}
-                disabled={currentIndex === 0}
-                title="Slide Sebelumnya (Panah Kiri)"
-                className="p-2 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent rounded-full text-slate-300"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setShowSlideNavigator(prev => !prev)}
-                title="Buka Kisi Miniatur Slide untuk Melompat Cepat"
-                className={`text-xs font-mono font-medium px-2.5 py-1 rounded-full transition-colors flex items-center gap-1.5 ${
-                  showSlideNavigator
-                    ? 'bg-indigo-600 text-white font-bold shadow'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                onClick={() => setShowReactionMenu(!showReactionMenu)}
+                title="Kirim Reaksi Emotikon Audiens"
+                className={`p-1.5 rounded-xl transition-colors ${
+                  showReactionMenu ? 'bg-slate-800 text-indigo-300' : 'hover:bg-slate-800 text-slate-400 hover:text-white'
                 }`}
               >
-                <LayoutGrid className="w-3.5 h-3.5 text-indigo-400" />
-                <span>{currentIndex + 1} / {slides.length}</span>
-              </button>
-              <button
-                onClick={goToNext}
-                disabled={currentIndex === slides.length - 1}
-                title="Slide Selanjutnya (Spasi / Panah Kanan)"
-                className="p-2 hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent rounded-full text-slate-300"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-              <div className="h-4 w-[1px] bg-slate-800" />
-              <button
-                onClick={triggerCelebration}
-                title="Tembakkan Selebrasi Confetti ke Layar Utama & Audiens"
-                className="p-1.5 hover:bg-slate-800 rounded-full text-amber-400 hover:text-amber-300 transition-colors"
-              >
-                <PartyPopper className="w-4 h-4" />
+                <Smile className="w-4 h-4" />
               </button>
 
-              {/* Quick Interactive Reaction Emojis */}
-              <div className="flex items-center gap-0.5 px-1 bg-slate-800/80 rounded-full border border-slate-700/60">
-                {['👏', '❤️', '🔥', '💡', '🚀'].map(emoji => (
-                  <button
-                    key={emoji}
-                    onClick={() => {
-                      triggerFloatingReaction(emoji);
-                      channelRef.current?.postMessage({ type: 'REACTION', emoji });
-                    }}
-                    title={`Kirim reaksi ${emoji} ke layar audiens`}
-                    className="w-6 h-6 flex items-center justify-center text-xs hover:scale-125 transition-transform rounded-full"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => setShowHelpOverlay(true)}
-                title="Buka Panduan Pintasan Tombol (? / H)"
-                className="p-1.5 hover:bg-slate-800 rounded-full text-indigo-400 hover:text-indigo-300 transition-colors"
-              >
-                <HelpCircle className="w-4 h-4" />
-              </button>
+              {showReactionMenu && (
+                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-1.5 z-40 flex items-center gap-1 animate-in fade-in zoom-in-95 duration-100 backdrop-blur-xl">
+                  {['👏', '❤️', '🔥', '💡', '🚀'].map(emoji => (
+                    <button
+                      key={emoji}
+                      onClick={() => {
+                        triggerFloatingReaction(emoji);
+                        channelRef.current?.postMessage({ type: 'REACTION', emoji });
+                        setShowReactionMenu(false);
+                      }}
+                      title={`Reaksi ${emoji}`}
+                      className="w-7 h-7 flex items-center justify-center text-sm hover:scale-125 transition-transform rounded-xl hover:bg-slate-800"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-            {/* Quick Keyboard Cheatsheet */}
-            <div className="px-3 py-0.5 rounded-full bg-slate-950/70 border border-slate-800/60 text-[10px] font-mono text-slate-400 flex items-center gap-2 select-none shadow-sm">
-              <span><kbd className="text-indigo-300">Spasi / →</kbd> Maju</span>
-              <span>•</span>
-              <span><kbd className="text-indigo-300">B</kbd> Hitam</span>
-              <span>•</span>
-              <span><kbd className="text-indigo-300">W</kbd> Putih</span>
-              <span>•</span>
-              <span><kbd className="text-indigo-300">L</kbd> Laser</span>
-              <span>•</span>
-              <span><kbd className="text-indigo-300">P</kbd> Pena</span>
-              <span>•</span>
-              <span><kbd className="text-indigo-300">U</kbd> Undo</span>
-              <span>•</span>
-              <span><kbd className="text-indigo-300">C</kbd> Hapus</span>
-              <span>•</span>
-              <span><kbd className="text-indigo-300">N</kbd> Notes</span>
-              <span>•</span>
-              <span><kbd className="text-indigo-300">0-9+Enter</kbd> Lompat Slide</span>
-              <span>•</span>
-              <span><kbd className="text-indigo-300">F</kbd> Layar Penuh</span>
-            </div>
+
+            {/* Keyboard Shortcuts Helper Modal Button */}
+            <button
+              onClick={() => setShowHelpOverlay(true)}
+              title="Buka Panduan Pintasan Tombol (? / H)"
+              className="p-1.5 hover:bg-slate-800 rounded-xl text-indigo-400 hover:text-indigo-300 transition-colors"
+            >
+              <HelpCircle className="w-4 h-4" />
+            </button>
           </div>
         </div>
 
-        {/* Presenter Speaker Notes Sidebar (Live Editable) */}
+        {/* Presenter Speaker Notes Sidebar (Live Editable & Responsive Drawer on mobile) */}
         {showNotes && (
-          <aside className="w-84 border-l border-slate-800 bg-slate-900 p-5 flex flex-col justify-between shrink-0">
+          <aside className="w-72 sm:w-80 border-l border-slate-800/80 bg-slate-900/95 backdrop-blur-xl p-4 sm:p-5 flex flex-col justify-between shrink-0 fixed lg:static right-0 top-14 bottom-0 z-30 shadow-2xl lg:shadow-none animate-in slide-in-from-right duration-150">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
