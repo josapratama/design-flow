@@ -14,6 +14,7 @@ import {
   PanelLeftClose,
   Focus,
   LayoutGrid,
+  Boxes,
 } from 'lucide-react';
 
 interface ToolbarProps {
@@ -24,6 +25,8 @@ interface ToolbarProps {
   showSafeMargin?: boolean;
   isZenMode?: boolean;
   hasSelectedElements: boolean;
+  selectedCount?: number;
+  isGrouped?: boolean;
   canUndo?: boolean;
   canRedo?: boolean;
   onUndo?: () => void;
@@ -39,6 +42,8 @@ interface ToolbarProps {
   onToggleSafeMargin?: () => void;
   onToggleZenMode?: () => void;
   onOpenSlideSorter?: () => void;
+  onGroup?: () => void;
+  onUngroup?: () => void;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
 }
@@ -51,6 +56,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   showSafeMargin = false,
   isZenMode = false,
   hasSelectedElements,
+  selectedCount = 0,
+  isGrouped = false,
   canUndo = false,
   canRedo = false,
   onUndo,
@@ -66,6 +73,8 @@ export const Toolbar: React.FC<ToolbarProps> = ({
   onToggleSafeMargin,
   onToggleZenMode,
   onOpenSlideSorter,
+  onGroup,
+  onUngroup,
   onDeleteSelected,
   onDuplicateSelected,
 }) => {
@@ -277,6 +286,27 @@ export const Toolbar: React.FC<ToolbarProps> = ({
       {hasSelectedElements && (
         <>
           <div className="h-4 w-[1px] bg-slate-800 mx-1" />
+
+          {/* Group / Ungroup buttons */}
+          {selectedCount > 1 && onGroup && (
+            <button
+              onClick={onGroup}
+              title="Kelompokkan Elemen Terpilih (Ctrl+G)"
+              className="p-1.5 hover:bg-emerald-600/20 text-emerald-400 rounded-xl transition-colors"
+            >
+              <Boxes className="w-4 h-4" />
+            </button>
+          )}
+
+          {isGrouped && onUngroup && (
+            <button
+              onClick={onUngroup}
+              title="Pisahkan Elemen dari Grup (Ctrl+Shift+G)"
+              className="p-1.5 hover:bg-amber-500/20 text-amber-400 rounded-xl transition-colors"
+            >
+              <Boxes className="w-4 h-4" />
+            </button>
+          )}
 
           <button
             onClick={onDuplicateSelected}

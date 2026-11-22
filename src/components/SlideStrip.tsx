@@ -207,8 +207,8 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
               <span>{slide.elements.length} el</span>
             </div>
 
-            {/* Hover Action Buttons */}
-            <div className="absolute inset-0 bg-slate-950/90 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-0.5 transition-opacity z-20">
+            {/* Non-intrusive Floating Action Pill */}
+            <div className="absolute top-6 right-1.5 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 p-0.5 rounded-lg bg-slate-950/95 border border-slate-700/80 shadow-2xl backdrop-blur-md transition-all z-20">
               {/* Move to Start */}
               {index > 1 && (
                 <button

@@ -30,6 +30,7 @@ import {
   Image as ImageIcon,
   Sparkles,
   Upload,
+  Boxes,
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { POPULAR_FONTS, getFontFamilyStyle } from '../utils/fontLoader';
@@ -50,6 +51,8 @@ interface PropertyInspectorProps {
   onInvertSlideTheme?: () => void;
   onToggleLock?: (elementId: string) => void;
   onToggleHide?: (elementId: string) => void;
+  onGroup?: () => void;
+  onUngroup?: () => void;
 }
 
 export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
@@ -67,6 +70,8 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   onInvertSlideTheme,
   onToggleLock,
   onToggleHide,
+  onGroup,
+  onUngroup,
 }) => {
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [iconFilter, setIconFilter] = useState('');
@@ -568,6 +573,28 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
               className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition-colors"
             >
               {element.hidden ? <EyeOff className="w-3.5 h-3.5 text-slate-500" /> : <Eye className="w-3.5 h-3.5 text-emerald-400" />}
+            </button>
+          )}
+
+          {/* Group Multiple Elements */}
+          {selectedCount > 1 && onGroup && (
+            <button
+              onClick={onGroup}
+              title="Kelompokkan Elemen Terpilih (Ctrl+G)"
+              className="p-1.5 hover:bg-emerald-500/20 text-slate-400 hover:text-emerald-300 rounded-lg transition-colors"
+            >
+              <Boxes className="w-3.5 h-3.5" />
+            </button>
+          )}
+
+          {/* Ungroup If Grouped */}
+          {element.groupId && onUngroup && (
+            <button
+              onClick={onUngroup}
+              title="Pisahkan Elemen dari Grup (Ctrl+Shift+G)"
+              className="p-1.5 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 rounded-lg transition-colors"
+            >
+              <Boxes className="w-3.5 h-3.5" />
             </button>
           )}
 

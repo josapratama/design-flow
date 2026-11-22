@@ -210,18 +210,40 @@ export function useDesignStore() {
   }, [updateActiveSlide]);
 
   const toggleLockElement = useCallback((elementId: string) => {
-    updateActiveSlide(slide => ({
-      ...slide,
-      elements: slide.elements.map(el => (el.id === elementId ? { ...el, locked: !el.locked } : el)),
-    }));
-  }, [updateActiveSlide]);
+    updateActiveSlide(slide => {
+      const isMulti = project.selectedElementIds.includes(elementId) && project.selectedElementIds.length > 1;
+      const targetEl = slide.elements.find(el => el.id === elementId);
+      const targetState = targetEl ? !targetEl.locked : true;
+
+      return {
+        ...slide,
+        elements: slide.elements.map(el => {
+          if (isMulti) {
+            return project.selectedElementIds.includes(el.id) ? { ...el, locked: targetState } : el;
+          }
+          return el.id === elementId ? { ...el, locked: !el.locked } : el;
+        }),
+      };
+    });
+  }, [project.selectedElementIds, updateActiveSlide]);
 
   const toggleHideElement = useCallback((elementId: string) => {
-    updateActiveSlide(slide => ({
-      ...slide,
-      elements: slide.elements.map(el => (el.id === elementId ? { ...el, hidden: !el.hidden } : el)),
-    }));
-  }, [updateActiveSlide]);
+    updateActiveSlide(slide => {
+      const isMulti = project.selectedElementIds.includes(elementId) && project.selectedElementIds.length > 1;
+      const targetEl = slide.elements.find(el => el.id === elementId);
+      const targetState = targetEl ? !targetEl.hidden : true;
+
+      return {
+        ...slide,
+        elements: slide.elements.map(el => {
+          if (isMulti) {
+            return project.selectedElementIds.includes(el.id) ? { ...el, hidden: targetState } : el;
+          }
+          return el.id === elementId ? { ...el, hidden: !el.hidden } : el;
+        }),
+      };
+    });
+  }, [project.selectedElementIds, updateActiveSlide]);
 
   const duplicateSelectedElements = useCallback(() => {
     if (project.selectedElementIds.length === 0 || !activeSlide) return;
@@ -622,6 +644,17 @@ export function useDesignStore() {
     });
   }, [pushHistory]);
 
+  const reverseSlidesOrder = useCallback(() => {
+    setProject(prev => {
+      if (prev.slides.length <= 1) return prev;
+      pushHistory(prev.slides);
+      return {
+        ...prev,
+        slides: [...prev.slides].reverse(),
+      };
+    });
+  }, [pushHistory]);
+
   // Load a complete template
   const loadTemplate = useCallback((template: typeof TEMPLATES[0]) => {
     pushHistory(project.slides);
@@ -901,6 +934,7 @@ export function useDesignStore() {
     deleteSlide,
     reorderSlide,
     moveSlideToIndex,
+    reverseSlidesOrder,
     loadTemplate,
     appendTemplateSlides,
     saveProjectToFile,

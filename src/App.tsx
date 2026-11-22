@@ -65,6 +65,7 @@ export default function App() {
     deleteSlide,
     reorderSlide,
     moveSlideToIndex,
+    reverseSlidesOrder,
     loadTemplate,
     appendTemplateSlides,
     saveProjectToFile,
@@ -575,6 +576,8 @@ export default function App() {
             showSafeMargin={showSafeMargin}
             isZenMode={isZenMode}
             hasSelectedElements={project.selectedElementIds.length > 0}
+            selectedCount={project.selectedElementIds.length}
+            isGrouped={Boolean(selectedElement?.groupId)}
             canUndo={canUndo}
             canRedo={canRedo}
             onUndo={undo}
@@ -596,6 +599,8 @@ export default function App() {
             onToggleSafeMargin={() => setShowSafeMargin(prev => !prev)}
             onToggleZenMode={() => setIsZenMode(prev => !prev)}
             onOpenSlideSorter={() => setIsSlideSorterOpen(true)}
+            onGroup={groupSelectedElements}
+            onUngroup={ungroupSelectedElements}
             onDeleteSelected={deleteSelectedElements}
             onDuplicateSelected={duplicateSelectedElements}
           />
@@ -625,6 +630,8 @@ export default function App() {
               onInvertSlideTheme={invertActiveSlideTheme}
               onToggleLock={toggleLockElement}
               onToggleHide={toggleHideElement}
+              onGroup={groupSelectedElements}
+              onUngroup={ungroupSelectedElements}
             />
             {isMobileRightOpen && (
               <button
@@ -790,6 +797,7 @@ export default function App() {
         onReorderSlide={reorderSlide}
         onMoveSlideToIndex={moveSlideToIndex}
         onUpdateSlideTitle={(slideId, title) => updateSlideSettings(slideId, { title })}
+        onReverseSlides={reverseSlidesOrder}
       />
 
       {/* Presentation Deck Stats & Pacing Inspector */}

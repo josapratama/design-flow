@@ -16,6 +16,7 @@ import {
   Search,
   Sparkles,
   Layers,
+  ArrowUpDown,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -31,6 +32,7 @@ interface SlideSorterModalProps {
   onReorderSlide: (slideId: string, direction: 'left' | 'right' | 'start' | 'end') => void;
   onMoveSlideToIndex?: (slideId: string, targetIndex: number) => void;
   onUpdateSlideTitle: (slideId: string, title: string) => void;
+  onReverseSlides?: () => void;
 }
 
 export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
@@ -45,6 +47,7 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
   onReorderSlide,
   onMoveSlideToIndex,
   onUpdateSlideTitle,
+  onReverseSlides,
 }) => {
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -160,6 +163,24 @@ export const SlideSorterModal: React.FC<SlideSorterModalProps> = ({
               </button>
             ))}
           </div>
+
+          {/* Reverse Slide Order Button */}
+          {onReverseSlides && slides.length > 1 && (
+            <button
+              onClick={() => {
+                const confirmed = window.confirm('Balikkan urutan seluruh slide dari akhir ke awal?');
+                if (confirmed) {
+                  onReverseSlides();
+                  confetti({ particleCount: 40, spread: 60, origin: { y: 0.2 } });
+                }
+              }}
+              title="Balikkan urutan seluruh slide dari akhir ke awal (Reverse)"
+              className="px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all"
+            >
+              <ArrowUpDown className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="hidden sm:inline">Balik Urutan</span>
+            </button>
+          )}
 
           {/* Add Slide Button */}
           <button
