@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { DesignElement, Slide } from '../types';
 import { ArtboardRenderer } from './ArtboardRenderer';
 
@@ -92,17 +92,27 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     currentY: number;
   } | null>(null);
 
-  // Wheel to Zoom & Pan
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    if (e.ctrlKey || e.metaKey) {
-      const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
-      const newScale = Math.min(3.0, Math.max(0.15, scale * zoomFactor));
-      onScaleChange(Number(newScale.toFixed(2)));
-    } else {
-      onPanChange(panX - e.deltaX, panY - e.deltaY);
-    }
-  };
+  // Native Non-Passive Wheel Event Listener to prevent Chrome passive event error
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const onWheelHandler = (e: WheelEvent) => {
+      e.preventDefault();
+      if (e.ctrlKey || e.metaKey) {
+        const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+        const newScale = Math.min(3.0, Math.max(0.15, scale * zoomFactor));
+        onScaleChange(Number(newScale.toFixed(2)));
+      } else {
+        onPanChange(panX - e.deltaX, panY - e.deltaY);
+      }
+    };
+
+    container.addEventListener('wheel', onWheelHandler, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', onWheelHandler);
+    };
+  }, [scale, panX, panY, onScaleChange, onPanChange]);
 
   // Pointer Down on background (Panning via Middle Click, Spacebar, or Marquee via Left Click)
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -198,7 +208,6 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
           ? 'cursor-grab'
           : 'cursor-default'
         }`}
-      onWheel={handleWheel}
       onPointerDown={handlePointerDown}
       onClick={e => {
         if (e.target === containerRef.current) {
