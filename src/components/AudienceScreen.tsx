@@ -14,6 +14,7 @@ interface LaserData {
   xRatio: number;
   yRatio: number;
   color?: string;
+  mode?: 'laser' | 'spotlight';
 }
 
 export const AudienceScreen: React.FC = () => {
@@ -337,8 +338,18 @@ export const AudienceScreen: React.FC = () => {
           className="absolute inset-0 z-30 pointer-events-none"
         />
 
+        {/* Virtual Spotlight Mode (Stage Light focus) */}
+        {laserPos && laserPos.mode === 'spotlight' && (
+          <div
+            className="absolute inset-0 pointer-events-none z-45 transition-opacity duration-100"
+            style={{
+              background: `radial-gradient(circle 140px at ${laserPos.xRatio * currentSlide.width}px ${laserPos.yRatio * currentSlide.height}px, transparent 0%, rgba(0,0,0,0.72) 100%)`,
+            }}
+          />
+        )}
+
         {/* Glowing Virtual Laser Pointer accurately scaled inside slide */}
-        {laserPos && (
+        {laserPos && laserPos.mode !== 'spotlight' && (
           <div
             className="absolute pointer-events-none z-50 -translate-x-1/2 -translate-y-1/2"
             style={{
