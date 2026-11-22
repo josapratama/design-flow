@@ -198,11 +198,26 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
               if (!textarea) return;
               const start = textarea.selectionStart;
               const end = textarea.selectionEnd;
-              const newCode = code.substring(0, start) + '  ' + code.substring(end);
-              setCode(newCode);
-              setTimeout(() => {
-                textarea.selectionStart = textarea.selectionEnd = start + 2;
-              }, 0);
+              if (e.shiftKey) {
+                // Outdent 2 spaces if present at beginning of line
+                const before = code.substring(0, start);
+                const lastNewline = before.lastIndexOf('\n');
+                const lineStart = lastNewline === -1 ? 0 : lastNewline + 1;
+                if (code.substring(lineStart, lineStart + 2) === '  ') {
+                  const newCode = code.substring(0, lineStart) + code.substring(lineStart + 2);
+                  setCode(newCode);
+                  setTimeout(() => {
+                    textarea.selectionStart = Math.max(lineStart, start - 2);
+                    textarea.selectionEnd = Math.max(lineStart, end - 2);
+                  }, 0);
+                }
+              } else {
+                const newCode = code.substring(0, start) + '  ' + code.substring(end);
+                setCode(newCode);
+                setTimeout(() => {
+                  textarea.selectionStart = textarea.selectionEnd = start + 2;
+                }, 0);
+              }
               return;
             }
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {

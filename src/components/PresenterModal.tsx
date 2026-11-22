@@ -91,6 +91,11 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
           blankMode,
           transitionEffect,
         });
+      } else if (event.data?.type === 'SLIDE_CHANGE' && typeof event.data.index === 'number') {
+        setCurrentIndex(event.data.index);
+        soundEffects.playSlideTransition();
+      } else if (event.data?.type === 'BLANK_MODE' && event.data.mode) {
+        setBlankMode(event.data.mode);
       }
     };
 

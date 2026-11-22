@@ -522,7 +522,33 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
           break;
         }
 
-        case 'card':
+        case 'card': {
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '1E293B' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : { color: '334155', width: 1 },
+            rectRadius: 0.15,
+          });
+
+          if (el.content) {
+            slide.addText(el.content, {
+              x: posX,
+              y: posY,
+              w: w,
+              h: h,
+              fontSize: el.fontSize ? Math.round(el.fontSize * 0.45) : 14,
+              color: cleanHex(el.color || '#FFFFFF'),
+              bold: el.fontWeight === 'bold',
+              align: (el.textAlign as any) || 'center',
+              valign: 'middle',
+            });
+          }
+          break;
+        }
+
         case 'rect':
         default: {
           slide.addShape(pptx.ShapeType.roundRect, {
@@ -549,6 +575,15 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
           }
           break;
         }
+      }
+    }
+
+    // Export Speaker Notes (Native PowerPoint Notes Pane)
+    if (slideData.notes && slideData.notes.trim()) {
+      try {
+        slide.addNotes(slideData.notes.trim());
+      } catch (noteErr) {
+        console.warn('Gagal menambahkan speaker notes pptx:', noteErr);
       }
     }
   }

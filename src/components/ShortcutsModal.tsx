@@ -32,6 +32,8 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Shift', 'F'], description: 'Mode Fokus Kanvas / Sembunyikan Panel (Zen Mode)' },
         { keys: ['Alt', 'S'], description: 'Buka Pengatur Kisi Slide (Slide Sorter / Light Table)' },
         { keys: ['Alt', 'C'], description: 'Buka / Tutup Editor Kode DSL (Declarative Design DSL)' },
+        { keys: ['Ctrl', 'Enter'], description: 'Terapkan Perubahan Kode DSL ke Kanvas Visual' },
+        { keys: ['Tab', 'Shift+Tab'], description: 'Indent / Outdent 2 spasi di Editor Kode DSL' },
         { keys: ['Ctrl', 'K'], description: 'Buka Spotlight Command Palette Cepat' },
         { keys: ['Ctrl', 'H'], description: 'Buka Dialog Cari & Ganti Teks (Find & Replace)' },
         { keys: ['Ctrl', 'E'], description: 'Buka Modal Ekspor Desain (PNG/WebP/PDF/React)' },
@@ -86,6 +88,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['F'], description: 'Mode Layar Penuh (Fullscreen)' },
         { keys: ['→', 'Spasi'], description: 'Pindah ke slide berikutnya' },
         { keys: ['←'], description: 'Kembali ke slide sebelumnya' },
+        { keys: ['PgUp', 'PgDn'], description: 'Dukungan Remote Clicker Nirkabel di Layar Utama & Audiens' },
       ],
     },
   ];

@@ -27,6 +27,7 @@ export const AudienceScreen: React.FC = () => {
   });
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const channelRef = useRef<BroadcastChannel | null>(null);
 
   // Fade out top hint after 5 seconds
   useEffect(() => {
@@ -86,6 +87,7 @@ export const AudienceScreen: React.FC = () => {
     }
 
     const channel = new BroadcastChannel('designflow_presentation');
+    channelRef.current = channel;
 
     channel.onmessage = (event) => {
       const data = event.data;
@@ -122,6 +124,7 @@ export const AudienceScreen: React.FC = () => {
 
     return () => {
       channel.close();
+      channelRef.current = null;
     };
   }, []);
 
@@ -132,6 +135,76 @@ export const AudienceScreen: React.FC = () => {
       document.exitFullscreen().catch(() => {});
     }
   };
+
+  // Keyboard navigation & wireless presentation clicker support
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Toggle fullscreen (F or F11 handled by browser)
+      if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        handleToggleFullscreen();
+        return;
+      }
+
+      // Blank Screen shortcuts
+      if (e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setBlankMode(prev => {
+          const next = prev === 'black' ? 'none' : 'black';
+          channelRef.current?.postMessage({ type: 'BLANK_MODE', mode: next });
+          return next;
+        });
+        return;
+      }
+      if (e.key.toLowerCase() === 'w') {
+        e.preventDefault();
+        setBlankMode(prev => {
+          const next = prev === 'white' ? 'none' : 'white';
+          channelRef.current?.postMessage({ type: 'BLANK_MODE', mode: next });
+          return next;
+        });
+        return;
+      }
+
+      // Next slide (Presentation clickers emit PageDown, ArrowRight, Space, or Enter)
+      if (
+        e.key === 'ArrowRight' ||
+        e.key === 'ArrowDown' ||
+        e.key === 'PageDown' ||
+        e.key === ' ' ||
+        e.key === 'Enter'
+      ) {
+        e.preventDefault();
+        if (currentIndex < slides.length - 1) {
+          const nextIdx = currentIndex + 1;
+          setCurrentIndex(nextIdx);
+          setStrokes([]);
+          channelRef.current?.postMessage({ type: 'SLIDE_CHANGE', index: nextIdx });
+        }
+        return;
+      }
+
+      // Previous slide (Presentation clickers emit PageUp, ArrowLeft, or Backspace)
+      if (
+        e.key === 'ArrowLeft' ||
+        e.key === 'ArrowUp' ||
+        e.key === 'PageUp' ||
+        e.key === 'Backspace'
+      ) {
+        e.preventDefault();
+        if (currentIndex > 0) {
+          const prevIdx = currentIndex - 1;
+          setCurrentIndex(prevIdx);
+          setStrokes([]);
+          channelRef.current?.postMessage({ type: 'SLIDE_CHANGE', index: prevIdx });
+        }
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIndex, slides.length]);
 
   const currentSlide = slides[currentIndex];
 
