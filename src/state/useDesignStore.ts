@@ -760,6 +760,54 @@ export function useDesignStore() {
     [project.slides, pushHistory]
   );
 
+  // Invert active slide background & element colors (Dark ⇄ Light)
+  const invertActiveSlideTheme = useCallback(() => {
+    if (!activeSlide) return;
+    pushHistory(project.slides);
+
+    const isCurrentlyDark =
+      activeSlide.background.startsWith('#0') ||
+      activeSlide.background.startsWith('#1') ||
+      activeSlide.background.includes('#090d16') ||
+      activeSlide.background.includes('#0f172a');
+
+    const newBg = isCurrentlyDark ? '#f8fafc' : '#090d16';
+
+    const newElements = activeSlide.elements.map(el => {
+      let updated = { ...el };
+
+      if (isCurrentlyDark) {
+        if (!el.color || el.color.startsWith('#f') || el.color.startsWith('#e') || el.color === '#ffffff') {
+          updated.color = '#0f172a';
+        } else if (el.color === '#94a3b8' || el.color === '#cbd5e1') {
+          updated.color = '#475569';
+        }
+        if (el.fill && (el.fill.startsWith('#0') || el.fill.startsWith('#1') || el.fill.startsWith('rgba(30') || el.fill.startsWith('rgba(59'))) {
+          updated.fill = '#ffffff';
+          updated.stroke = '#cbd5e1';
+        }
+      } else {
+        if (!el.color || el.color.startsWith('#0') || el.color.startsWith('#1') || el.color === '#0f172a') {
+          updated.color = '#f8fafc';
+        } else if (el.color === '#475569' || el.color === '#64748b') {
+          updated.color = '#94a3b8';
+        }
+        if (el.fill && (el.fill.startsWith('#f') || el.fill === '#ffffff')) {
+          updated.fill = '#131b2e';
+          updated.stroke = '#1e293b';
+        }
+      }
+
+      return updated;
+    });
+
+    updateActiveSlide(slide => ({
+      ...slide,
+      background: newBg,
+      elements: newElements,
+    }));
+  }, [activeSlide, project.slides, pushHistory, updateActiveSlide]);
+
   return {
     project,
     setProject,
@@ -802,5 +850,6 @@ export function useDesignStore() {
     replaceTextInElements,
     resetProjectToDefault,
     applyThemeToActiveSlide,
+    invertActiveSlideTheme,
   };
 }

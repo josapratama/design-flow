@@ -17,6 +17,8 @@ import { FindReplaceModal } from './components/FindReplaceModal';
 import { DesignElement } from './types';
 import { preloadCoreFonts } from './utils/fontLoader';
 import { AudienceScreen } from './components/AudienceScreen';
+import { copyArtboardToClipboard } from './engine/canvas-exporter';
+import confetti from 'canvas-confetti';
 
 export default function App() {
   // If URL has ?mode=audience, render clean secondary projector screen
@@ -66,6 +68,7 @@ export default function App() {
     replaceTextInElements,
     resetProjectToDefault,
     applyThemeToActiveSlide,
+    invertActiveSlideTheme,
   } = useDesignStore();
 
   const [isCodeDrawerOpen, setIsCodeDrawerOpen] = useState(false);
@@ -172,6 +175,15 @@ export default function App() {
 
     setProject(prev => ({ ...prev, scale: roundedScale, panX, panY }));
   }, [activeSlide, project.selectedElementIds, setProject]);
+
+  // Copy active artboard PNG to clipboard (Ctrl+Shift+C)
+  const handleCopyArtboardToClipboard = React.useCallback(async () => {
+    if (!artboardRef.current) return;
+    const success = await copyArtboardToClipboard(artboardRef.current);
+    if (success) {
+      confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
+    }
+  }, [artboardRef]);
 
   // Global Keyboard Shortcuts (Figma / Canva style)
   useEffect(() => {
@@ -300,10 +312,17 @@ export default function App() {
       }
 
       // 5. Copy: Ctrl+C / Cmd+C
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && !e.shiftKey) {
         if (project.selectedElementIds.length > 0) {
           copySelectedElements();
         }
+      }
+
+      // 5.1 Copy Artboard PNG to Clipboard: Ctrl+Shift+C / Cmd+Shift+C
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        handleCopyArtboardToClipboard();
+        return;
       }
 
       // 6. Paste: Ctrl+V / Cmd+V
@@ -330,20 +349,43 @@ export default function App() {
         setShowSafeMargin(prev => !prev);
       }
 
-      // 7. Arrow Key Nudge
-      const step = e.shiftKey ? 10 : 1;
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        nudgeSelectedElements(-step, 0);
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        nudgeSelectedElements(step, 0);
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        nudgeSelectedElements(0, -step);
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        nudgeSelectedElements(0, step);
+      // 7. Arrow Key Nudge (when elements selected) or Slide Navigation (when canvas idle)
+      if (project.selectedElementIds.length > 0) {
+        const step = e.shiftKey ? 10 : 1;
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          nudgeSelectedElements(-step, 0);
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          nudgeSelectedElements(step, 0);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          nudgeSelectedElements(0, -step);
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          nudgeSelectedElements(0, step);
+        }
+      } else {
+        const currentIdx = project.slides.findIndex(s => s.id === project.activeSlideId);
+        if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          if (currentIdx > 0) {
+            e.preventDefault();
+            setProject(prev => ({
+              ...prev,
+              activeSlideId: prev.slides[currentIdx - 1].id,
+              selectedElementIds: [],
+            }));
+          }
+        } else if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+          if (currentIdx < project.slides.length - 1) {
+            e.preventDefault();
+            setProject(prev => ({
+              ...prev,
+              activeSlideId: prev.slides[currentIdx + 1].id,
+              selectedElementIds: [],
+            }));
+          }
+        }
       }
     };
 
@@ -489,6 +531,7 @@ export default function App() {
             onAlignElement={alignSelectedElement}
             onDistributeElements={distributeSelectedElements}
             onApplySlideTheme={applyThemeToActiveSlide}
+            onInvertSlideTheme={invertActiveSlideTheme}
             onToggleLock={toggleLockElement}
             onToggleHide={toggleHideElement}
           />
@@ -569,6 +612,7 @@ export default function App() {
           }}
           onZoomToSelection={handleZoomToSelection}
           onZoomToFit={handleZoomToFit}
+          onCopyArtboardImage={handleCopyArtboardToClipboard}
         />
       )}
 

@@ -33,6 +33,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         { keys: ['Ctrl', 'K'], description: 'Buka Spotlight Command Palette Cepat' },
         { keys: ['Ctrl', 'H'], description: 'Buka Dialog Cari & Ganti Teks (Find & Replace)' },
         { keys: ['Ctrl', 'E'], description: 'Buka Modal Ekspor Desain (PNG/WebP/PDF/React)' },
+        { keys: ['Ctrl', 'Shift', 'C'], description: 'Salin Gambar Artboard Aktif ke Clipboard (PNG 2x)' },
         { keys: ['Double-Click Judul'], description: 'Ubah nama slide langsung di thumbnail slide strip' },
       ],
     },

@@ -24,6 +24,7 @@ import {
   AlignEndVertical,
   Focus,
   Maximize,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { DesignElement } from '../types';
 
@@ -51,6 +52,7 @@ interface ContextMenuProps {
   onFlip?: (direction: 'horizontal' | 'vertical') => void;
   onZoomToSelection?: () => void;
   onZoomToFit?: () => void;
+  onCopyArtboardImage?: () => void;
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({
@@ -77,6 +79,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
   onFlip,
   onZoomToSelection,
   onZoomToFit,
+  onCopyArtboardImage,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -407,6 +410,22 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({
                 <span>Sesuaikan ke Layar</span>
               </span>
               <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+0</kbd>
+            </button>
+          )}
+
+          {onCopyArtboardImage && (
+            <button
+              onClick={() => {
+                onCopyArtboardImage();
+                onClose();
+              }}
+              className="w-full px-3 py-1.5 flex items-center justify-between hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <ImageIcon className="w-3.5 h-3.5 text-pink-400" />
+                <span>Salin Gambar Slide (PNG)</span>
+              </span>
+              <kbd className="text-[10px] text-slate-500 font-mono">Ctrl+Shift+C</kbd>
             </button>
           )}
 

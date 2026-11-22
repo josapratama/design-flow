@@ -23,6 +23,7 @@ import {
   Unlock,
   Eye,
   EyeOff,
+  SunMoon,
   ArrowLeftRight,
   ArrowUpDown,
   Pipette,
@@ -45,6 +46,7 @@ interface PropertyInspectorProps {
   onAlignElement: (alignment: 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom') => void;
   onDistributeElements?: (direction: 'horizontal' | 'vertical') => void;
   onApplySlideTheme?: (theme: { background: string; primaryAccent: string; cardFill: string; textColor: string }) => void;
+  onInvertSlideTheme?: () => void;
   onToggleLock?: (elementId: string) => void;
   onToggleHide?: (elementId: string) => void;
 }
@@ -61,6 +63,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   onAlignElement,
   onDistributeElements,
   onApplySlideTheme,
+  onInvertSlideTheme,
   onToggleLock,
   onToggleHide,
 }) => {
@@ -277,6 +280,16 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                   </button>
                 ))}
               </div>
+              {onInvertSlideTheme && (
+                <button
+                  onClick={onInvertSlideTheme}
+                  title="Balik warna latar belakang dan teks secara otomatis (Gelap ⇄ Terang)"
+                  className="w-full mt-2 py-1.5 px-3 rounded-lg border border-slate-700 hover:border-indigo-500/60 bg-slate-900/60 hover:bg-indigo-950/20 text-slate-300 hover:text-white text-xs flex items-center justify-center gap-2 transition-colors active:scale-98"
+                >
+                  <SunMoon className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Invert Tema Slide (Gelap ⇄ Terang)</span>
+                </button>
+              )}
             </div>
 
             {/* Wallpaper & Gambar Latar Slide (Unsplash HD Presets & Custom Upload) */}

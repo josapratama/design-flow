@@ -1,4 +1,4 @@
-import { toPng, toJpeg, toSvg, toCanvas } from 'html-to-image';
+import { toPng, toJpeg, toSvg, toCanvas, toBlob } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { DesignProject } from '../types';
 
@@ -11,6 +11,30 @@ const exportFilter = (node: HTMLElement) => {
   }
   return true;
 };
+
+/**
+ * Copies the active HTML artboard node directly to clipboard as PNG image.
+ */
+export async function copyArtboardToClipboard(
+  element: HTMLElement,
+  pixelRatio: number = 2
+): Promise<boolean> {
+  try {
+    const blob = await toBlob(element, {
+      pixelRatio,
+      filter: exportFilter,
+    });
+    if (blob && navigator.clipboard && (navigator.clipboard as any).write) {
+      await (navigator.clipboard as any).write([
+        new ClipboardItem({ 'image/png': blob }),
+      ]);
+      return true;
+    }
+  } catch (err) {
+    console.warn('Gagal menyalin gambar artboard ke clipboard:', err);
+  }
+  return false;
+}
 
 /**
  * Exports the active HTML artboard node as PNG, JPEG, SVG or WebP image.
