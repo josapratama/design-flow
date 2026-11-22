@@ -18,6 +18,9 @@ export function generateDesignDSL(project: DesignProject): string {
     if (slide.wallpaper) {
       lines.push(`  wallpaper: "${escapeString(slide.wallpaper)}"`);
     }
+    if (slide.transition && slide.transition !== 'none') {
+      lines.push(`  transition: "${slide.transition}"`);
+    }
     if (slide.notes && slide.notes.trim()) {
       lines.push(`  notes: "${escapeString(slide.notes)}"`);
     }

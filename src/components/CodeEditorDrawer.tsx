@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DesignProject } from '../types';
 import { generateDesignDSL } from '../engine/dsl-generator';
 import { parseDesignDSL } from '../engine/dsl-parser';
-import { Code, Check, AlertCircle, Copy, RefreshCw } from 'lucide-react';
+import { Code, Check, AlertCircle, Copy, RefreshCw, Download, Upload } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 interface CodeEditorDrawerProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
   const [copied, setCopied] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Synchronize visual state to DSL code whenever project updates
   useEffect(() => {
@@ -54,6 +56,35 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDownloadDSL = () => {
+    const blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const fileName = `${(project.title || 'designflow_project')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '_')}.dflow`;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+    confetti({ particleCount: 40, spread: 50, origin: { y: 0.7 } });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const content = ev.target?.result as string;
+      if (content) {
+        setCode(content);
+        setError(null);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
     if (gutterRef.current) {
       gutterRef.current.scrollTop = e.currentTarget.scrollTop;
@@ -77,6 +108,29 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".dflow,.dsl,.txt"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            title="Buka file .dflow dari perangkat Anda"
+            className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg text-xs transition-colors flex items-center gap-1"
+          >
+            <Upload className="w-3.5 h-3.5 text-indigo-400" />
+            <span className="hidden sm:inline text-[10px]">Buka</span>
+          </button>
+          <button
+            onClick={handleDownloadDSL}
+            title="Unduh kode DSL sebagai file .dflow"
+            className="p-1 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg text-xs transition-colors flex items-center gap-1"
+          >
+            <Download className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline text-[10px]">Unduh</span>
+          </button>
           <button
             onClick={() => {
               setCode(generateDesignDSL(project));
@@ -125,6 +179,19 @@ export const CodeEditorDrawer: React.FC<CodeEditorDrawerProps> = ({
           }}
           onScroll={handleScroll}
           onKeyDown={e => {
+            if (e.key === 'Tab') {
+              e.preventDefault();
+              const textarea = textareaRef.current;
+              if (!textarea) return;
+              const start = textarea.selectionStart;
+              const end = textarea.selectionEnd;
+              const newCode = code.substring(0, start) + '  ' + code.substring(end);
+              setCode(newCode);
+              setTimeout(() => {
+                textarea.selectionStart = textarea.selectionEnd = start + 2;
+              }, 0);
+              return;
+            }
             if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
               e.preventDefault();
               handleApply();

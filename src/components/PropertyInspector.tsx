@@ -834,9 +834,23 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
         {/* Table Content Editor */}
         {element.type === 'table' && (
           <div className="space-y-3 p-3 bg-slate-950 border border-slate-800 rounded-xl">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
-              Editor Isi Tabel Data
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block">
+                Editor Isi Tabel Data
+              </span>
+              {(() => {
+                const parsedRows = (element.content || '')
+                  .split('\n')
+                  .filter(r => r.trim().length > 0);
+                const rowCount = parsedRows.length;
+                const colCount = parsedRows[0] ? parsedRows[0].split('|').length : 0;
+                return (
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 font-semibold">
+                    {colCount} Kolom × {rowCount} Baris
+                  </span>
+                );
+              })()}
+            </div>
             <div className="text-[11px] text-slate-400">
               Gunakan pemisah pipa (<kbd className="text-indigo-300">|</kbd>) untuk memisahkan kolom dan baris baru untuk tiap record.
             </div>

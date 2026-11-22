@@ -14,6 +14,7 @@ import { QuickCommandPalette } from './components/QuickCommandPalette';
 import { ContextMenu } from './components/ContextMenu';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { FindReplaceModal } from './components/FindReplaceModal';
+import { SlideSorterModal } from './components/SlideSorterModal';
 import { DesignElement } from './types';
 import { preloadCoreFonts } from './utils/fontLoader';
 import { AudienceScreen } from './components/AudienceScreen';
@@ -78,6 +79,7 @@ export default function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false);
+  const [isSlideSorterOpen, setIsSlideSorterOpen] = useState(false);
   const [showSafeMargin, setShowSafeMargin] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
 
@@ -272,6 +274,13 @@ export default function App() {
       if (e.shiftKey && e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
         setIsZenMode(prev => !prev);
+        return;
+      }
+
+      // 0.95 Slide Sorter Grid View: Alt+S
+      if (e.altKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        setIsSlideSorterOpen(prev => !prev);
         return;
       }
 
@@ -561,6 +570,7 @@ export default function App() {
           onDeleteSlide={deleteSlide}
           onReorderSlide={reorderSlide}
           onUpdateSlideTitle={(slideId, title) => updateSlideSettings(slideId, { title })}
+          onOpenSlideSorter={() => setIsSlideSorterOpen(true)}
         />
       )}
 
@@ -579,6 +589,7 @@ export default function App() {
         onDuplicateActiveSlide={() => duplicateSlide(project.activeSlideId)}
         onCopyArtboardImage={handleCopyArtboardToClipboard}
         onInvertSlideTheme={invertActiveSlideTheme}
+        onOpenSlideSorter={() => setIsSlideSorterOpen(true)}
       />
 
       {/* Floating Right-Click Context Menu */}
@@ -658,6 +669,22 @@ export default function App() {
         activeSlideId={project.activeSlideId}
         onClose={() => setIsFindReplaceOpen(false)}
         onReplaceAll={replaceTextInElements}
+      />
+
+      {/* Visual Slide Sorter / Light Table Modal (Alt+S) */}
+      <SlideSorterModal
+        isOpen={isSlideSorterOpen}
+        slides={project.slides}
+        activeSlideId={project.activeSlideId}
+        onClose={() => setIsSlideSorterOpen(false)}
+        onSelectSlide={slideId =>
+          setProject(prev => ({ ...prev, activeSlideId: slideId, selectedElementIds: [] }))
+        }
+        onAddSlide={addSlide}
+        onDuplicateSlide={duplicateSlide}
+        onDeleteSlide={deleteSlide}
+        onReorderSlide={reorderSlide}
+        onUpdateSlideTitle={(slideId, title) => updateSlideSettings(slideId, { title })}
       />
     </div>
   );

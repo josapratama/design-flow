@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  LayoutGrid,
 } from 'lucide-react';
 
 interface SlideStripProps {
@@ -19,6 +20,7 @@ interface SlideStripProps {
   onDeleteSlide: (slideId: string) => void;
   onReorderSlide: (slideId: string, direction: 'left' | 'right' | 'start' | 'end') => void;
   onUpdateSlideTitle?: (slideId: string, newTitle: string) => void;
+  onOpenSlideSorter?: () => void;
 }
 
 export const SlideStrip: React.FC<SlideStripProps> = ({
@@ -30,6 +32,7 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
   onDeleteSlide,
   onReorderSlide,
   onUpdateSlideTitle,
+  onOpenSlideSorter,
 }) => {
   const [editingSlideId, setEditingSlideId] = React.useState<string | null>(null);
   const [tempTitle, setTempTitle] = React.useState('');
@@ -248,6 +251,18 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
         <Plus className="w-5 h-5" />
         <span className="text-[10px] font-bold">Slide Baru</span>
       </button>
+
+      {/* Slide Sorter / Light Table Grid Button */}
+      {onOpenSlideSorter && (
+        <button
+          onClick={onOpenSlideSorter}
+          title="Buka Pengatur Kisi Slide (Slide Sorter / Light Table) [Alt+S]"
+          className="h-26 w-24 rounded-xl border-2 border-slate-800 hover:border-indigo-500 bg-slate-950/60 hover:bg-slate-800/40 text-slate-400 hover:text-indigo-300 flex flex-col items-center justify-center gap-1.5 transition-all shrink-0"
+        >
+          <LayoutGrid className="w-5 h-5 text-indigo-400" />
+          <span className="text-[10px] font-bold">Kisi Slide</span>
+        </button>
+      )}
     </div>
   );
 };

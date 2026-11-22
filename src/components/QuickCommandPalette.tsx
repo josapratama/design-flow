@@ -31,6 +31,7 @@ import {
   ClipboardCopy,
   TrendingUp,
   Split,
+  LayoutGrid,
 } from 'lucide-react';
 import { DesignElement, ElementType } from '../types';
 import { SMART_BLOCKS } from '../templates/smart-blocks';
@@ -49,6 +50,7 @@ interface QuickCommandPaletteProps {
   onDuplicateActiveSlide?: () => void;
   onCopyArtboardImage?: () => void;
   onInvertSlideTheme?: () => void;
+  onOpenSlideSorter?: () => void;
 }
 
 interface CommandItem {
@@ -74,6 +76,7 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
   onDuplicateActiveSlide,
   onCopyArtboardImage,
   onInvertSlideTheme,
+  onOpenSlideSorter,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -183,6 +186,18 @@ export const QuickCommandPalette: React.FC<QuickCommandPaletteProps> = ({
             category: 'Aksi Studio',
             icon: <SunMoon className="w-4 h-4 text-amber-400" />,
             action: () => onInvertSlideTheme(),
+          },
+        ]
+      : []),
+    ...(onOpenSlideSorter
+      ? [
+          {
+            id: 'action-slide-sorter',
+            title: 'Buka Pengatur Kisi Slide / Light Table (Alt+S)',
+            subtitle: 'Tinjauan makro seluruh slide untuk menata urutan dan alur cerita',
+            category: 'Aksi Studio',
+            icon: <LayoutGrid className="w-4 h-4 text-indigo-400" />,
+            action: () => onOpenSlideSorter(),
           },
         ]
       : []),

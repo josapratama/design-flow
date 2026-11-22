@@ -54,6 +54,7 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
   const [isAutoPlay, setIsAutoPlay] = useState(false);
   const [autoPlayInterval, setAutoPlayInterval] = useState(5);
   const [transitionEffect, setTransitionEffect] = useState<'fade' | 'slide' | 'zoom'>('fade');
+  const [notesFontSize, setNotesFontSize] = useState<'sm' | 'base' | 'lg' | 'xl'>('base');
   const [windowDimensions, setWindowDimensions] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 1920,
     height: typeof window !== 'undefined' ? window.innerHeight : 1080,
@@ -835,15 +836,47 @@ export const PresenterModal: React.FC<PresenterModalProps> = ({
 
               {/* Live Editable Textarea */}
               <div className="space-y-1">
-                <label className="text-[10px] text-slate-500 flex items-center justify-between">
+                <div className="text-[10px] text-slate-500 flex items-center justify-between">
                   <span>Dapat diedit langsung saat presentasi:</span>
-                  <span className="text-emerald-400 font-mono text-[9px]">Tersimpan Otomatis</span>
-                </label>
+                  <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5">
+                    <button
+                      onClick={() => {
+                        if (notesFontSize === 'xl') setNotesFontSize('lg');
+                        else if (notesFontSize === 'lg') setNotesFontSize('base');
+                        else if (notesFontSize === 'base') setNotesFontSize('sm');
+                      }}
+                      title="Perkecil Ukuran Font Catatan (A-)"
+                      className="text-[10px] text-slate-400 hover:text-white px-0.5"
+                    >
+                      A-
+                    </button>
+                    <span className="text-[9px] text-slate-500 font-mono uppercase">{notesFontSize}</span>
+                    <button
+                      onClick={() => {
+                        if (notesFontSize === 'sm') setNotesFontSize('base');
+                        else if (notesFontSize === 'base') setNotesFontSize('lg');
+                        else if (notesFontSize === 'lg') setNotesFontSize('xl');
+                      }}
+                      title="Perbesar Ukuran Font Catatan (A+)"
+                      className="text-[10px] text-slate-400 hover:text-white px-0.5 font-bold"
+                    >
+                      A+
+                    </button>
+                  </div>
+                </div>
                 <textarea
                   value={currentSlide.notes || ''}
                   onChange={e => onUpdateSlideNotes?.(currentSlide.id, e.target.value)}
                   placeholder="Ketik poin penting, panduan berbicara, atau naskah presentasi untuk slide ini..."
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl p-3 text-xs text-slate-200 outline-none leading-relaxed min-h-[170px] resize-none font-sans"
+                  className={`w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl p-3 text-slate-200 outline-none leading-relaxed min-h-[170px] resize-none font-sans ${
+                    notesFontSize === 'sm'
+                      ? 'text-xs'
+                      : notesFontSize === 'base'
+                        ? 'text-sm'
+                        : notesFontSize === 'lg'
+                          ? 'text-base'
+                          : 'text-lg font-medium'
+                  }`}
                 />
               </div>
             </div>

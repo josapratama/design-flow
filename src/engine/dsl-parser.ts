@@ -139,6 +139,12 @@ function parseSlideProperty(line: string, slide: Slide) {
     slide.wallpaper = unescapeString(wallpaperMatch[1]);
     return;
   }
+
+  const transitionMatch = line.match(/transition:\s*"([^"]+)"/);
+  if (transitionMatch) {
+    slide.transition = transitionMatch[1] as any;
+    return;
+  }
 }
 
 function parseElementProperty(line: string, el: Partial<DesignElement>) {
