@@ -502,9 +502,9 @@ export function useDesignStore() {
     }
   }, [activeSlide, project.selectedElementIds, updateActiveSlide]);
 
-  const reorderSelectedElement = useCallback((direction: 'front' | 'back' | 'up' | 'down') => {
-    if (project.selectedElementIds.length === 0) return;
-    const targetId = project.selectedElementIds[0];
+  const reorderSelectedElement = useCallback((direction: 'front' | 'back' | 'up' | 'down', elementId?: string) => {
+    const targetId = elementId || (project.selectedElementIds.length > 0 ? project.selectedElementIds[0] : null);
+    if (!targetId) return;
 
     updateActiveSlide(slide => {
       const elements = [...slide.elements];

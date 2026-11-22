@@ -35,6 +35,7 @@ import {
 import * as LucideIcons from 'lucide-react';
 import { POPULAR_FONTS, getFontFamilyStyle } from '../utils/fontLoader';
 import { evaluateContrast } from '../utils/colorContrast';
+import { extractPaletteFromImage, ExtractedPalette } from '../utils/paletteExtractor';
 
 interface PropertyInspectorProps {
   element: DesignElement | null;
@@ -76,6 +77,8 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [iconFilter, setIconFilter] = useState('');
   const [fontFilterCategory, setFontFilterCategory] = useState<'all' | 'Sans Serif' | 'Serif' | 'Monospace' | 'Display'>('all');
+  const [extractedPalette, setExtractedPalette] = useState<ExtractedPalette | null>(null);
+  const [isExtractingPalette, setIsExtractingPalette] = useState(false);
 
   // Auto-extracted document colors used across active slide
   const documentColors = React.useMemo(() => {
@@ -467,6 +470,75 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Smart Palette Extractor from Wallpaper Photo */}
+              {activeSlide.wallpaper && (
+                <div className="space-y-2 p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 mt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-slate-300 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Ekstraksi Warna Foto</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setIsExtractingPalette(true);
+                        try {
+                          const pal = await extractPaletteFromImage(activeSlide.wallpaper!);
+                          setExtractedPalette(pal);
+                        } finally {
+                          setIsExtractingPalette(false);
+                        }
+                      }}
+                      disabled={isExtractingPalette}
+                      className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded text-[10px] font-semibold transition-colors flex items-center gap-1 shadow-sm active:scale-95"
+                    >
+                      <Palette className="w-3 h-3" />
+                      <span>{isExtractingPalette ? 'Menganalisis...' : 'Ekstrak Palet'}</span>
+                    </button>
+                  </div>
+
+                  {extractedPalette && (
+                    <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                      <span className="text-[9px] text-slate-400 block font-medium">
+                        Warna dominan foto (klik swatch untuk terapkan ke warna latar slide):
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {extractedPalette.swatches.map((color, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              onUpdateSlide(activeSlide.id, { background: color });
+                            }}
+                            title={`Warna: ${color} (Klik untuk terapkan ke warna latar)`}
+                            className="w-7 h-7 rounded-lg border border-slate-700 cursor-pointer shadow-sm hover:scale-110 hover:ring-2 hover:ring-indigo-400 transition-all shrink-0"
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                      </div>
+
+                      {onApplySlideTheme && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onApplySlideTheme({
+                              background: extractedPalette.dominantDark,
+                              primaryAccent: extractedPalette.primaryAccent,
+                              cardFill: extractedPalette.swatches[1] || '#1e293b',
+                              textColor: extractedPalette.lightTone,
+                            });
+                          }}
+                          className="w-full py-1.5 bg-slate-800/90 hover:bg-slate-800 border border-slate-700 text-indigo-300 hover:text-white rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                        >
+                          <Sparkles className="w-3 h-3 text-indigo-400" />
+                          <span>Terapkan Palet Foto ke Elemen Slide</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

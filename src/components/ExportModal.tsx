@@ -7,7 +7,7 @@ import { generateDesignDSL } from '../engine/dsl-generator';
 import { generateStandaloneHtmlPresentation } from '../engine/html-exporter';
 import { Download, FileText, Image, Code2, Check, Loader2, Sparkles, X, BookOpen, FileCode, HardDrive, Globe, Copy } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { toPng } from 'html-to-image';
+import { toPng, toSvg } from 'html-to-image';
 import jsPDF from 'jspdf';
 import { ElementRenderer } from './ElementRenderer';
 import { getSlideBackground } from '../utils/slideStyle';
@@ -31,6 +31,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [pdfScope, setPdfScope] = useState<'all' | 'active'>('all');
   const [copiedCode, setCopiedCode] = useState(false);
   const [copiedOutline, setCopiedOutline] = useState(false);
+  const [copiedSvg, setCopiedSvg] = useState(false);
   const [exportProgress, setExportProgress] = useState<string>('');
 
   const tailwindCode = exportToReactTailwind(activeSlide);
@@ -180,6 +181,43 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       confetti({ particleCount: 60, spread: 50, origin: { y: 0.7 } });
     } catch (err: any) {
       alert('Gagal mengekspor gambar: ' + err.message);
+    } finally {
+      setIsExporting(false);
+      setExportProgress('');
+    }
+  };
+
+  const handleCopySvgCode = async () => {
+    if (!artboardRef.current) return;
+    setIsExporting(true);
+    setExportProgress('Mengonversi kanvas menjadi markup vektor SVG...');
+    try {
+      const dataUrl = await toSvg(artboardRef.current, {
+        quality: 1,
+        filter: (node: HTMLElement) => {
+          if (node.classList && (node.classList.contains('transform-handles') || node.classList.contains('export-ignore'))) {
+            return false;
+          }
+          if (node.getAttribute && node.getAttribute('data-export-ignore') === 'true') {
+            return false;
+          }
+          return true;
+        },
+      });
+
+      let svgContent = '';
+      if (dataUrl.includes('base64,')) {
+        svgContent = atob(dataUrl.split('base64,')[1]);
+      } else {
+        svgContent = decodeURIComponent(dataUrl.replace(/^data:image\/svg\+xml;charset=utf-8,/, ''));
+      }
+
+      await navigator.clipboard.writeText(svgContent);
+      setCopiedSvg(true);
+      setTimeout(() => setCopiedSvg(false), 2500);
+      confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+    } catch (err: any) {
+      alert('Gagal menyalin kode SVG: ' + err.message);
     } finally {
       setIsExporting(false);
       setExportProgress('');
@@ -435,10 +473,33 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 <button
                   onClick={() => handleExportImage('svg')}
                   disabled={isExporting}
-                  className="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-1.5 transition-all hover:border-indigo-500"
+                  className="p-3 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 rounded-xl flex flex-col items-center gap-1.5 transition-all hover:border-indigo-500 relative group"
                 >
-                  <span className="font-bold text-sm text-slate-100">SVG</span>
-                  <span className="text-[9px] text-slate-400">Vektor Murni</span>
+                  <span className="absolute -top-1.5 right-1 px-1.5 py-0.5 bg-indigo-500 text-[8px] font-bold text-white rounded-full">
+                    Vector
+                  </span>
+                  <span className="font-bold text-sm text-indigo-300 group-hover:text-white">SVG</span>
+                  <span className="text-[9px] text-slate-400">Vektor Scalable</span>
+                </button>
+              </div>
+
+              {/* 1-Click SVG Vector Clipboard Box */}
+              <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-between gap-3 mt-1">
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <div>
+                    <span className="text-xs font-semibold text-white block">Salin Kode Vektor SVG ke Clipboard</span>
+                    <span className="text-[10px] text-slate-400">Siap di-paste langsung ke Figma, Adobe Illustrator, atau kode web</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopySvgCode}
+                  disabled={isExporting}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm active:scale-95 shrink-0"
+                >
+                  {copiedSvg ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedSvg ? 'Tersalin ke Clipboard!' : 'Salin Kode SVG'}</span>
                 </button>
               </div>
             </div>

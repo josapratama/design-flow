@@ -84,12 +84,12 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     };
   }, []);
 
-  // Marquee Selection Box State
+  // Marquee Selection Box State (Viewport Screen Coordinates)
   const [marquee, setMarquee] = useState<{
-    startX: number;
-    startY: number;
-    currentX: number;
-    currentY: number;
+    containerStartX: number;
+    containerStartY: number;
+    containerCurrentX: number;
+    containerCurrentY: number;
   } | null>(null);
 
   // Native Non-Passive Wheel & Touch Event Listeners (Prevents passive event error & enables touch pinch-to-zoom)
@@ -169,7 +169,11 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
 
   // Pointer Down on background (Panning via Middle Click, Spacebar, or Marquee via Left Click)
   const handlePointerDown = (e: React.PointerEvent) => {
-    const isBackground = e.target === containerRef.current || e.target === artboardRef.current;
+    const targetEl = e.target as HTMLElement;
+    const isInsideElement = targetEl.closest('[data-element-id]') !== null;
+    const isTransformHandle = targetEl.closest('.transform-handles') !== null;
+    const isGuideline = targetEl.closest('[data-guideline]') !== null;
+    const isBackground = !isInsideElement && !isTransformHandle && !isGuideline;
     if (!isBackground && !isSpaceDown) return;
 
     // Hand tool (Spacebar held) or Middle-click (1) or Alt key -> Pan canvas
@@ -202,49 +206,67 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
 
     // Left-click (0) on background -> Marquee Selection Box
     if (e.button === 0) {
-      if (!artboardRef.current) return;
-      const rect = artboardRef.current.getBoundingClientRect();
-      const startArtboardX = (e.clientX - rect.left) / scale;
-      const startArtboardY = (e.clientY - rect.top) / scale;
+      if (!containerRef.current || !artboardRef.current) return;
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const startClientX = e.clientX;
+      const startClientY = e.clientY;
+      const startContainerX = e.clientX - containerRect.left;
+      const startContainerY = e.clientY - containerRect.top;
 
-      setMarquee({
-        startX: startArtboardX,
-        startY: startArtboardY,
-        currentX: startArtboardX,
-        currentY: startArtboardY,
-      });
+      let isDragging = false;
 
       const handlePointerMove = (moveEvent: PointerEvent) => {
-        const curArtboardX = (moveEvent.clientX - rect.left) / scale;
-        const curArtboardY = (moveEvent.clientY - rect.top) / scale;
+        const dist = Math.hypot(moveEvent.clientX - startClientX, moveEvent.clientY - startClientY);
+        if (!isDragging && dist > 3) {
+          isDragging = true;
+        }
 
-        setMarquee(prev => prev ? { ...prev, currentX: curArtboardX, currentY: curArtboardY } : null);
+        const curContainerX = moveEvent.clientX - containerRect.left;
+        const curContainerY = moveEvent.clientY - containerRect.top;
 
-        // Find intersecting elements
-        const minX = Math.min(startArtboardX, curArtboardX);
-        const maxX = Math.max(startArtboardX, curArtboardX);
-        const minY = Math.min(startArtboardY, curArtboardY);
-        const maxY = Math.max(startArtboardY, curArtboardY);
+        setMarquee({
+          containerStartX: startContainerX,
+          containerStartY: startContainerY,
+          containerCurrentX: curContainerX,
+          containerCurrentY: curContainerY,
+        });
 
-        const intersectingIds = slide.elements
-          .filter(el => {
-            if (el.locked || el.hidden) return false;
-            return (
-              el.x + el.width >= minX &&
-              el.x <= maxX &&
-              el.y + el.height >= minY &&
-              el.y <= maxY
-            );
-          })
-          .map(el => el.id);
+        // Find intersecting elements in artboard coordinate space
+        if (artboardRef.current) {
+          const artboardRect = artboardRef.current.getBoundingClientRect();
+          const minClientX = Math.min(startClientX, moveEvent.clientX);
+          const maxClientX = Math.max(startClientX, moveEvent.clientX);
+          const minClientY = Math.min(startClientY, moveEvent.clientY);
+          const maxClientY = Math.max(startClientY, moveEvent.clientY);
 
-        onSelectMultipleElements(intersectingIds);
+          const minArtboardX = (minClientX - artboardRect.left) / scale;
+          const maxArtboardX = (maxClientX - artboardRect.left) / scale;
+          const minArtboardY = (minClientY - artboardRect.top) / scale;
+          const maxArtboardY = (maxClientY - artboardRect.top) / scale;
+
+          const intersectingIds = slide.elements
+            .filter(el => {
+              if (el.locked || el.hidden) return false;
+              return (
+                el.x + el.width >= minArtboardX &&
+                el.x <= maxArtboardX &&
+                el.y + el.height >= minArtboardY &&
+                el.y <= maxArtboardY
+              );
+            })
+            .map(el => el.id);
+
+          onSelectMultipleElements(intersectingIds);
+        }
       };
 
       const handlePointerUp = () => {
         setMarquee(null);
         window.removeEventListener('pointermove', handlePointerMove);
         window.removeEventListener('pointerup', handlePointerUp);
+        if (!isDragging) {
+          onSelectElement('', false);
+        }
       };
 
       window.addEventListener('pointermove', handlePointerMove);
@@ -355,20 +377,21 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
           </div>
         )}
 
-        {/* Marquee Selection Rectangle Overlay */}
-        {marquee && (
-          <div
-            className="absolute border border-indigo-400 bg-indigo-500/20 pointer-events-none z-50 rounded-sm"
-            data-export-ignore="true"
-            style={{
-              left: `${Math.min(marquee.startX, marquee.currentX)}px`,
-              top: `${Math.min(marquee.startY, marquee.currentY)}px`,
-              width: `${Math.abs(marquee.currentX - marquee.startX)}px`,
-              height: `${Math.abs(marquee.currentY - marquee.startY)}px`,
-            }}
-          />
-        )}
       </div>
+
+      {/* Marquee Selection Rectangle Overlay (Crisp Viewport-Level Canvas Box) */}
+      {marquee && (
+        <div
+          className="absolute border border-indigo-400 bg-indigo-500/20 pointer-events-none z-50 rounded-sm shadow-sm"
+          data-export-ignore="true"
+          style={{
+            left: `${Math.min(marquee.containerStartX, marquee.containerCurrentX)}px`,
+            top: `${Math.min(marquee.containerStartY, marquee.containerCurrentY)}px`,
+            width: `${Math.abs(marquee.containerCurrentX - marquee.containerStartX)}px`,
+            height: `${Math.abs(marquee.containerCurrentY - marquee.containerStartY)}px`,
+          }}
+        />
+      )}
 
       {/* Interactive Pixel Rulers (Top & Left) */}
       {showRulers && (() => {

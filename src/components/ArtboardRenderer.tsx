@@ -127,6 +127,7 @@ export const ArtboardRenderer = forwardRef<HTMLDivElement, ArtboardRendererProps
             return (
               <div
                 key={element.id}
+                data-element-id={element.id}
                 className="absolute"
                 style={{
                   left: `${element.x}px`,

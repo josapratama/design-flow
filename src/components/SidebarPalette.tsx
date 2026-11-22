@@ -52,7 +52,7 @@ interface SidebarPaletteProps {
   onToggleLock: (elementId: string) => void;
   onToggleHide: (elementId: string) => void;
   onDeleteElement: (elementId: string) => void;
-  onReorderElement: (direction: 'front' | 'back' | 'up' | 'down') => void;
+  onReorderElement: (direction: 'front' | 'back' | 'up' | 'down', elementId?: string) => void;
   onAddElement: (element: DesignElement) => void;
   onAddElements: (elements: DesignElement[]) => void;
 }
@@ -1203,7 +1203,33 @@ export const SidebarPalette: React.FC<SidebarPaletteProps> = ({
                       </div>
 
                       {/* Layer Actions */}
-                      <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100">
+                      <div className="flex items-center gap-0.5 opacity-80 group-hover:opacity-100">
+                        {/* Move Up in Stack */}
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            onSelectElement(el.id, false);
+                            onReorderElement('up', el.id);
+                          }}
+                          title="Naikkan Layer (Ke Depan)"
+                          className="p-1 hover:text-indigo-300 hover:bg-slate-800 rounded transition-colors"
+                        >
+                          <ArrowUp className="w-3 h-3 text-slate-400 hover:text-indigo-300" />
+                        </button>
+
+                        {/* Move Down in Stack */}
+                        <button
+                          onClick={e => {
+                            e.stopPropagation();
+                            onSelectElement(el.id, false);
+                            onReorderElement('down', el.id);
+                          }}
+                          title="Turunkan Layer (Ke Belakang)"
+                          className="p-1 hover:text-indigo-300 hover:bg-slate-800 rounded transition-colors"
+                        >
+                          <ArrowDown className="w-3 h-3 text-slate-400 hover:text-indigo-300" />
+                        </button>
+
                         {/* Hide / Show */}
                         <button
                           onClick={e => {
