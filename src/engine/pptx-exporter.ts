@@ -799,6 +799,75 @@ export async function exportToPowerPoint(project: DesignProject): Promise<void> 
           break;
         }
 
+        case 'navbar': {
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '0F172A' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : { color: '1E293B', width: 1 },
+            rectRadius: 0.1,
+          });
+          const brand = el.subTitle || 'App Branding';
+          const navLinks = (el.content && el.content.trim() ? el.content : 'Home, Fitur, Harga')
+            .split(/[,|]/)
+            .map(s => s.trim())
+            .filter(Boolean);
+          const cta = el.value !== undefined ? el.value : 'Masuk';
+          slide.addText(`⚡ ${brand}`, {
+            x: posX + 0.15,
+            y: posY,
+            w: Math.max(1.5, w * 0.35),
+            h: h,
+            fontSize: 12,
+            bold: true,
+            color: cleanHex(el.color || '#818CF8'),
+            align: 'left',
+            valign: 'middle',
+          });
+          const linksText = navLinks.join('    ') + (cta ? `    [${cta}]` : '');
+          slide.addText(linksText, {
+            x: posX + w * 0.4,
+            y: posY,
+            w: w * 0.58,
+            h: h,
+            fontSize: 10,
+            color: 'CBD5E1',
+            align: 'right',
+            valign: 'middle',
+          });
+          break;
+        }
+
+        case 'bottom-nav': {
+          slide.addShape(pptx.ShapeType.roundRect, {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fill: el.fill ? { color: cleanHex(el.fill) } : { color: '0F172A' },
+            line: el.stroke ? { color: cleanHex(el.stroke), width: el.strokeWidth || 1 } : { color: '1E293B', width: 1 },
+            rectRadius: 0.1,
+          });
+          const tabs = (el.content && el.content.trim() ? el.content : 'Beranda, Eksplor, Dompet, Profil')
+            .split(/[,|]/)
+            .map(s => s.trim())
+            .filter(Boolean);
+          slide.addText(tabs.join('    •    '), {
+            x: posX,
+            y: posY,
+            w: w,
+            h: h,
+            fontSize: 10,
+            bold: true,
+            color: '818CF8',
+            align: 'center',
+            valign: 'middle',
+          });
+          break;
+        }
+
         case 'rect':
         default: {
           slide.addShape(pptx.ShapeType.roundRect, {

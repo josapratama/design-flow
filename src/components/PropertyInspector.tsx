@@ -257,6 +257,15 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
     handleChange('color', contrastColor);
   };
 
+  const handleExplodeElement = (elementId: string, replacementElements: DesignElement[]) => {
+    const idx = activeSlide.elements.findIndex(el => el.id === elementId);
+    if (idx === -1) return;
+    const newElements = [...activeSlide.elements];
+    newElements.splice(idx, 1, ...replacementElements);
+    onUpdateSlide(activeSlide.id, { elements: newElements });
+    showToast('Berhasil memecah elemen menjadi Group satuan (Figma-Style)!');
+  };
+
   return (
     <aside className="w-72 h-full bg-slate-900 border-l border-slate-800 flex flex-col shrink-0 select-none z-10 relative">
       {/* Toast Feedback */}
@@ -330,6 +339,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({
             fontFilterCategory={fontFilterCategory}
             setFontFilterCategory={setFontFilterCategory}
             showToast={showToast}
+            onExplodeElement={handleExplodeElement}
           />
         ) : (
           <ElementLayoutTab

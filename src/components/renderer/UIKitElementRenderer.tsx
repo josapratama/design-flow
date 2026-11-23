@@ -26,6 +26,7 @@ export const UIKitElementRenderer: React.FC<UIKitElementRendererProps> = ({ elem
     subTitle,
     iconName,
     placeholder,
+    value,
     name,
   } = element;
 
@@ -316,49 +317,79 @@ export const UIKitElementRenderer: React.FC<UIKitElementRendererProps> = ({ elem
         </div>
       );
 
-    case 'navbar':
+    case 'navbar': {
+      const brand = subTitle || 'App Branding';
+      const navLinks = (content && content.trim() ? content : 'Home, Fitur, Harga')
+        .split(/[,|]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+      const cta = value !== undefined ? value : 'Masuk';
       return (
         <div
-          className="w-full h-full px-6 flex items-center justify-between bg-slate-900/95 border-b border-slate-800 select-none"
-          style={{ background: fill || '#0f172a' }}
+          className="w-full h-full px-6 flex items-center justify-between border-b select-none transition-all"
+          style={{
+            background: fill || '#0f172a',
+            borderColor: stroke || '#1e293b',
+            borderWidth: stroke ? `${strokeWidth || 1}px` : undefined,
+            borderRadius: `${borderRadius || 0}px`,
+          }}
         >
-          <div className="flex items-center space-x-2 font-bold text-base text-indigo-400">
-            <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs">⚡</div>
-            <span>App Branding</span>
+          <div className="flex items-center space-x-2 font-bold text-base">
+            <div className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs shrink-0 shadow-sm">⚡</div>
+            <span className="truncate" style={{ color: color || '#818cf8', fontSize: `${fontSize || 15}px` }}>
+              {brand}
+            </span>
           </div>
           <div className="flex items-center space-x-4 text-xs text-slate-300">
-            <span>Home</span>
-            <span>Fitur</span>
-            <span>Harga</span>
-            <span className="px-3 py-1 rounded-md bg-indigo-600 text-white font-medium">Masuk</span>
+            {navLinks.map((item, idx) => (
+              <span key={idx} className="hover:text-white transition-colors cursor-pointer truncate">
+                {item}
+              </span>
+            ))}
+            {cta && (
+              <span className="px-3 py-1 rounded-md bg-indigo-600 text-white font-medium shadow-sm shrink-0">
+                {cta}
+              </span>
+            )}
           </div>
         </div>
       );
+    }
 
-    case 'bottom-nav':
+    case 'bottom-nav': {
+      const items = (content && content.trim() ? content : 'Beranda, Eksplor, Dompet, Profil')
+        .split(/[,|]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+      const defaultIcons = [Icons.Home, Icons.Compass, Icons.CreditCard, Icons.User, Icons.Bell, Icons.Settings, Icons.Bookmark];
       return (
         <div
-          className="w-full h-full px-6 flex items-center justify-around bg-slate-900/95 border-t border-slate-800 text-slate-400 select-none"
-          style={{ background: fill || '#0f172a' }}
+          className="w-full h-full px-4 flex items-center justify-around border-t select-none transition-all"
+          style={{
+            background: fill || '#0f172a',
+            borderColor: stroke || '#1e293b',
+            borderWidth: stroke ? `${strokeWidth || 1}px` : undefined,
+            borderRadius: `${borderRadius || 0}px`,
+          }}
         >
-          <div className="flex flex-col items-center gap-1 text-indigo-400">
-            <Icons.Home className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Beranda</span>
-          </div>
-          <div className="flex flex-col items-center gap-1 hover:text-slate-200">
-            <Icons.Compass className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Eksplor</span>
-          </div>
-          <div className="flex flex-col items-center gap-1 hover:text-slate-200">
-            <Icons.CreditCard className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Dompet</span>
-          </div>
-          <div className="flex flex-col items-center gap-1 hover:text-slate-200">
-            <Icons.User className="w-5 h-5" />
-            <span className="text-[10px] font-medium">Profil</span>
-          </div>
+          {items.map((label, idx) => {
+            const Icon = defaultIcons[idx % defaultIcons.length] || Icons.Circle;
+            const isActive = idx === 0;
+            return (
+              <div
+                key={idx}
+                className={`flex flex-col items-center gap-1 ${
+                  isActive ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-[10px] font-medium truncate max-w-[60px]">{label}</span>
+              </div>
+            );
+          })}
         </div>
       );
+    }
 
     case 'rating': {
       const score = content || '4.9';

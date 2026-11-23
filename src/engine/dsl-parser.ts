@@ -254,6 +254,7 @@ function parseElementProperty(line: string, el: Partial<DesignElement>) {
     'stroke',
     'variant',
     'placeholder',
+    'value',
     'iconName',
     'subTitle',
     'badgeText',

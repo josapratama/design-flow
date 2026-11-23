@@ -24,6 +24,7 @@ interface ElementDesignTabProps {
   fontFilterCategory: 'all' | 'Sans Serif' | 'Serif' | 'Monospace' | 'Display';
   setFontFilterCategory: (cat: 'all' | 'Sans Serif' | 'Serif' | 'Monospace' | 'Display') => void;
   showToast: (msg: string) => void;
+  onExplodeElement?: (elementId: string, replacementElements: DesignElement[]) => void;
 }
 
 export const ElementDesignTab: React.FC<ElementDesignTabProps> = ({
@@ -42,10 +43,11 @@ export const ElementDesignTab: React.FC<ElementDesignTabProps> = ({
   fontFilterCategory,
   setFontFilterCategory,
   showToast,
+  onExplodeElement,
 }) => {
   return (
     <div className="space-y-4">
-      {/* 1. Special Element Specific Controls (QR Code, Progress, Rating, Alert, Icon, Image) */}
+      {/* 1. Special Element Specific Controls (QR Code, Progress, Rating, Alert, Icon, Image, Navbar) */}
       <SpecialComponentsSection
         element={element}
         handleChange={handleChange}
@@ -54,6 +56,7 @@ export const ElementDesignTab: React.FC<ElementDesignTabProps> = ({
         iconFilter={iconFilter}
         setIconFilter={setIconFilter}
         filteredIcons={filteredIcons}
+        onExplodeElement={onExplodeElement}
       />
 
       {/* 2. Typography Controls */}

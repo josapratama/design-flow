@@ -74,6 +74,7 @@ export function generateDesignDSL(project: DesignProject): string {
       if (el.imageUrl) lines.push(`    imageUrl: "${escapeString(el.imageUrl)}"`);
       if (el.variant) lines.push(`    variant: "${el.variant}"`);
       if (el.placeholder) lines.push(`    placeholder: "${escapeString(el.placeholder)}"`);
+      if (el.value !== undefined) lines.push(`    value: "${escapeString(el.value)}"`);
       if (el.iconName) lines.push(`    iconName: "${el.iconName}"`);
       if (el.subTitle) lines.push(`    subTitle: "${escapeString(el.subTitle)}"`);
       if (el.badgeText) lines.push(`    badgeText: "${escapeString(el.badgeText)}"`);

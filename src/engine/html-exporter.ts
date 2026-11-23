@@ -355,6 +355,27 @@ ${fontLink}  <style>
           innerContent = '<div style="width:100%;height:100%;padding:14px;display:flex;flex-direction:column;justify-content:space-between;">' +
             '<div style="font-size:12px;font-style:italic;color:#e2e8f0;">"' + escapeHtml(el.content || '') + '"</div>' +
             '<div style="font-size:11px;font-weight:700;color:#818cf8;">' + escapeHtml(el.name || 'Reviewer') + ' • <span style="font-weight:400;color:#94a3b8;">' + escapeHtml(el.subTitle || '') + '</span></div></div>';
+        } else if (el.type === 'navbar') {
+          const brand = escapeHtml(el.subTitle || 'App Branding');
+          const navLinks = (el.content && el.content.trim() ? el.content : 'Home, Fitur, Harga')
+            .split(/[,|]/)
+            .map(s => s.trim())
+            .filter(Boolean);
+          const cta = el.value !== undefined ? escapeHtml(el.value) : 'Masuk';
+          const linksHtml = navLinks.map(link => '<span style="color:#cbd5e1;font-size:12px;margin-right:12px;cursor:pointer;">' + escapeHtml(link) + '</span>').join('');
+          const ctaHtml = cta ? '<span style="padding:4px 12px;background:#4f46e5;color:#ffffff;border-radius:6px;font-size:12px;font-weight:600;">' + cta + '</span>' : '';
+          innerContent = '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;height:100%;padding:0 20px;">' +
+            '<div style="display:flex;align-items:center;gap:8px;font-weight:700;color:' + (el.color || '#818cf8') + ';font-size:15px;"><span>⚡</span><span>' + brand + '</span></div>' +
+            '<div style="display:flex;align-items:center;">' + linksHtml + ctaHtml + '</div></div>';
+        } else if (el.type === 'bottom-nav') {
+          const tabs = (el.content && el.content.trim() ? el.content : 'Beranda, Eksplor, Dompet, Profil')
+            .split(/[,|]/)
+            .map(s => s.trim())
+            .filter(Boolean);
+          const tabsHtml = tabs.map((tab, idx) =>
+            '<div style="display:flex;flex-direction:column;align-items:center;gap:2px;color:' + (idx === 0 ? '#818cf8' : '#94a3b8') + ';font-size:11px;font-weight:500;"><span>' + escapeHtml(tab) + '</span></div>'
+          ).join('');
+          innerContent = '<div style="display:flex;align-items:center;justify-content:space-around;width:100%;height:100%;padding:0 12px;">' + tabsHtml + '</div>';
         } else if (el.content) {
           innerContent = '<div style="' + fontStyle + '; padding: 4px 6px;">' + escapeHtml(el.content) + '</div>';
         }

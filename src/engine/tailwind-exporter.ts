@@ -670,7 +670,13 @@ ${innerChart}
       </div>`;
     }
 
-    case 'navbar':
+    case 'navbar': {
+      const brand = el.subTitle || 'App Branding';
+      const navLinks = (el.content && el.content.trim() ? el.content : 'Home, Fitur, Harga')
+        .split(/[,|]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+      const cta = el.value !== undefined ? el.value : 'Masuk';
       return `      {/* Navigation Bar: ${el.name} */}
       <nav 
         className="absolute px-6 flex items-center justify-between border-b border-slate-800 backdrop-blur-md"
@@ -681,17 +687,20 @@ ${innerChart}
       >
         <div className="flex items-center gap-2 font-bold text-sm text-indigo-400">
           <span className="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs">⚡</span>
-          <span>App Branding</span>
+          <span>${brand}</span>
         </div>
         <div className="flex items-center gap-4 text-xs text-slate-300 font-medium">
-          <a href="#home" className="hover:text-white transition-colors">Home</a>
-          <a href="#features" className="hover:text-white transition-colors">Fitur</a>
-          <a href="#pricing" className="hover:text-white transition-colors">Harga</a>
-          <button className="px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">Masuk</button>
+          ${navLinks.map(l => `<a href="#${l.toLowerCase()}" className="hover:text-white transition-colors">${l}</a>`).join('\n          ')}
+          ${cta ? `<button className="px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">${cta}</button>` : ''}
         </div>
       </nav>`;
+    }
 
-    case 'bottom-nav':
+    case 'bottom-nav': {
+      const tabs = (el.content && el.content.trim() ? el.content : 'Beranda, Eksplor, Dompet, Profil')
+        .split(/[,|]/)
+        .map(s => s.trim())
+        .filter(Boolean);
       return `      {/* Mobile Bottom Navigation: ${el.name} */}
       <nav 
         className="absolute px-6 flex items-center justify-around border-t border-slate-800 text-slate-400 backdrop-blur-md"
@@ -700,23 +709,13 @@ ${innerChart}
           backdropFilter: 'blur(12px)',
         })}
       >
-        <button className="flex flex-col items-center gap-1 text-indigo-400 font-medium text-[10px]">
-          <span>🏠</span>
-          <span>Beranda</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 hover:text-slate-200 text-[10px]">
-          <span>🧭</span>
-          <span>Eksplor</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 hover:text-slate-200 text-[10px]">
-          <span>💳</span>
-          <span>Dompet</span>
-        </button>
-        <button className="flex flex-col items-center gap-1 hover:text-slate-200 text-[10px]">
-          <span>👤</span>
-          <span>Profil</span>
-        </button>
+        ${tabs.map((tab, idx) => `
+        <button className="flex flex-col items-center gap-1 ${idx === 0 ? 'text-indigo-400 font-medium' : 'hover:text-slate-200'} text-[10px]">
+          <span>${idx === 0 ? '🏠' : idx === 1 ? '🧭' : idx === 2 ? '💳' : '👤'}</span>
+          <span>${tab}</span>
+        </button>`).join('')}
       </nav>`;
+    }
 
     case 'rect':
     case 'card':

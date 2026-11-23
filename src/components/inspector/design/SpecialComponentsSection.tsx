@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { DesignElement } from '../../../types';
+import { explodeNavbar, explodeBottomNav } from '../../../utils/componentExploder';
 
 interface SpecialComponentsSectionProps {
   element: DesignElement;
@@ -19,6 +20,7 @@ interface SpecialComponentsSectionProps {
   iconFilter: string;
   setIconFilter: (filter: string) => void;
   filteredIcons: string[];
+  onExplodeElement?: (elementId: string, replacementElements: DesignElement[]) => void;
 }
 
 export const SpecialComponentsSection: React.FC<SpecialComponentsSectionProps> = ({
@@ -29,6 +31,7 @@ export const SpecialComponentsSection: React.FC<SpecialComponentsSectionProps> =
   iconFilter,
   setIconFilter,
   filteredIcons,
+  onExplodeElement,
 }) => {
   const [csvRawInput, setCsvRawInput] = useState('');
   const [showCsvImporter, setShowCsvImporter] = useState(false);
@@ -510,6 +513,210 @@ export const SpecialComponentsSection: React.FC<SpecialComponentsSectionProps> =
                   );
                 })}
               </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Pengaturan Bilah Navigasi (Navbar) */}
+      {element.type === 'navbar' && (
+        <div className="space-y-3 p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span>⚡</span> Bilah Navigasi (Navbar)
+            </span>
+            <span className="text-[9px] px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 font-mono border border-indigo-800/60">
+              Auto-Layout
+            </span>
+          </div>
+
+          {/* 1. Brand Logo / Name */}
+          <div>
+            <label className="text-[10px] text-slate-400 block mb-1">Nama Brand / Logo</label>
+            <input
+              type="text"
+              value={element.subTitle || 'App Branding'}
+              onChange={e => handleChange('subTitle', e.target.value)}
+              placeholder="Contoh: DesignFlow Studio"
+              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          {/* 2. Menu Items (Editable list) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] text-slate-400">Daftar Link Menu</label>
+              <span className="text-[9px] text-slate-500">Edit teks tiap item</span>
+            </div>
+            
+            {(() => {
+              const items = (element.content && element.content.trim() ? element.content : 'Home, Fitur, Harga')
+                .split(/[,|]/)
+                .map(s => s.trim())
+                .filter(Boolean);
+
+              const updateItems = (newItems: string[]) => {
+                handleChange('content', newItems.join(', '));
+              };
+
+              return (
+                <div className="space-y-1.5">
+                  {items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-slate-500 font-mono w-4">{idx + 1}.</span>
+                      <input
+                        type="text"
+                        value={item}
+                        onChange={e => {
+                          const next = [...items];
+                          next[idx] = e.target.value;
+                          updateItems(next);
+                        }}
+                        placeholder={`Menu ${idx + 1}`}
+                        className="flex-1 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 outline-none focus:border-indigo-500"
+                      />
+                      <button
+                        type="button"
+                        disabled={items.length <= 1}
+                        onClick={() => updateItems(items.filter((_, i) => i !== idx))}
+                        className="p-1 text-slate-500 hover:text-rose-400 disabled:opacity-20"
+                        title="Hapus Menu"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => updateItems([...items, `Menu ${items.length + 1}`])}
+                    className="w-full py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                  >
+                    <Plus className="w-3 h-3 text-indigo-400" />
+                    <span>Tambah Menu Teks</span>
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* 3. Tombol CTA */}
+          <div>
+            <label className="text-[10px] text-slate-400 block mb-1">Teks Tombol Aksi (CTA)</label>
+            <input
+              type="text"
+              value={element.value !== undefined ? element.value : 'Masuk'}
+              onChange={e => handleChange('value', e.target.value)}
+              placeholder="Contoh: Masuk / Daftar"
+              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          {/* 4. Action: Pecah Jadi Elemen Bebas (Figma-Style Ungroup) */}
+          {onExplodeElement && (
+            <div className="pt-2 border-t border-slate-800/80">
+              <button
+                type="button"
+                onClick={() => {
+                  const replacements = explodeNavbar(element);
+                  onExplodeElement(element.id, replacements);
+                }}
+                className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20 hover:from-indigo-600/30 hover:via-purple-600/30 hover:to-pink-600/30 border border-indigo-500/40 text-indigo-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-sm"
+              >
+                <span>⚡</span>
+                <span>Pecah Jadi Elemen Bebas (Figma Ungroup)</span>
+              </button>
+              <p className="text-[9px] text-slate-500 mt-1 text-center">
+                Memecah navbar menjadi teks & tombol individual dalam satu Group Figma.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Pengaturan Navigasi Bawah (Bottom Nav) */}
+      {element.type === 'bottom-nav' && (
+        <div className="space-y-3 p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+              <span>📱</span> Navigasi Bawah (Bottom Nav)
+            </span>
+            <span className="text-[9px] px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 font-mono border border-indigo-800/60">
+              Mobile Tabs
+            </span>
+          </div>
+
+          {/* Menu Items (Editable list) */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] text-slate-400 block">Daftar Tab Menu</label>
+            {(() => {
+              const items = (element.content && element.content.trim() ? element.content : 'Beranda, Eksplor, Dompet, Profil')
+                .split(/[,|]/)
+                .map(s => s.trim())
+                .filter(Boolean);
+
+              const updateItems = (newItems: string[]) => {
+                handleChange('content', newItems.join(', '));
+              };
+
+              return (
+                <div className="space-y-1.5">
+                  {items.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5">
+                      <span className="text-[10px] text-slate-500 font-mono w-4">{idx + 1}.</span>
+                      <input
+                        type="text"
+                        value={item}
+                        onChange={e => {
+                          const next = [...items];
+                          next[idx] = e.target.value;
+                          updateItems(next);
+                        }}
+                        placeholder={`Tab ${idx + 1}`}
+                        className="flex-1 bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-slate-200 outline-none focus:border-indigo-500"
+                      />
+                      <button
+                        type="button"
+                        disabled={items.length <= 1}
+                        onClick={() => updateItems(items.filter((_, i) => i !== idx))}
+                        className="p-1 text-slate-500 hover:text-rose-400 disabled:opacity-20"
+                        title="Hapus Tab"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => updateItems([...items, `Tab ${items.length + 1}`])}
+                    className="w-full py-1 rounded bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[10px] font-semibold flex items-center justify-center gap-1 transition-colors"
+                  >
+                    <Plus className="w-3 h-3 text-indigo-400" />
+                    <span>Tambah Tab Baru</span>
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Action: Pecah Jadi Elemen Bebas */}
+          {onExplodeElement && (
+            <div className="pt-2 border-t border-slate-800/80">
+              <button
+                type="button"
+                onClick={() => {
+                  const replacements = explodeBottomNav(element);
+                  onExplodeElement(element.id, replacements);
+                }}
+                className="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20 hover:from-indigo-600/30 hover:via-purple-600/30 hover:to-pink-600/30 border border-indigo-500/40 text-indigo-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all shadow-sm"
+              >
+                <span>⚡</span>
+                <span>Pecah Jadi Elemen Bebas (Figma Ungroup)</span>
+              </button>
+              <p className="text-[9px] text-slate-500 mt-1 text-center">
+                Memecah bottom-nav menjadi teks individual dalam satu Group Figma.
+              </p>
             </div>
           )}
         </div>
