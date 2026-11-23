@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Slide } from '../types';
 import { getSlideBackground } from '../utils/slideStyle';
+import { ElementRenderer } from './ElementRenderer';
 import {
   Plus,
   Copy,
@@ -224,15 +225,16 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
 
             {/* Scaled Mini Visual Canvas Thumbnail */}
             <div
-              className="relative w-full h-12 rounded-md overflow-hidden border border-slate-800/80 my-0.5 pointer-events-none shrink-0"
+              className="relative w-full h-12 rounded-md overflow-hidden border border-slate-800/80 my-0.5 pointer-events-none select-none shrink-0"
               style={{ background: getSlideBackground(slide) }}
             >
               <div
-                className="absolute origin-top-left pointer-events-none"
+                className="absolute origin-top-left pointer-events-none select-none"
                 style={{
                   width: `${slide.width}px`,
                   height: `${slide.height}px`,
                   transform: `scale(${scaleFactor})`,
+                  transformOrigin: 'top left',
                 }}
               >
                 {slide.elements.map(el => {
@@ -240,27 +242,25 @@ export const SlideStrip: React.FC<SlideStripProps> = ({
                   return (
                     <div
                       key={el.id}
-                      className="absolute"
                       style={{
+                        position: 'absolute',
                         left: `${el.x}px`,
                         top: `${el.y}px`,
                         width: `${el.width}px`,
                         height: `${el.height}px`,
-                        background:
-                          el.fill ||
-                          (el.type === 'heading'
-                            ? '#ffffff'
-                            : el.type === 'text'
-                            ? '#94a3b8'
-                            : el.type === 'button'
-                            ? '#6366f1'
-                            : el.type === 'image'
-                            ? '#8b5cf6'
-                            : '#334155'),
-                        borderRadius: `${el.borderRadius || 2}px`,
-                        opacity: el.opacity !== undefined ? el.opacity : 0.8,
+                        zIndex: el.zIndex,
+                        transform: [
+                          el.rotation ? `rotate(${el.rotation}deg)` : '',
+                          el.flipX ? 'scaleX(-1)' : '',
+                          el.flipY ? 'scaleY(-1)' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ') || undefined,
+                        opacity: el.opacity !== undefined ? el.opacity : 1,
                       }}
-                    />
+                    >
+                      <ElementRenderer element={el} isSelected={false} />
+                    </div>
                   );
                 })}
               </div>
