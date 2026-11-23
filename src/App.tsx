@@ -98,6 +98,7 @@ export default function App() {
   const [isZenMode, setIsZenMode] = useState(false);
   const [isMobileLeftOpen, setIsMobileLeftOpen] = useState(false);
   const [isMobileRightOpen, setIsMobileRightOpen] = useState(false);
+  const [bridgeNotice, setBridgeNotice] = useState<string | null>(null);
 
   // Floating Context Menu State
   const [contextMenu, setContextMenu] = useState<{
@@ -442,8 +443,81 @@ export default function App() {
     deselectAllElements,
   ]);
 
+  // Integration Bridge: Auto-import project from GuidePath via URL Hash (#import_base64=...) or postMessage
+  useEffect(() => {
+    // 1. Handle postMessage from external parent or window opener (GuidePath)
+    const handleBridgeMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'LOAD_DESIGNFLOW_PROJECT' && event.data.project) {
+        try {
+          loadProjectData(event.data.project);
+          setBridgeNotice('🎓 Proyek Sidang dari GuidePath berhasil dimuat ke kanvas!');
+          confetti({ particleCount: 60, spread: 70, origin: { y: 0.15 } });
+        } catch (err) {
+          console.warn('Gagal memuat proyek dari bridge:', err);
+        }
+      }
+    };
+    window.addEventListener('message', handleBridgeMessage);
+
+    // Notify window.opener if opened directly in popup
+    if (window.opener) {
+      try {
+        window.opener.postMessage({ type: 'DESIGNFLOW_READY' }, '*');
+      } catch {}
+    }
+
+    // 2. Handle URL Hash bridge (#import_base64=...)
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hash = window.location.hash;
+      if (hash.includes('import_base64=')) {
+        try {
+          const rawB64 = hash.split('import_base64=')[1];
+          if (rawB64) {
+            const jsonStr = decodeURIComponent(escape(atob(rawB64)));
+            const parsed = JSON.parse(jsonStr);
+            if (parsed && parsed.slides && Array.isArray(parsed.slides)) {
+              loadProjectData(parsed);
+              setBridgeNotice('🎓 Proyek Sidang dari GuidePath berhasil dimuat!');
+              confetti({ particleCount: 70, spread: 80, origin: { y: 0.15 } });
+              // Clean URL hash so user refresh won't overwrite current state
+              window.history.replaceState(null, '', window.location.pathname);
+            }
+          }
+        } catch (err) {
+          console.warn('Gagal mendekode import_base64:', err);
+        }
+      }
+    }
+
+    return () => {
+      window.removeEventListener('message', handleBridgeMessage);
+    };
+  }, [loadProjectData]);
+
+  // Auto-dismiss bridge notification after 5 seconds
+  useEffect(() => {
+    if (!bridgeNotice) return;
+    const timer = setTimeout(() => setBridgeNotice(null), 5000);
+    return () => clearTimeout(timer);
+  }, [bridgeNotice]);
+
   return (
-    <div className="flex flex-col w-screen h-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
+    <div className="flex flex-col w-screen h-screen overflow-hidden bg-slate-950 text-slate-100 font-sans relative">
+      {/* GuidePath Bridge Import Banner */}
+      {bridgeNotice && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-indigo-600/95 border border-indigo-400 text-white rounded-xl shadow-2xl backdrop-blur-md flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
+          <span className="text-base">🎓</span>
+          <span className="text-xs font-semibold">{bridgeNotice}</span>
+          <button
+            type="button"
+            onClick={() => setBridgeNotice(null)}
+            className="ml-2 text-indigo-200 hover:text-white p-0.5 rounded transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Top Navbar */}
       <Navbar
         title={project.title}
